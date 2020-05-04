@@ -64,6 +64,11 @@ void calculate_rs(
 
 /* returns value of maximum (absolute) velocity on grid for current time step */
 
+
+// Function is used for searching the maximum absolute element in a matrix
+static bool abs_compare(int a, int b);
+
+
 double max_abs_velocity(int imax, int jmax, Grid &grid, velocity_type type);
 
 /**
