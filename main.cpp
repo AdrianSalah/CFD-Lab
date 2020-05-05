@@ -40,7 +40,7 @@
 int main(int argn, char** args){
 
 //this is a test
-std::cout<<1;
+
 
   return -1;
 }
