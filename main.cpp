@@ -37,10 +37,67 @@
  *   iteration loop the operation sor() is used.
  * - calculate_uv() Calculate the velocity at the next time step.
  */
+
+static bool abs_compare(int a, int b)
+{
+    return (std::abs(a) < std::abs(b));
+}
+
 int main(int argn, char** args){
 
-//this is a test
+    //initialize all relevant parameters
+    //we should use smart pointers here
+    double* Re = new double;                /* reynolds number   */
+    double* UI = new double;                /* velocity x-direction */
+    double* VI = new double;                /* velocity y-direction */
+    double* PI = new double;                /* pressure */
+    double* GX = new double;                /* gravitation x-direction */
+    double* GY = new double;                /* gravitation y-direction */
+    double* t_end = new double;             /* end time */
+    double* xlength = new double;           /* length of the domain x-dir.*/
+    double* ylength = new double;           /* length of the domain y-dir.*/
+    double* dt = new double;                /* time step */
+    double* dx = new double;                /* length of a cell x-dir. */
+    double* dy = new double;                /* length of a cell y-dir. */
+    int*  imax = new int;                   /* number of cells x-direction*/
+    int*  jmax = new int;                   /* number of cells y-direction*/
+    double* alpha = new double;             /* uppwind differencing factor*/
+    double* omg = new double;               /* relaxation factor */
+    double* tau = new double;               /* safety factor for time step*/
+    int*  itermax = new int;                /* max. number of iterations  */
+    double* eps = new double;               /* accuracy bound for pressure*/
+    double* dt_value = new double;          /* time for output */
+
+    std::string data_file{"../cavity100.dat"}; //relative path to cavity100.dat file
+    
+    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
+
+    //set up matrices
+    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
 
 
-  return -1;
+    //free dynamically allocated memory
+    //we should avoid this by using smart pointers
+    delete Re;
+    delete UI;
+    delete VI;
+    delete PI;
+    delete GX;
+    delete GY;
+    delete t_end;
+    delete xlength;
+    delete ylength;
+    delete dt;
+    delete dx;
+    delete dy;
+    delete imax;
+    delete jmax;
+    delete alpha;
+    delete omg;
+    delete tau;
+    delete itermax;
+    delete eps;
+    delete dt_value;
+
+    return 0;
 }
