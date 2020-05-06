@@ -5,6 +5,7 @@
 #include <cstdio>
 
 
+
 /**
  * The main operation reads the configuration file, initializes the scenario and
  * contains the main loop. So here are the individual steps of the algorithm:
@@ -38,15 +39,12 @@
  * - calculate_uv() Calculate the velocity at the next time step.
  */
 
-static bool abs_compare(int a, int b)
-{
-    return (std::abs(a) < std::abs(b));
-}
+
 
 int main(int argn, char** args){
 
     //initialize all relevant parameters
-    //we should use smart pointers here
+    //we should use smart pointers here to avoid memory leaks
     double* Re = new double;                /* reynolds number   */
     double* UI = new double;                /* velocity x-direction */
     double* VI = new double;                /* velocity y-direction */
@@ -69,11 +67,12 @@ int main(int argn, char** args){
     double* dt_value = new double;          /* time for output */
 
     std::string data_file{"../cavity100.dat"}; //relative path to cavity100.dat file
-    
+
     read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
 
     //set up matrices
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
+
 
 
     //free dynamically allocated memory
