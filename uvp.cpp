@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cfloat>
 
-// Determines the value of F and G
+// Determines the values of F and G
 void calculate_fg(
         double Re,
         double GX,
@@ -27,34 +27,32 @@ void calculate_fg(
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
 
-    // -----Boundary values for F and G----- //
+    // ----- Boundary values for F and G ----- //
     // F[0, j] = u[0, j]        j = 1...jmax    LEFT
     // F[imax, j] = u[imax, j]  j = 1...jmax    RIGHT
     //
     // G[i, 0] = v[i, 0]        i = 1...imax    BOTTOM
     // G[i, jmax] = v[i, jmax]  i = 1...imax    TOP
 
-    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int j = 1; j <= jmax; j++) {
         F[0][j] = u[0][j];
         F[imax][j] = u[imax][j];
     }
-    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
+
     for (int i = 1; i <= imax; i++) {
         G[i][0] = v[i][0];
         G[i][jmax] = v[i][jmax];
     }
 
-    // -----F function initialisation----- //
+    // ----- F function initialisation ----- //
 
     double d2_u_dx2;
     double d2_u_dy2;
     double d_u2_dx;
     double d_uv_dy;
 
-    // ------ Discritasation of differential operators of F ----- //
+    // ------ Discretisation of differential operators of G ----- //
 
-    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int i = 1; i < imax; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
     {
         for (int j = 1; j <= jmax; j++)
@@ -89,19 +87,18 @@ void calculate_fg(
         }
     }
 
-    // -----G function initialisation----- //
+    // ----- G function initialisation ----- //
 
     double d2_v_dx2;
     double d2_v_dy2;
     double d_v2_dy;
     double d_uv_dx;
 
-    // ------ Discritasation of differential operators of F ----- //
+    // ------ Discretisation of differential operators of F ----- //
 
-    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int i = 1; i <= imax; i++)
     {
-        for (int j = 1; j < jmax; j++) //shouldn't be the index from for (int j = 1; j < jmax-1; i++)
+        for (int j = 1; j < jmax; j++)
         {
             //second derivative of v with respect to x
             d2_v_dx2 = 1 / (dx * dx) * (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]);
@@ -145,9 +142,9 @@ void calculate_rs(
         matrix<double> &G,
         matrix<double> &RS)
 {
-    for (int i = 1; i < imax; i++) //shouldn't it be for (int i = 1; i <= imax; i++) here?
+    for (int i = 1; i <= imax; i++)
     {
-        for (int j = 1; j < jmax; j++) //shouldn't it be for (int j = 1; i <= jmax; j++) here?
+        for (int j = 1; j <= jmax; j++)
         {
             RS.at(i).at(j) = 1 / dt * (
                 (F.at(i).at(j) - F.at(i - 1).at(j)) / dx +
