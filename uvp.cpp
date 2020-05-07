@@ -69,7 +69,7 @@ void calculate_uv(
 
     for (int i = 1; i <= imax; i++){
         for(int j = 1; j <= jmax - 1; j++){
-            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j) - pressure.at(i).at(j));
+            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
         }
     }
 
