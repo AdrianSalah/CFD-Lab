@@ -41,6 +41,7 @@ void calculate_dt(double Re, double tau, double *dt, double dx, double dy, int i
 {
 }
 
+
 void calculate_uv(
         double dt,
         double dx,
@@ -51,4 +52,27 @@ void calculate_uv(
         matrix<double> &F,
         matrix<double> &G)
 {
+    matrix<double> u_velocity;
+    matrix<double> v_velocity;
+    matrix<double> pressure;
+
+    grid.velocity(u_velocity, velocity_type::U);
+    grid.velocity(v_velocity, velocity_type::V);
+    grid.pressure(pressure);
+
+
+    for(int i = 1; i <= imax - 1; i++){
+        for(int j = 1; j <= jmax; j++){
+            u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
+        }
+    }
+
+    for (int i = 1; i <= imax; i++){
+        for(int j = 1; j <= jmax - 1; j++){
+            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j) - pressure.at(i).at(j));
+        }
+    }
+
+    grid.set_velocity(u_velocity, velocity_type::U);
+    grid.set_velocity(v_velocity, velocity_type::V);
 }
