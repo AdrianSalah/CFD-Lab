@@ -34,12 +34,12 @@ void calculate_fg(
     // G[i, 0] = v[i, 0]        i = 1...imax    BOTTOM
     // G[i, jmax] = v[i, jmax]  i = 1...imax    TOP
 
-
+    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int j = 1; j <= jmax; j++) {
         F[0][j] = u[0][j];
         F[imax][j] = u[imax][j];
     }
-
+    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int i = 1; i <= imax; i++) {
         G[i][0] = v[i][0];
         G[i][jmax] = v[i][jmax];
@@ -52,15 +52,18 @@ void calculate_fg(
     double d_u2_dx;
     double d_uv_dy;
 
+    // ------ Discritasation of differential operators of F ----- //
 
-    for (int i = 1; i < imax; i++)
+    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
+    for (int i = 1; i < imax; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
     {
         for (int j = 1; j <= jmax; j++)
         {
+            //second derivative with respect to x
             d2_u_dx2 = 1 / (dx * dx) * (u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]);
-
+            //second derivative with respect to y
             d2_u_dy2 = 1 / (dy * dy) * (u[i][j + 1] - 2 * u[i][j] + u[i][j - 1]);
-
+            //first derivative of (u*u) with respect to x
             d_u2_dx = 1 / (4 * dx) * (
                 (u[i][j] + u[i + 1][j]) * (u[i][j] + u[i + 1][j]) -
                 (u[i - 1][j] + u[i][j]) * (u[i - 1][j] + u[i][j])
@@ -70,7 +73,7 @@ void calculate_fg(
                     abs(u[i][j] + u[i + 1][j]) * (u[i][j] - u[i + 1][j]) -
                     abs(u[i - 1][j] + u[i][j]) * (u[i - 1][j] - u[i][j])
                     );
-
+            //first derivative of (u*v) with respect to y
             d_uv_dy = 1 / (4 * dy) * (
                 (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
                 (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
@@ -93,15 +96,18 @@ void calculate_fg(
     double d_v2_dy;
     double d_uv_dx;
 
+    // ------ Discritasation of differential operators of F ----- //
 
+    //access elemtents with .at() instead of [] -> boundary checks for safety [Adrian]
     for (int i = 1; i <= imax; i++)
     {
-        for (int j = 1; j < jmax; j++)
+        for (int j = 1; j < jmax; j++) //shouldn't be the index from for (int j = 1; j < jmax-1; i++)
         {
+            //second derivative of v with respect to x
             d2_v_dx2 = 1 / (dx * dx) * (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]);
-
+            //second derivative of v with respect to y
             d2_v_dy2 = 1 / (dy * dy) * (v[i][j + 1] - 2 * v[i][j] + v[i][j - 1]);
-
+            //first derivative of (v*v) with respect to y
             d_v2_dy = 1 / (4 * dy) * (
                 (v[i][j] + v[i][j + 1]) * (v[i][j] + v[i][j + 1]) -
                 (v[i][j - 1] + v[i][j]) * (v[i][j - 1] + v[i][j])
@@ -111,7 +117,7 @@ void calculate_fg(
                     abs(v[i][j] + v[i][j + 1]) * (v[i][j] - v[i][j + 1]) -
                     abs(v[i][j - 1] + v[i][j]) * (v[i][j - 1] - v[i][j])
                     );
-
+            //first derivative of (u*v) with respect to x
             d_uv_dx = 1 / (4 * dx) * (
                 (u[i][j] + u[i][j + 1]) * (v[i][j] + v[i + 1][j]) -
                 (u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] + v[i][j])
@@ -139,9 +145,9 @@ void calculate_rs(
         matrix<double> &G,
         matrix<double> &RS)
 {
-    for (int i = 1; i < imax; i++)
+    for (int i = 1; i < imax; i++) //shouldn't it be for (int i = 1; i <= imax; i++) here?
     {
-        for (int j = 1; j < jmax; j++)
+        for (int j = 1; j < jmax; j++) //shouldn't it be for (int j = 1; i <= jmax; j++) here?
         {
             RS.at(i).at(j) = 1 / dt * (
                 (F.at(i).at(j) - F.at(i - 1).at(j)) / dx +
