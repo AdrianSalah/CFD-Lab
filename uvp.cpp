@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cfloat>
+#include <algorithm> //to find maximum element in vector
 
 // Determines the values of F and G
 void calculate_fg(
