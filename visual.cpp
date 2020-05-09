@@ -12,17 +12,17 @@
 #include "vector"
 
 void write_vtkFile(const char *szProblem,
-		 int    timeStepNumber,
-		 double xlength,
+		         int    timeStepNumber,
+		         double xlength,
                  double ylength,
                  int    imax,
                  int    jmax,
-		 double dx,
-		 double dy,
-                 double **U,
-                 double **V,
-                 double **P) {
-  
+		         double dx,
+		         double dy,
+                 matrix <double> &U,
+                 matrix <double> &V,
+                 matrix <double> &P)
+{
   int i,j;
   char szFileName[80];
   FILE *fp=NULL;
