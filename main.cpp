@@ -83,9 +83,15 @@ int main(int argn, char** args) {
     // The residual for SOR
     double* res = new double;
 
+    //we need to initialize F and G
     matrix<double> F;
     matrix<double> G;
     matrix<double> RS;
+    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
+
+    //initialize matrices for U, V, P
+    matrix<double> U, V, P;
+
 
     while (time < *t_end) {
 
@@ -105,14 +111,19 @@ int main(int argn, char** args) {
         
         // Visualize u v p
         if (timesteps_total % visualization_period == 0) {
-            // placeholder for the code
+            grid.velocity(U, velocity_type::U);
+            grid.velocity(V, velocity_type::V);
+            grid.pressure(P);
+
         }
 
         time += *dt;
         timesteps_total++;
     }
-    
-    // Visualize u v p at the end of the computations
+
+
+
+
 
     // Free dynamically allocated memory
     // We should avoid this by using smart pointers (can be improved at later stage)

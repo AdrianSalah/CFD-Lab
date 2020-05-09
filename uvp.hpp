@@ -114,4 +114,18 @@ void calculate_uv(
         matrix<double> &G
 );
 
+/*
+ * initializes matrices of F, G and R for constant
+ */
+
+void init_fgrs(int imax,
+               int jmax,
+               matrix<double> &F,
+               matrix<double> &G,
+               matrix<double> &RS,
+               double FI,
+               double GI,
+               double RSI
+);
+
 #endif

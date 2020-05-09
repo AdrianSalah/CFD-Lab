@@ -252,3 +252,24 @@ void calculate_uv(
     grid.set_velocity(v_velocity, velocity_type::V);
 
 }
+
+void init_fgrs(int imax,
+            int jmax,
+            matrix<double> &F,
+            matrix<double> &G,
+            matrix<double> &RS,
+            double FI,
+            double GI,
+            double RSI
+  ){
+    //loop through hole grid
+    F.resize(imax+2 );
+    G.resize(imax+2);
+    RS.resize(imax+2);
+    for(int i = 0; i<imax+2; i++){
+
+        F.at(i).resize(jmax+2, FI);
+        G.at(i).resize(jmax+2, GI);
+        RS.at(i).resize(jmax+2, RSI);
+    }
+}
