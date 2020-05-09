@@ -68,42 +68,54 @@ int main(int argn, char** args) {
     std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
 
     read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
-    //set up matrices
+    
+    // Set up matrices
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
-    // initializing variables; time, # of iterations for main loop, # of iterations for sor
-    double time=0;
-    short int n=0;
-    short int it=0;
-    //every period'th iteration we visualize u v p
-    short int period=10;
-    // teh residual for sor
+    
+    // Initializing variables
+    double time = 0;                        // time
+    int timesteps_total = 0;                // # of iterations for main loop
+    int current_timestep_iteration = 0;     // # of iterations for SOR
+    
+    // Every period'th iteration we visualize u v p
+    int visualization_period = 10;
+    
+    // The residual for SOR
     double* res = new double;
-    while (time < *t_end){
+
+    matrix<double> F;
+    matrix<double> G;
+    matrix<double> RS;
+
+    while (time < *t_end) {
 
         calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
         boundaryvalues (*imax, *jmax, grid);
-        matrix<double> F;
-        matrix<double> G;
-        matrix<double> RS;
-        calculate_fg(*Re,*GX,*GY,*alpha,*dt,*dx,*dy,*imax,*jmax,grid,F,G);
-        calculate_rs(*dt,*dx,*dy,*imax,*jmax,F,G,RS);
-        it =0;
-        // sor loop
-        while (*res > *eps && it<=100){
-            sor(*omg,*dx,*dy,*imax,*jmax,grid,RS,res);
-            it++;
-        }
-        calculate_uv(*dt,*dx,*dy,*imax,*jmax,grid,F,G);
-        if (n%period==0){
-            //visualize u v p
-        }
-        time += *dt;
-        n++;
-    }
-    //visualize u v p
+        calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
+        
+        current_timestep_iteration = 0;
 
-    //free dynamically allocated memory
-    //we should avoid this by using smart pointers
+        // SOR loop
+        while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
+            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
+            current_timestep_iteration++;
+        }
+        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        
+        // Visualize u v p
+        if (timesteps_total % visualization_period == 0) {
+            // placeholder for the code
+        }
+
+        time += *dt;
+        timesteps_total++;
+    }
+    
+    // Visualize u v p at the end of the computations
+
+    // Free dynamically allocated memory
+    // We should avoid this by using smart pointers (can be improved at later stage)
     delete Re;
     delete UI;
     delete VI;
@@ -124,6 +136,7 @@ int main(int argn, char** args) {
     delete itermax;
     delete eps;
     delete dt_value;
+    delete res;
 
     return 0;
 }
