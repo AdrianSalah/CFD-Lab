@@ -2,7 +2,10 @@
 #include "visual.hpp"
 #include "init.hpp"
 #include "sor.hpp"
+#include "uvp.hpp"
 #include <cstdio>
+#include <iostream>
+#include "boundary_val.hpp"
 
 
 /**
@@ -39,7 +42,6 @@
  */
 
 int main(int argn, char** args) {
-
     //initialize all relevant parameters
     //we should use smart pointers here to avoid memory leaks
     double* Re = new double;                /* reynolds number   */
@@ -66,11 +68,39 @@ int main(int argn, char** args) {
     std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
 
     read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
-
     //set up matrices
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
+    // initializing variables; time, # of iterations for main loop, # of iterations for sor
+    double time=0;
+    short int n=0;
+    short int it=0;
+    //every period'th iteration we visualize u v p
+    short int period=10;
+    // teh residual for sor
+    double* res = new double;
+    while (time < *t_end){
 
-
+        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
+        boundaryvalues (*imax, *jmax, grid);
+        matrix<double> F;
+        matrix<double> G;
+        matrix<double> RS;
+        calculate_fg(*Re,*GX,*GY,*alpha,*dt,*dx,*dy,*imax,*jmax,grid,F,G);
+        calculate_rs(*dt,*dx,*dy,*imax,*jmax,F,G,RS);
+        it =0;
+        // sor loop
+        while (*res > *eps && it<=100){
+            sor(*omg,*dx,*dy,*imax,*jmax,grid,RS,res);
+            it++;
+        }
+        calculate_uv(*dt,*dx,*dy,*imax,*jmax,grid,F,G);
+        if (n%period==0){
+            //visualize u v p
+        }
+        time += *dt;
+        n++;
+    }
+    //visualize u v p
 
     //free dynamically allocated memory
     //we should avoid this by using smart pointers

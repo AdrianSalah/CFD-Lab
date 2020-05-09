@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cfloat>
+#include <algorithm>
 
 // Determines the values of F and G
 void calculate_fg(
@@ -63,24 +64,24 @@ void calculate_fg(
             d2_u_dy2 = 1 / (dy * dy) * (u[i][j + 1] - 2 * u[i][j] + u[i][j - 1]);
             //first derivative of (u*u) with respect to x
             d_u2_dx = 1 / (4 * dx) * (
-                (u[i][j] + u[i + 1][j]) * (u[i][j] + u[i + 1][j]) -
-                (u[i - 1][j] + u[i][j]) * (u[i - 1][j] + u[i][j])
-                ) +
+                    (u[i][j] + u[i + 1][j]) * (u[i][j] + u[i + 1][j]) -
+                    (u[i - 1][j] + u[i][j]) * (u[i - 1][j] + u[i][j])
+            ) +
 
-                alpha / (4 * dx) * (
-                    abs(u[i][j] + u[i + 1][j]) * (u[i][j] - u[i + 1][j]) -
-                    abs(u[i - 1][j] + u[i][j]) * (u[i - 1][j] - u[i][j])
-                    );
+                      alpha / (4 * dx) * (
+                              abs(u[i][j] + u[i + 1][j]) * (u[i][j] - u[i + 1][j]) -
+                              abs(u[i - 1][j] + u[i][j]) * (u[i - 1][j] - u[i][j])
+                      );
             //first derivative of (u*v) with respect to y
             d_uv_dy = 1 / (4 * dy) * (
-                (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
-                (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
-                ) +
-                
-                alpha / (4 * dy) * (
-                    abs(v[i][j] + v[i + 1][j]) * (u[i][j] - u[i][j + 1]) -
-                    abs(v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] - u[i][j])
-                    );
+                    (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
+                    (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
+            ) +
+
+                      alpha / (4 * dy) * (
+                              abs(v[i][j] + v[i + 1][j]) * (u[i][j] - u[i][j + 1]) -
+                              abs(v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] - u[i][j])
+                      );
 
             // To check whether GX should be divided by density
             F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
@@ -106,24 +107,24 @@ void calculate_fg(
             d2_v_dy2 = 1 / (dy * dy) * (v[i][j + 1] - 2 * v[i][j] + v[i][j - 1]);
             //first derivative of (v*v) with respect to y
             d_v2_dy = 1 / (4 * dy) * (
-                (v[i][j] + v[i][j + 1]) * (v[i][j] + v[i][j + 1]) -
-                (v[i][j - 1] + v[i][j]) * (v[i][j - 1] + v[i][j])
-                ) +
+                    (v[i][j] + v[i][j + 1]) * (v[i][j] + v[i][j + 1]) -
+                    (v[i][j - 1] + v[i][j]) * (v[i][j - 1] + v[i][j])
+            ) +
 
-                alpha / (4 * dy) * (
-                    abs(v[i][j] + v[i][j + 1]) * (v[i][j] - v[i][j + 1]) -
-                    abs(v[i][j - 1] + v[i][j]) * (v[i][j - 1] - v[i][j])
-                    );
+                      alpha / (4 * dy) * (
+                              abs(v[i][j] + v[i][j + 1]) * (v[i][j] - v[i][j + 1]) -
+                              abs(v[i][j - 1] + v[i][j]) * (v[i][j - 1] - v[i][j])
+                      );
             //first derivative of (u*v) with respect to x
             d_uv_dx = 1 / (4 * dx) * (
-                (u[i][j] + u[i][j + 1]) * (v[i][j] + v[i + 1][j]) -
-                (u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] + v[i][j])
-                ) +
+                    (u[i][j] + u[i][j + 1]) * (v[i][j] + v[i + 1][j]) -
+                    (u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] + v[i][j])
+            ) +
 
-                alpha / (4 * dx) * (
-                    abs(u[i][j] + u[i][j + 1]) * (v[i][j] - v[i + 1][j]) -
-                    abs(u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] - v[i][j])
-                    );
+                      alpha / (4 * dx) * (
+                              abs(u[i][j] + u[i][j + 1]) * (v[i][j] - v[i + 1][j]) -
+                              abs(u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] - v[i][j])
+                      );
 
             // To check whether GY should be divided by density
             G.at(i).at(j) = v[i][j] + dt * (1 / Re * (d2_v_dx2 + d2_v_dy2) - d_uv_dx - d_v2_dy + GY);
@@ -149,9 +150,9 @@ void calculate_rs(
         for (int j = 1; j <= jmax; j++)
         {
             RS.at(i).at(j) = 1 / dt * (
-                (F.at(i).at(j) - F.at(i - 1).at(j)) / dx +
-                (G.at(i).at(j) - G.at(i).at(j - 1)) / dy
-                );
+                    (F.at(i).at(j) - F.at(i - 1).at(j)) / dx +
+                    (G.at(i).at(j) - G.at(i).at(j - 1)) / dy
+            );
         }
     }
 }
@@ -181,7 +182,7 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
 
     for (int i = 0; i < grid.imaxb(); ++i) {
         max_abs_value_per_row.at(i) = *std::max_element(current_velocity.at(i).begin(), current_velocity.at(i).end(),
-            abs_compare);
+                                                        abs_compare);
     }
     //maximum velocity value in grid
     return abs(*std::max_element(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), abs_compare));
@@ -212,7 +213,7 @@ void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int i
         *dt = tau * condition1;
     else
         *dt = tau * std::min(condition1,
-            std::min((dx / max_abs_U), (dy / max_abs_V)));
+                             std::min((dx / max_abs_U), (dy / max_abs_V)));
 }
 
 
@@ -226,4 +227,28 @@ void calculate_uv(
         matrix<double> &F,
         matrix<double> &G)
 {
+    matrix<double> u_velocity;
+    matrix<double> v_velocity;
+    matrix<double> pressure;
+
+    grid.velocity(u_velocity, velocity_type::U);
+    grid.velocity(v_velocity, velocity_type::V);
+    grid.pressure(pressure);
+
+
+    for(int i = 1; i <= imax - 1; i++){
+        for(int j = 1; j <= jmax; j++){
+            u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
+        }
+    }
+
+    for (int i = 1; i <= imax; i++){
+        for(int j = 1; j <= jmax - 1; j++){
+            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
+        }
+    }
+
+    grid.set_velocity(u_velocity, velocity_type::U);
+    grid.set_velocity(v_velocity, velocity_type::V);
+
 }
