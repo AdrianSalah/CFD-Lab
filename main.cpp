@@ -114,16 +114,17 @@ int main(int argn, char** args) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-
+            write_vtkFile("test", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
         }
 
         time += *dt;
         timesteps_total++;
     }
 
-
-
-
+    grid.velocity(U, velocity_type::U);
+    grid.velocity(V, velocity_type::V);
+    grid.pressure(P);
+    write_vtkFile("test", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
 
     // Free dynamically allocated memory
     // We should avoid this by using smart pointers (can be improved at later stage)

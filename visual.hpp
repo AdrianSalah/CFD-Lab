@@ -18,7 +18,7 @@
  * @param jmax    Maximum number of entries (?) in y-direction
  * @param dx      Mesh size in x-direction
  * @param dy      Mesh size in x-direction
- * @param U       Velocities in x-direction
+ * @param U       Velocities in x-directionđ
  * @param V       Velocities in y-direction
  * @param P       Pressure data
  * 
@@ -32,9 +32,9 @@ void write_vtkFile(const char *szProblem,
                   int    jmax,
 		  double dx,
 		  double dy,
-                  double **U,
-                  double **V,
-                  double **P);
+                  matrix<double> &U,
+                  matrix<double> &V,
+                  matrix<double> &P);
 
 /**
  * Method for writing header information in vtk format. 
