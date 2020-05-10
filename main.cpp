@@ -78,7 +78,7 @@ int main(int argn, char** args) {
     int current_timestep_iteration = 0;     // # of iterations for SOR
     
     // Every period'th iteration we visualize u v p
-    int visualization_period = 10;
+    int visualization_period = 1000;
     
     // The residual for SOR
     double* res = new double;
@@ -101,6 +101,7 @@ int main(int argn, char** args) {
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
         
         current_timestep_iteration = 0;
+        * res=10000;
 
         // SOR loop
         while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
