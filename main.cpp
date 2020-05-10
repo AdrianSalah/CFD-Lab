@@ -101,7 +101,7 @@ int main(int argn, char** args) {
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
         
         current_timestep_iteration = 0;
-        * res=10000;
+        * res=INFINITY;
 
         // SOR loop
         while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
