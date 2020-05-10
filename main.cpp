@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <iostream>
 #include "boundary_val.hpp"
+#include "Timer.h"
 
 
 /**
@@ -89,6 +90,9 @@ int main(int argn, char** args) {
     //initialize matrices U, V, P
     matrix<double> U, V, P;
 
+    // Initialize timer to measure performance
+    Timer runtime;
+
     //main loop of the algorithm
     while (time < *t_end) {
 
@@ -116,6 +120,7 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
         }
 
         time += *dt;
@@ -126,6 +131,9 @@ int main(int argn, char** args) {
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+
+    // Print out the total time required for the solution
+    runtime.printTimer();
 
     // Free dynamically allocated memory
     delete Re;
