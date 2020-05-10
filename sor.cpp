@@ -11,10 +11,11 @@ void sor(
         matrix<double> &RS,
         double *res
 ) {
-    int i,j;
-    double rloc;
-    double coeff = omg/(2.0*(1.0/(dx*dx)+1.0/(dy*dy)));
-    matrix<double> P;
+    static int i,j;
+    static double rloc;
+    static double coeff;
+    coeff = omg / (2.0 * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
+    static matrix<double> P;
     grid.pressure(P);
 
     /* SOR iteration */

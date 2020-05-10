@@ -6,8 +6,8 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     
     // VELOCITY - Declaration and Initialisation
 
-    matrix<double> u_velocity;
-    matrix<double> v_velocity;
+    static matrix<double> u_velocity;
+    static matrix<double> v_velocity;
 
     grid.velocity(u_velocity, velocity_type::U);
     grid.velocity(v_velocity, velocity_type::V);
@@ -58,7 +58,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     // PRESSURE - Declaration and Initialisation
     // Neuman boundary conditions
 
-    matrix<double> pres;
+    static matrix<double> pres;
     grid.pressure(pres);
 
     for (int j = 1; j <= jmax; j++)

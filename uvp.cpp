@@ -22,8 +22,8 @@ void calculate_fg(
         matrix<double> &F,
         matrix<double> &G)
 {
-    matrix<double> u;
-    matrix<double> v;
+    static matrix<double> u;
+    static matrix<double> v;
 
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
@@ -47,10 +47,10 @@ void calculate_fg(
 
     // ----- F function initialisation ----- //
 
-    double d2_u_dx2;
-    double d2_u_dy2;
-    double d_u2_dx;
-    double d_uv_dy;
+    static double d2_u_dx2;
+    static double d2_u_dy2;
+    static double d_u2_dx;
+    static double d_uv_dy;
 
     // ------ Discretisation of differential operators of G ----- //
 
@@ -90,10 +90,10 @@ void calculate_fg(
 
     // ----- G function initialisation ----- //
 
-    double d2_v_dx2;
-    double d2_v_dy2;
-    double d_v2_dy;
-    double d_uv_dx;
+    static double d2_v_dx2;
+    static double d2_v_dy2;
+    static double d_v2_dy;
+    static double d_uv_dx;
 
     // ------ Discretisation of differential operators of F ----- //
 
@@ -173,12 +173,14 @@ static bool abs_compare(int a, int b)
 
 
 double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
-    matrix<double> current_velocity; //matrix of current velocity U or V on grid
+    static matrix<double> current_velocity; //matrix of current velocity U or V on grid
     grid.velocity(current_velocity, type); //assigns velocity U or V to current_velocity
 
     // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
     //should we use function parameters imax+2, jmax+2 (assumes 1 boundary cell)  or imaxb(), jmax()? [Adrian]
-    std::vector<double> max_abs_value_per_row(grid.imaxb(), 0);
+    static std::vector<double> max_abs_value_per_row;
+
+    max_abs_value_per_row(grid.imaxb(), 0);
 
     for (int i = 0; i < grid.imaxb(); ++i) {
         max_abs_value_per_row.at(i) = *std::max_element(current_velocity.at(i).begin(), current_velocity.at(i).end(),
@@ -193,12 +195,16 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
 void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid) {
 
     //maximum absolute values for U, V on grid for current time step
-    double max_abs_U = max_abs_velocity(imax, jmax, grid, velocity_type::U);
-    double max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
+    static double max_abs_U;
+    max_abs_U = max_abs_velocity(imax, jmax, grid, velocity_type::U);
+
+    static double max_abs_V;
+    max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
 
     //first stability conditon
 
-    double condition1 = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+    static double condition1;
+    condition1 = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
 
     //check if CFL stability conditions are too small, then just use first stability condition
@@ -227,9 +233,9 @@ void calculate_uv(
         matrix<double> &F,
         matrix<double> &G)
 {
-    matrix<double> u_velocity;
-    matrix<double> v_velocity;
-    matrix<double> pressure;
+    static matrix<double> u_velocity;
+    static matrix<double> v_velocity;
+    static matrix<double> pressure;
 
     grid.velocity(u_velocity, velocity_type::U);
     grid.velocity(v_velocity, velocity_type::V);
@@ -263,13 +269,13 @@ void init_fgrs(int imax,
             double RSI
   ){
     //loop through hole grid
-    F.resize(imax+2 );
-    G.resize(imax+2);
-    RS.resize(imax+2);
-    for(int i = 0; i<imax+2; i++){
+    F.resize(imax + 2);
+    G.resize(imax + 2);
+    RS.resize(imax + 2);
+    for (int i = 0; i < imax + 2; i++) {
 
-        F.at(i).resize(jmax+2, FI);
-        G.at(i).resize(jmax+2, GI);
-        RS.at(i).resize(jmax+2, RSI);
+        F.at(i).resize(jmax + 2, FI);
+        G.at(i).resize(jmax + 2, GI);
+        RS.at(i).resize(jmax + 2, RSI);
     }
 }
