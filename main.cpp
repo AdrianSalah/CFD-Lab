@@ -42,8 +42,8 @@
  */
 
 int main(int argn, char** args) {
+
     //initialize all relevant parameters
-    //we should use smart pointers here to avoid memory leaks
     double* Re = new double;                /* reynolds number   */
     double* UI = new double;                /* velocity x-direction */
     double* VI = new double;                /* velocity y-direction */
@@ -56,55 +56,55 @@ int main(int argn, char** args) {
     double* dt = new double;                /* time step */
     double* dx = new double;                /* length of a cell x-dir. */
     double* dy = new double;                /* length of a cell y-dir. */
-    int* imax = new int;                   /* number of cells x-direction*/
-    int* jmax = new int;                   /* number of cells y-direction*/
+    int* imax = new int;                    /* number of cells x-direction*/
+    int* jmax = new int;                    /* number of cells y-direction*/
     double* alpha = new double;             /* uppwind differencing factor*/
     double* omg = new double;               /* relaxation factor */
     double* tau = new double;               /* safety factor for time step*/
-    int* itermax = new int;                /* max. number of iterations  */
+    int* itermax = new int;                 /* max. number of iterations  */
     double* eps = new double;               /* accuracy bound for pressure*/
     double* dt_value = new double;          /* time for output */
+    double* res = new double;               /* residual for SOR*/
 
     std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
 
+    //ready parameters from cavity100.dat file and assign values to initalized parameters
     read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
     
-    // Set up matrices
+    // Set up grid
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
     
     // Initializing variables
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
-    int current_timestep_iteration = 0;     // # of iterations for SOR
-    
-    // Every period'th iteration we visualize u v p
-    int visualization_period = 1000;
-    
-    // The residual for SOR
-    double* res = new double;
+    int current_timestep_iteration;         // # of iterations for SOR
+    int visualization_period = 1000;        // Every period'th iteration we visualize u v p
 
-    //we need to initialize F and G
-    matrix<double> F;
-    matrix<double> G;
-    matrix<double> RS;
+    //initialize matrices F, G and RS
+    matrix<double> F, G, RS;
+
+    //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
 
-    //initialize matrices for U, V, P
+    //initialize matrices U, V, P
     matrix<double> U, V, P;
 
-
+    //main loop of the algorithm
     while (time < *t_end) {
 
         calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
         boundaryvalues (*imax, *jmax, grid);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
-        
+
+        //reset the current number of iterations for SOR
         current_timestep_iteration = 0;
-        * res=10000;
+
+        //reset the residual to a large value before new SOR iteration
+        *res = *eps + 1000;
 
         // SOR loop
-        while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
+        while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
             current_timestep_iteration++;
         }
@@ -115,7 +115,7 @@ int main(int argn, char** args) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-            write_vtkFile("test", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            write_vtkFile("test_data", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
         }
 
         time += *dt;
@@ -125,10 +125,9 @@ int main(int argn, char** args) {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
-    write_vtkFile("test", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    write_vtkFile("test_data", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
 
     // Free dynamically allocated memory
-    // We should avoid this by using smart pointers (can be improved at later stage)
     delete Re;
     delete UI;
     delete VI;
