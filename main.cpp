@@ -100,8 +100,8 @@ int main(int argn, char** args) {
         //reset the current number of iterations for SOR
         current_timestep_iteration = 0;
 
-        //reset the residual to a large value before new SOR iteration
-        *res = *eps + 1000;
+        //reset the residual before new SOR iteration
+        *res = INFINITY;
 
         // SOR loop
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
@@ -115,7 +115,7 @@ int main(int argn, char** args) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-            write_vtkFile("test_data", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
         }
 
         time += *dt;
@@ -125,7 +125,7 @@ int main(int argn, char** args) {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
-    write_vtkFile("test_data", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
 
     // Free dynamically allocated memory
     delete Re;
