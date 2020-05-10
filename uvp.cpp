@@ -22,11 +22,10 @@ void calculate_fg(
         matrix<double> &F,
         matrix<double> &G)
 {
-    matrix<double> u;
-    matrix<double> v;
 
-    grid.velocity(u, velocity_type::U);
-    grid.velocity(v, velocity_type::V);
+    // Declaring u and v as aliases for grid._velocity members
+    matrix<double> &u = grid._velocities[static_cast<int>(velocity_type::U)];
+    matrix<double> &v = grid._velocities[static_cast<int>(velocity_type::V)];
 
     // ----- Boundary values for F and G ----- //
     // F[0, j] = u[0, j]        j = 1...jmax    LEFT
@@ -173,8 +172,7 @@ static bool abs_compare(int a, int b)
 
 
 double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
-    matrix<double> current_velocity; //matrix of current velocity U or V on grid
-    grid.velocity(current_velocity, type); //assigns velocity U or V to current_velocity
+    matrix<double>& current_velocity = grid._velocities[static_cast<int>(type)]; // matrix of current velocity U or V on grid
 
     // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
     //should we use function parameters imax+2, jmax+2 (assumes 1 boundary cell)  or imaxb(), jmax()? [Adrian]
@@ -227,12 +225,14 @@ void calculate_uv(
         matrix<double> &F,
         matrix<double> &G)
 {
-    matrix<double> u_velocity;
-    matrix<double> v_velocity;
-    matrix<double> pressure;
+    // Declaring u and v as aliases for grid._velocity members
+    matrix<double> &u_velocity = grid._velocities[static_cast<int>(velocity_type::U)];
+    matrix<double> &v_velocity = grid._velocities[static_cast<int>(velocity_type::V];
 
-    grid.velocity(u_velocity, velocity_type::U);
-    grid.velocity(v_velocity, velocity_type::V);
+    matrix<double> pressure; // pressure matrix lives the same life as before
+
+    //grid.velocity(u_velocity, velocity_type::U);
+    //grid.velocity(v_velocity, velocity_type::V);
     grid.pressure(pressure);
 
 
@@ -248,8 +248,8 @@ void calculate_uv(
         }
     }
 
-    grid.set_velocity(u_velocity, velocity_type::U);
-    grid.set_velocity(v_velocity, velocity_type::V);
+    //grid.set_velocity(u_velocity, velocity_type::U);
+    //grid.set_velocity(v_velocity, velocity_type::V);
 
 }
 

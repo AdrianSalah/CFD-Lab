@@ -5,12 +5,13 @@
 void boundaryvalues(int imax, int jmax, Grid& grid) {
     
     // VELOCITY - Declaration and Initialisation
+    // Declaring u and v as aliases for grid._velocity members
 
-    matrix<double> u_velocity;
-    matrix<double> v_velocity;
+    matrix<double> &u_velocity = grid._velocities[static_cast<int>(velocity_type::U)];
+    matrix<double> &v_velocity = grid._velocities[static_cast<int>(velocity_type::V)];
 
-    grid.velocity(u_velocity, velocity_type::U);
-    grid.velocity(v_velocity, velocity_type::V);
+    //grid.velocity(u_velocity, velocity_type::U);
+    //grid.velocity(v_velocity, velocity_type::V);
 
 
     // -----Boundary conditions initializaion----- //
@@ -50,8 +51,8 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     for (int i = 1; i <= imax; i++)
         v_velocity.at(i).at(jmax) = 0;
 
-    grid.set_velocity(u_velocity, velocity_type::U);
-    grid.set_velocity(v_velocity, velocity_type::V);
+    //grid.set_velocity(u_velocity, velocity_type::U);
+    //grid.set_velocity(v_velocity, velocity_type::V);
 
 
 

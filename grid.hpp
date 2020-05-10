@@ -46,9 +46,11 @@ public:
     void print_velocity(velocity_type type);
     void print_pressure();
 
+    std::array<matrix<double>, 2> _velocities;
+
+
 private:
     matrix<Cell> _cells;
-    std::array<matrix<double>, 2> _velocities;
     const int _imax;
     const int _jmax;
     const int _imax_b;
