@@ -113,7 +113,7 @@ int main(int argn, char** args) {
             current_timestep_iteration++;
         }
         //print warning if SOR doesn't converge
-        if(*res > *eps){std::cout << "#SOR iterations: " << current_timestep_iteration <<  " exceeded maximum #: " << *itermax << std::endl;}
+        if(*res > *eps){std::cout << "Warning: current #SOR iterations: " << current_timestep_iteration <<  " exceeded max #SOR iterations: " << *itermax << "!" << std::endl;}
 
         calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
         
