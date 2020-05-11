@@ -120,6 +120,8 @@ int main(int argn, char** args) {
 
         calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
         visualization_time_accumulator += * dt;
+        timesteps_total++;
+        time += *dt;
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
             grid.velocity(U, velocity_type::U);
@@ -130,8 +132,8 @@ int main(int argn, char** args) {
             visualization_time_accumulator -= *dt_value;
         }
 
-        time += *dt;
-        timesteps_total++;
+       
+        
     }
 
     grid.velocity(U, velocity_type::U);
