@@ -112,6 +112,9 @@ int main(int argn, char** args) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
             current_timestep_iteration++;
         }
+        //print warning if SOR doesn't converge
+        if(*res > *eps){std::cout << "#SOR iterations: " << current_timestep_iteration <<  " exceeded maximum #: " << *itermax << std::endl;}
+
         calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
         
         // Visualize u v p
