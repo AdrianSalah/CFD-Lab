@@ -180,6 +180,8 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
     //should we use function parameters imax+2, jmax+2 (assumes 1 boundary cell)  or imaxb(), jmax()? [Adrian]
     static std::vector<double> max_abs_value_per_row(grid.imaxb(), 0);
 
+    // Resetting the values to zeros
+    std::fill(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), 0);
 
 
     for (int i = 0; i < grid.imaxb(); ++i) {
