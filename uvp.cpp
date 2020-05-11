@@ -227,7 +227,7 @@ void calculate_uv(
 {
     // Declaring u and v as aliases for grid._velocity members
     matrix<double> &u_velocity = grid._velocities[static_cast<int>(velocity_type::U)];
-    matrix<double> &v_velocity = grid._velocities[static_cast<int>(velocity_type::V];
+    matrix<double> &v_velocity = grid._velocities[static_cast<int>(velocity_type::V)];
 
     matrix<double> pressure; // pressure matrix lives the same life as before
 
