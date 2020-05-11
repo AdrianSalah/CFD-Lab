@@ -79,7 +79,7 @@ int main(int argn, char** args) {
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
     int current_timestep_iteration;         // # of iterations for SOR
-    int visualization_period = 1000;        // Every period'th iteration we visualize u v p
+    double visualization_time_accumulator = 0.0;        // Every period'th iteration we visualize u v p
     int count_failed_SOR = 0;               //# of failed SOR iterations
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
@@ -119,14 +119,15 @@ int main(int argn, char** args) {
         }
 
         calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
-        
+        visualization_time_accumulator += * dt;
         // Visualize u v p
-        if (timesteps_total % visualization_period == 0) {
+        if (visualization_time_accumulator >= *dt_value) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
+            visualization_time_accumulator -= *dt_value;
         }
 
         time += *dt;
