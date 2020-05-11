@@ -112,9 +112,9 @@ int main(int argn, char** args) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
             current_timestep_iteration++;
         }
-        //print warning if SOR doesn't converge
+        //count number of failed SOR iterations
         if(*res > *eps){
-            std::cout << "Warning: current #SOR iterations: " << current_timestep_iteration <<  " exceeded max #SOR iterations: " << *itermax << "!" << std::endl;
+            //std::cout << "Warning: current #SOR iterations: " << current_timestep_iteration <<  " exceeded max #SOR iterations: " << *itermax << "!" << std::endl;
             count_failed_SOR++;
         }
 
@@ -142,7 +142,7 @@ int main(int argn, char** args) {
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
-    std::cout << "#total of timesteps " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+    std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
 
     // Free dynamically allocated memory
     delete Re;
