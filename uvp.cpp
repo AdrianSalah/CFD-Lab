@@ -165,12 +165,12 @@ static bool abs_compare(int a, int b)
 }
 
 
+
 double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
     static matrix<double> current_velocity; //matrix of current velocity U or V on grid
     grid.velocity(current_velocity, type); //assigns velocity U or V to current_velocity
 
     // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
-    //should we use function parameters imax+2, jmax+2 (assumes 1 boundary cell)  or imaxb(), jmax()? [Adrian]
     static std::vector<double> max_abs_value_per_row(grid.imaxb(), 0);
 
     // Resetting the values to zeros
@@ -186,7 +186,7 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
 }
 
 
-// Determines the maximal time step size
+
 void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid) {
 
     //maximum absolute values for U, V on grid for current time step
@@ -197,12 +197,8 @@ void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int i
     max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
 
     //first stability conditon
-
     static double condition1;
     condition1 = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
-
-
-    //check if CFL stability conditions are too small, then just use first stability condition
 
 
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06)
@@ -258,10 +254,10 @@ void init_fgrs(int imax,
             double GI,
             double RSI
   ){
-    //loop through hole grid
     F.resize(imax + 2);
     G.resize(imax + 2);
     RS.resize(imax + 2);
+
     for (int i = 0; i < imax + 2; i++) {
 
         F.at(i).resize(jmax + 2, FI);
