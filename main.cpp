@@ -79,7 +79,7 @@ int main(int argn, char** args) {
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
     int current_timestep_iteration;         // # of iterations for SOR
-    double visualization_time_accumulator = 0.0;        // Every period'th iteration we visualize u v p
+    double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;

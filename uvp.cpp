@@ -165,13 +165,6 @@ static bool abs_compare(int a, int b)
 }
 
 
-// Changed the function signature: removed imax and jmax - they are already contained in Grid
-// and can be acessed with imax() and jmax() methods. And jmax value is not used here at all.
-// Used *pointer to access the abs_max_value directly
-// Avoided creating additional vectors in the loop to improve performance and make code more readable
-// [Oleg]
-
-
 double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
     static matrix<double> current_velocity; //matrix of current velocity U or V on grid
     grid.velocity(current_velocity, type); //assigns velocity U or V to current_velocity
@@ -210,12 +203,7 @@ void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int i
 
 
     //check if CFL stability conditions are too small, then just use first stability condition
-    //I am not sure if that's the best way to do it
 
-    // Decreased the tolerance and replaced logical OR operator to AND ("&&"), which should be here
-    // Because one value may be in "normal" range, even if another is close to zero.
-    // Improved code readability and unnecessary initialization of variables (CFL1, CFL2, ec).
-    // [Oleg]
 
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06)
         *dt = tau * condition1;
