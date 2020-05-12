@@ -1,8 +1,0 @@
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/CMakeFiles/test.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/CMakeFiles/sim.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/tests/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/tests/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/tests/CMakeFiles/test.dir
-/mnt/c/Users/Issa Saba/Documents/Source/Repos/GroupCCFDLab/out/build/WSL-Debug/tests/CMakeFiles/test_factorial.dir
