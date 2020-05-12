@@ -62,14 +62,16 @@ void calculate_rs(
         matrix<double> &RS
 );
 
-/* returns value of maximum (absolute) velocity on grid for current time step */
 
 
-// Function is used for searching the maximum absolute element in a matrix
+
+/* Function used for searching the maximum absolute element in a matrix */
 static bool abs_compare(int a, int b);
 
 
+/* Returns value of maximum absolute velocity on grid for current time step */
 double max_abs_velocity(int imax, int jmax, Grid &grid, velocity_type type);
+
 
 /**
  * Determines the maximal time step size. The time step size is restricted
@@ -115,7 +117,7 @@ void calculate_uv(
 );
 
 /*
- * initializes matrices of F, G and R for constant
+ * initializes matrices of F, G and R with constant values FI, GI and RSI on the hole domain
  */
 
 void init_fgrs(int imax,

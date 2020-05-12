@@ -81,6 +81,7 @@ int main(int argn, char** args) {
     int current_timestep_iteration;         // # of iterations for SOR
     double visualization_time_accumulator = 0.0;        // Every period'th iteration we visualize u v p
     int count_failed_SOR = 0;               //# of failed SOR iterations
+
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
 
@@ -93,7 +94,6 @@ int main(int argn, char** args) {
     // Initialize timer to measure performance
     Timer runtime;
 
-    //main loop of the algorithm
     while (time < *t_end) {
 
         calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
@@ -101,19 +101,19 @@ int main(int argn, char** args) {
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
-        //reset the current number of iterations for SOR
+        //reset current number of iterations for SOR
         current_timestep_iteration = 0;
 
-        //reset the residual before new SOR iteration
+        //reset residual before new SOR iteration
         *res = INFINITY;
 
-        // SOR loop
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
             current_timestep_iteration++;
         }
         //count number of failed SOR iterations
         if(*res > *eps){
+            //print warning message after failed SOR iteration
             //std::cout << "Warning: current #SOR iterations: " << current_timestep_iteration <<  " exceeded max #SOR iterations: " << *itermax << "!" << std::endl;
             count_failed_SOR++;
         }
@@ -122,12 +122,13 @@ int main(int argn, char** args) {
         visualization_time_accumulator += * dt;
         timesteps_total++;
         time += *dt;
+        
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-            write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -139,7 +140,7 @@ int main(int argn, char** args) {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
-    write_vtkFile("test_data3", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
 
     // Print out the total time required for the solution
     runtime.printTimer();
