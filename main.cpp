@@ -65,12 +65,16 @@ int main(int argn, char** args) {
     int* itermax = new int;                 /* max. number of iterations  */
     double* eps = new double;               /* accuracy bound for pressure*/
     double* dt_value = new double;          /* time for output */
+    double* TI = new double;                /* Initial Temperature*/
+    double* T_h = new double;               /* Temperature of hot wall*/
+    double* T_c = new double;               /* Temperature of cold wall*/
+    int* PR = new int;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
 
-    std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
+    std::string data_file{"../cavity100.dat" }; //relative path to cavity100.dat file
 
     //ready parameters from cavity100.dat file and assign values to initalized parameters
-    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
+    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value, TI, T_h, T_c, PR);
     
     // Set up grid
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
@@ -169,6 +173,10 @@ int main(int argn, char** args) {
     delete itermax;
     delete eps;
     delete dt_value;
+    delete TI;
+    delete T_h;
+    delete T_c;
+    delete PR;
     delete res;
 
     return 0;
