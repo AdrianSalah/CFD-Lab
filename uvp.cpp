@@ -187,7 +187,7 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
 
 
 
-void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid) {
+void calculate_dt(double Re,double PR, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid) {
 
     //maximum absolute values for U, V on grid for current time step
     static double max_abs_U;
@@ -196,15 +196,16 @@ void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int i
     static double max_abs_V;
     max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
 
-    //first stability conditon
-    static double condition1;
-    condition1 = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+    //explicit time-steooing stability condition
+    static double condition12;
+    // PR=nu/alpha so Re*PR= alpha
+    condition12 = 0.5 * std::min(PR, 1.0) * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
 
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06)
-        *dt = tau * condition1;
+        *dt = tau * condition12;
     else
-        *dt = tau * std::min(condition1,
+        *dt = tau * std::min(condition12,
                              std::min((dx / max_abs_U), (dy / max_abs_V)));
 }
 

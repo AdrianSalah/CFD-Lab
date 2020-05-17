@@ -82,6 +82,7 @@ double max_abs_velocity(int imax, int jmax, Grid &grid, velocity_type type);
  *
  */
 void calculate_dt(double Re,
+        double PR,
         double tau,
         double *dt,
         double dx,

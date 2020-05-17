@@ -68,7 +68,7 @@ int main(int argn, char** args) {
     double* TI = new double;                /* Initial Temperature*/
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
-    int* PR = new int;                      /* Prandlt Number*/
+    double* PR = new double;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
 
     std::string data_file{"../cavity100.dat" }; //relative path to cavity100.dat file
@@ -100,7 +100,7 @@ int main(int argn, char** args) {
 
     while (time < *t_end) {
 
-        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
+        calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues (*imax, *jmax, grid);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
