@@ -13,7 +13,7 @@
 
 class Grid {
 public:
-    Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI);
+    Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI, double& TI);
     
     // Get and Set Velocity
     void velocity(matrix<double>& vec, velocity_type type);
@@ -22,6 +22,10 @@ public:
     // Get and Set Velocity
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
+
+    // Get and Set Pressure
+    void temperature(matrix<double>& vec);
+    void set_temperature(matrix<double>& vec);
 
     // get specific row or column
     void cells(std::vector<Cell>& cells, matrix_selection m, int index);
@@ -45,6 +49,7 @@ public:
     // Print matrices
     void print_velocity(velocity_type type);
     void print_pressure();
+    void print_temperature();
 
 private:
     matrix<Cell> _cells;
