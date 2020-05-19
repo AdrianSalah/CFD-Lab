@@ -63,7 +63,8 @@ int read_parameters(
   double* TI,                   
   double* T_h,               
   double* T_c,          
-  double* PR
+  double* PR,
+  double* beta
 );
 
 /**

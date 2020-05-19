@@ -70,11 +70,12 @@ int main(int argn, char** args) {
     double* T_c = new double;               /* Temperature of cold wall*/
     double* PR = new double;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
+    double* beta= new double;               /* beta for fg calculation*/
 
     std::string data_file{"../cavity100.dat" }; //relative path to cavity100.dat file
 
     //ready parameters from cavity100.dat file and assign values to initalized parameters
-    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value, TI, T_h, T_c, PR);
+    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value, TI, T_h, T_c, PR,beta);
     
     // Set up grid
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
@@ -178,6 +179,7 @@ int main(int argn, char** args) {
     delete T_c;
     delete PR;
     delete res;
+    delete beta;
 
     return 0;
 }
