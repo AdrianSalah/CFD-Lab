@@ -90,7 +90,7 @@ int main(int argn, char** args) {
     {
         std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
         //ready parameters from cavity100.dat file and assign values to initalized parameters
-        read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
+        read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value,TI, T_h, T_c, PR, beta);
     }
     //for output to vtk-file
     VTKHelper vtkOutput;
@@ -119,7 +119,7 @@ int main(int argn, char** args) {
 
     while (time < *t_end) {
         //here we set time steps manually
-        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
+        calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues (*imax, *jmax, grid);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
