@@ -2,8 +2,8 @@
 
 Cell::Cell() {};
 
-Cell::Cell(double& PI, double& UI, double& VI):
-_pressure(PI) {
+Cell::Cell(double& PI, double& UI, double& VI, double& TI) :
+    _pressure(PI), _temperature(TI) {
     set_velocity(UI, velocity_type::U);
     set_velocity(VI, velocity_type::V);
 };
@@ -15,6 +15,15 @@ double& Cell::pressure() {
 
 void Cell::set_pressure(double& value) {
     _pressure = value;
+}
+
+// Temperature Get and Set
+double& Cell::temperature() {
+    return _temperature;
+}
+
+void Cell::set_temperature(double& value) {
+    _temperature = value;
 }
 
 // Velocity Get and Set

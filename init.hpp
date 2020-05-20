@@ -59,7 +59,12 @@ int read_parameters(
   double *tau,
   int  *itermax,
   double *eps,
-  double *dt_value
+  double *dt_value, 
+  double* TI,                   
+  double* T_h,               
+  double* T_c,          
+  double* PR,
+  double* beta
 );
 
 /**

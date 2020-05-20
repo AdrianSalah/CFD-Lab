@@ -20,9 +20,13 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double *omg,               /* relaxation factor */
                     double *tau,               /* safety factor for time step*/
                     int  *itermax,             /* max. number of iterations  */
-		                               /* for pressure per time step */
-                    double *eps,               /* accuracy bound for pressure*/
-		    double *dt_value)           /* time for output */
+                    double *eps,                 /* accuracy bound for pressure*/
+		            double *dt_value,            /* time for output */
+                    double *TI,                   /* Initial temperature */
+                    double *T_h,                  /* hot wall temperature */
+                    double *T_c,                  /* cold wall temperature */
+                    double *PR,                      /*Prandlt Number*/
+                    double *beta)                      /*beta value*/
 {
     // Reading Parameters
     get_file_double( szFileName, "xlength", *xlength);
@@ -40,11 +44,17 @@ int read_parameters( std::string szFileName,       /* name of the file */
     get_file_double( szFileName, "GX", *GX);
     get_file_double( szFileName, "GY", *GY);
     get_file_double( szFileName, "PI", *PI);
+    get_file_double( szFileName, "TI", *TI);
+    get_file_double( szFileName, "T_h", *T_h);
+    get_file_double( szFileName, "T_c", *T_c);
     get_file_double( szFileName, "tau", *tau);
+    get_file_double(szFileName, "PR", *PR);
+    get_file_double(szFileName, "beta", *beta);
 
     get_file_int(szFileName, "itermax", *itermax);
     get_file_int(szFileName, "imax", *imax);
     get_file_int(szFileName, "jmax", *jmax);
+  
 
     *dx = *xlength / (double)(*imax);
     *dy = *ylength / (double)(*jmax);

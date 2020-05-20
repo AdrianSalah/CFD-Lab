@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, double& UI, double& VI):
+Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, double& UI, double& VI, double& TI):
     _boundary_size(boundary_size_init),
     _imax_b(imax_init+2*boundary_size_init), // +2 for the total size of the vector / matrix
     _jmax_b(jmax_init+2*boundary_size_init),
@@ -12,7 +12,7 @@ Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, dou
     
     // Resizing the grid cells
     // the boundary size is given as a single value for all borders
-    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI)));
+    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI, TI)));
 
     // Resize Velocity Matrices
     _velocities[static_cast<int>(velocity_type::U)].resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), UI));
@@ -102,7 +102,7 @@ void Grid::pressure(matrix<double>& vec) {
     // Iterate over cells
     for(int x=0; x < Grid::imaxb();x++) {
         for (int y=0; y < Grid::jmaxb(); y++) {
-            // Accessing velocity
+            // Accessing pressure
             vec.at(x).at(y) = _cells.at(x).at(y).pressure();
         }
     }
@@ -115,6 +115,30 @@ void Grid::set_pressure(matrix<double>& vec) {
         for (int y=0; y < Grid::jmaxb(); y++) {
             // Accessing velocity
             _cells.at(x).at(y).set_pressure(vec.at(x).at(y));
+        }
+    }
+}
+
+void Grid::temperature(matrix<double>& vec) {
+    // Resize vector and set all values to 0
+    vec.resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), 0));
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Accessing temperature
+            vec.at(x).at(y) = _cells.at(x).at(y).temperature();
+        }
+    }
+}
+
+void Grid::set_temperature(matrix<double>& vec) {
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Accessing velocity
+            _cells.at(x).at(y).set_temperature(vec.at(x).at(y));
         }
     }
 }
@@ -206,6 +230,17 @@ void Grid::print_pressure() {
             // Print new line
             std::cout << std::endl;
         }
+}
+
+void Grid::print_temperature() {
+    for (int y = Grid::jmaxb() - 1; y >= 0; y--) {
+        for (int x = 0; x < Grid::imaxb(); x++) {
+            // Accessing temperature
+            std::cout << Grid::_cells.at(x).at(y).temperature() << " ";
+        }
+        // Print new line
+        std::cout << std::endl;
+    }
 }
 
 

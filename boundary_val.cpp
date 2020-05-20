@@ -74,4 +74,24 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     }
 
     grid.set_pressure(pres);
+
+ // TEMPERATURE - Declaration and Initialisation
+ // Neuman boundary conditions
+
+    static matrix<double> temp;
+    grid.temperature(temp);
+
+    for (int j = 1; j <= jmax; j++)
+    {
+        temp.at(0).at(j) = temp.at(1).at(j);                // LEFT
+        temp.at(imax + 1).at(j) = temp.at(imax).at(j);      // RIGHT
+    }
+
+    for (int i = 1; i <= imax; i++)
+    {
+        temp.at(i).at(0) = temp.at(i).at(1);                // BOTTOM
+        temp.at(i).at(jmax + 1) = temp.at(i).at(jmax);      // TOP
+    }
+
+    grid.set_temperature(temp);
 }

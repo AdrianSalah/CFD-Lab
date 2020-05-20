@@ -65,7 +65,12 @@ int main(int argn, char** args) {
     int* itermax = new int;                 /* max. number of iterations  */
     double* eps = new double;               /* accuracy bound for pressure*/
     double* dt_value = new double;          /* time for output */
+    double* TI = new double;                /* Initial Temperature*/
+    double* T_h = new double;               /* Temperature of hot wall*/
+    double* T_c = new double;               /* Temperature of cold wall*/
+    double* PR = new double;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
+    double* beta= new double;               /* beta for fg calculation*/
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists("output");
@@ -91,7 +96,7 @@ int main(int argn, char** args) {
     VTKHelper vtkOutput;
     
     // Set up grid
-    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI);
+    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
     
     // Initializing variables
     double time = 0;                        // time
@@ -107,7 +112,7 @@ int main(int argn, char** args) {
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
 
     //initialize matrices U, V, P
-    matrix<double> U, V, P;
+    matrix<double> U, V, P, T;
 
     // Initialize timer to measure performance
     Timer runtime;
@@ -193,7 +198,12 @@ int main(int argn, char** args) {
     delete itermax;
     delete eps;
     delete dt_value;
+    delete TI;
+    delete T_h;
+    delete T_c;
+    delete PR;
     delete res;
+    delete beta;
 
     return 0;
 }
