@@ -78,7 +78,10 @@ int main(int argn, char** args) {
 
 
     FILE* dataFile;
-    dataFile = fopen("../cavity100.dat", "r");
+
+    const char* input_file_path= "../cavity100.dat";
+
+    dataFile = fopen(input_file_path, "r");
 
     //check whether cavity100.dat exists or not
     if (dataFile==NULL)
@@ -88,7 +91,7 @@ int main(int argn, char** args) {
     }
     else
     {
-        std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
+        std::string data_file{ input_file_path }; //relative path to cavity100.dat file
         //ready parameters from cavity100.dat file and assign values to initalized parameters
         read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value,TI, T_h, T_c, PR, beta);
     }
