@@ -72,10 +72,28 @@ int main(int argn, char** args) {
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
 
-    std::string data_file{"/mnt/c/Users/Issa Saba/Documents/source/repos/GroupCCFDLab/cavity100.dat" }; //relative path to cavity100.dat file
+    //check if directory "output" exists, if not creates directory "output"
+    check_dir_exists("output");
 
-    //ready parameters from cavity100.dat file and assign values to initalized parameters
-    read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value, TI, T_h, T_c, PR,beta);
+
+
+    FILE* dataFile;
+    dataFile = fopen("../cavity100.dat", "r");
+
+    //check whether cavity100.dat exists or not
+    if (dataFile==NULL)
+    {
+        printf ("Error opening file");
+        exit (EXIT_FAILURE);
+    }
+    else
+    {
+        std::string data_file{ "../cavity100.dat" }; //relative path to cavity100.dat file
+        //ready parameters from cavity100.dat file and assign values to initalized parameters
+        read_parameters(data_file, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg, tau, itermax, eps, dt_value);
+    }
+    //for output to vtk-file
+    VTKHelper vtkOutput;
     
     // Set up grid
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
@@ -100,8 +118,8 @@ int main(int argn, char** args) {
     Timer runtime;
 
     while (time < *t_end) {
-
-        calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
+        //here we set time steps manually
+        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
         boundaryvalues (*imax, *jmax, grid);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
@@ -133,25 +151,31 @@ int main(int argn, char** args) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-            write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
-
-       
-        
     }
 
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
-    write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+
+
+    //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
+
 
     // Print out the total time required for the solution
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+
+
+    //close input file
+    fclose(dataFile);
 
     // Free dynamically allocated memory
     delete Re;
