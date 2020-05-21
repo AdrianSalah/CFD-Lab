@@ -466,6 +466,30 @@ void init_imatrix( int **m, int nrl, int nrh, int ncl, int nch, int a)
 	   m[i][j] = a;
 }
 
+bool assert_problem_solvability(int** PGM_cell, int imax, int jmax) {
+
+    int num_Fluid_Cells;
+    int num_non_Fluid_Cells;
+
+    for (int i = 0; i < imax; i++) {
+        if (PGM_cell[i][0] == 4 || PGM_cell[i][jmax-1] == 4)
+            return false;
+    }
+    for (int j = 0; j < jmax; j++) {
+        if (PGM_cell[0][j] == 4 || PGM_cell[imax-1][j] == 4)
+            return false;
+    }
+
+    for (int i = 1; i < imax - 1; i++) {
+        for (int j = 1; j < jmax - 1; j++) {
+            num_Fluid_Cells = (PGM_cell[i][j + 1] == 4) + (PGM_cell[i][j - 1] == 4) + (PGM_cell[i+1][j] == 4) + (PGM_cell[i-1][j] == 4);
+            num_non_Fluid_Cells = (PGM_cell[i][j + 1] != 4) + (PGM_cell[i][j - 1] != 4) + (PGM_cell[i + 1][j] != 4) + (PGM_cell[i - 1][j] != 4);
+            if (PGM_cell[i][j] == 0 && num_Fluid_Cells > 2) return false;
+            if (PGM_cell[i][j] == 4 && num_non_Fluid_Cells == 4) return false;
+        }
+    }
+    return true;
+}
 
 int **read_pgm(const char *filename) {
     FILE *input = NULL;

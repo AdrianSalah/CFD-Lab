@@ -101,6 +101,11 @@ int main(int argn, char** args) {
 
     cell_array = read_pgm(input_geometry_file_path);
 
+    if (!assert_problem_solvability(cell_array, *imax, *jmax)) {
+        printf("PGM file is not solvable");
+        exit(EXIT_FAILURE);
+    }
+
     //for output to vtk-file
     VTKHelper vtkOutput;
     
