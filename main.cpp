@@ -112,14 +112,14 @@ int main(int argn, char** args) {
     // Set up grid
     Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
 
-    //TO DO: check wheather imax and jmax same as grid size in geometry file
+    //TO DO: check whether imax and jmax same as grid size in geometry file
     for (int j = *jmax-1; j >= 0; j--){
         for (int i = 0; i < *imax; i++){
             //assign cell type
             if (cell_array[i][j] == 0){grid.cell(i,j)._cellType = NOSLIP;}
             else if(cell_array[i][j] == 4){grid.cell(i,j)._cellType = FLUID;}
-            else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = INFLOW;}
-            else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = OUTFLOW;}
+            else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = OUTFLOW;}
+            else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = INFLOW;}
             else{
                 printf("Error: wrong grey value in geometry-file ");
                 exit(EXIT_FAILURE);
@@ -131,6 +131,7 @@ int main(int argn, char** args) {
         std::cout << std::endl;
     }
 
+
     //store pointers to neighbours for inner cells
     for(int j = 1; j < *jmax-1; j++) {
         for (int i = 1; i < *imax - 1; i++) {
@@ -140,6 +141,7 @@ int main(int argn, char** args) {
             grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
         }
     }
+    
     //neighbour edges
     //bottom left
     grid.cell(0,0)._nbNorth = &grid.cell(0,1);
@@ -184,6 +186,7 @@ int main(int argn, char** args) {
     std::cout << "S " << testCell._nbSouth->_cellType << std::endl;
 
 
+/*
     // Initializing variables
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
@@ -258,7 +261,7 @@ int main(int argn, char** args) {
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
-
+*/
 
     //close input file
     fclose(parameterFile);
