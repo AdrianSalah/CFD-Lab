@@ -74,8 +74,78 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
 
     static matrix<double> temp;
     grid.temperature(temp);
-    // -----Boundary conditions initializaion----- //
+
     
+    //for (int i = 1; i < grid.imaxb() - 1; i++) {
+    //    if (grid.cell(i, 0)._cellType == NOSLIP) {
+    //        if (grid.cell(i, 0)._nbNorth->_cellType == NOSLIP && grid.cell(i, 0)._nbSouth->_cellType == NOSLIP) {
+    //            if (grid.cell(i, 0)._nbEast->_cellType == FLUID) {
+    //                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = pres.at(i).at(1);
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //            if (grid.cell(i, 0)._nbEast->_cellType == NOSLIP) {
+    //                u_velocity.at(i).at(0) = 0;
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = 0;
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //        }
+    //        if (grid.cell(i, 0)._nbNorth->_cellType == INFLOW && grid.cell(i, 0)._nbSouth->_cellType == NOSLIP) {
+    //            if (grid.cell(i, 0)._nbEast->_cellType == FLUID) {
+    //                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = pres.at(i).at(1);
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //            if (grid.cell(i, 0)._nbEast->_cellType == NOSLIP) {
+    //                u_velocity.at(i).at(0) = 0;
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = pres.at(i+1).at(0);
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //        }
+    //        if (grid.cell(i, 0)._nbNorth->_cellType == INFLOW && grid.cell(i, 0)._nbSouth->_cellType == NOSLIP) {
+    //            if (grid.cell(i, 0)._nbEast->_cellType == FLUID) {
+    //                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = (pres.at(i).at(1)+pres.at(i + 1).at(0))/2;
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //            if (grid.cell(i, 0)._nbEast->_cellType == NOSLIP) {
+    //                u_velocity.at(i).at(0) = 0;
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = pres.at(i + 1).at(0);
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //        }
+    //        if (grid.cell(i, 0)._nbNorth->_cellType == NOSLIP && grid.cell(i, 0)._nbSouth->_cellType == INFLOW) {
+    //            if (grid.cell(i, 0)._nbEast->_cellType == FLUID) {
+    //                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = (pres.at(i).at(1) + pres.at(i - 1).at(0)) / 2;
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //            if (grid.cell(i, 0)._nbEast->_cellType == NOSLIP) {
+    //                u_velocity.at(i).at(0) = 0;
+    //                v_velocity.at(i).at(0) = 0;
+    //                pres.at(i).at(0) = pres.at(i - 1).at(0);
+    //                F[i][0] = u_velocity.at(i).at(0);
+    //                G[i][0] = v_velocity.at(i).at(0);
+    //            }
+    //        }
+    //    }
+    //}
+
+        // -----Boundary conditions initializaion----- //
     for (int i = 1; i < grid.imaxb()-1; i++) {
         for (int j = 1; j < grid.jmaxb()-1; j++) {
             // NO slip boundary confitions
@@ -150,6 +220,14 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
                     pres.at(i).at(j) = pres.at(i - 1).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                else if(grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
+                    grid.cell(i, j)._nbNorth->_cellType == NOSLIP&& grid.cell(i, j)._nbSouth->_cellType == NOSLIP) {
+                    u_velocity.at(i).at(j) = 0;
+                    v_velocity.at(i).at(j) = 0;
+                    pres.at(i).at(j)=0;
+                    F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
             }

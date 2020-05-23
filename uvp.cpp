@@ -266,3 +266,30 @@ void init_fgrs(int imax,
         RS.at(i).resize(jmax + 2, RSI);
     }
 }
+void init_uvpt(int imax, int jmax, matrix<double>U, matrix<double>V, matrix<double>P,
+    matrix<double>T, double UI, double VI, double PI, double TI, Grid &grid) {
+    grid.velocity(U, velocity_type::U);
+    grid.velocity(V, velocity_type::V);
+    grid.pressure(P);
+    grid.temperature(T);
+    for (int i = 0; i < imax; i++) {
+        for (int j = 0; j < jmax; j++) {
+            if (grid.cell(i, j)._cellType == FLUID) {
+                U.at(i).at(j) = UI;
+                V.at(i).at(j) = VI;
+                P.at(i).at(j) = PI;
+                T.at(i).at(j) = TI;
+            }
+            else if(grid.cell(i, j)._cellType == NOSLIP) {
+                U.at(i).at(j) = 0;
+                V.at(i).at(j) = 0;
+                P.at(i).at(j) = 0;
+                T.at(i).at(j) = 0;
+            }
+        }
+    }
+    grid.set_velocity(U, velocity_type::U);
+    grid.set_velocity(V, velocity_type::V);
+    grid.set_pressure(P);
+    grid.set_temperature(T);
+};

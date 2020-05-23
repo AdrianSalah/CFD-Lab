@@ -130,5 +130,6 @@ void init_fgrs(int imax,
                double GI,
                double RSI
 );
-
+void init_uvpt(int imax, int jmax, matrix<double>U, matrix<double>V,
+    matrix<double>P, matrix<double>T, double UI, double VI, double PI, double TI, Grid &grid);
 #endif

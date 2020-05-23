@@ -192,6 +192,8 @@ int main(int argn, char** args) {
     double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
 
+    matrix<double> U, V, P, T;
+    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid);
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
 
@@ -199,7 +201,6 @@ int main(int argn, char** args) {
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
 
     //initialize matrices U, V, P
-    matrix<double> U, V, P, T;
 
     // Initialize timer to measure performance
     Timer runtime;
