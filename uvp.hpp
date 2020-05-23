@@ -39,7 +39,8 @@ void calculate_fg(
         int jmax,
         Grid& grid,
         matrix<double> &F,
-        matrix<double> &G
+        matrix<double> &G,
+        matrix<double> &T
 );
 
 void calculate_temp(

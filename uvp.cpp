@@ -10,6 +10,7 @@
 // Determines the values of F and G
 void calculate_fg(
         double Re,
+        double beta,
         double GX,
         double GY,
         double alpha,
@@ -20,7 +21,8 @@ void calculate_fg(
         int jmax,
         Grid& grid,
         matrix<double> &F,
-        matrix<double> &G)
+        matrix<double> &G,
+        matrix<double> &T)
 {
     static matrix<double> u;
     static matrix<double> v;
@@ -28,6 +30,8 @@ void calculate_fg(
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
 
+    //boundary values will be set in boundary_val function
+/*
     // ----- Boundary values for F and G ----- //
     // F[0, j] = u[0, j]        j = 1...jmax    LEFT
     // F[imax, j] = u[imax, j]  j = 1...jmax    RIGHT
@@ -44,6 +48,8 @@ void calculate_fg(
         G[i][0] = v[i][0];
         G[i][jmax] = v[i][jmax];
     }
+
+ */
 
     // ----- F function initialisation ----- //
 
@@ -85,8 +91,11 @@ void calculate_fg(
 
             // To check whether GX should be divided by density
             F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
+
+            F.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GX;
         }
     }
+
 
     // ----- G function initialisation ----- //
 
@@ -128,6 +137,8 @@ void calculate_fg(
 
             // To check whether GY should be divided by density
             G.at(i).at(j) = v[i][j] + dt * (1 / Re * (d2_v_dx2 + d2_v_dy2) - d_uv_dx - d_v2_dy + GY);
+
+            G.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GY;
         }
     }
 }
