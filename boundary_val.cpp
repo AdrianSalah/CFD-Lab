@@ -2,7 +2,8 @@
 #include "datastructures.hpp"
 #include "grid.hpp"
 
-void boundaryvalues(int imax, int jmax, Grid& grid) {
+void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
+    matrix<double>& G) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -12,86 +13,100 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     grid.velocity(u_velocity, velocity_type::U);
     grid.velocity(v_velocity, velocity_type::V);
 
+    static matrix<double> pres;
+    grid.pressure(pres);
 
+
+    static matrix<double> temp;
+    grid.temperature(temp);
     // -----Boundary conditions initializaion----- //
     
-    // ---BOTTOM--- //
-    for (int i = 0; i < grid.imaxb(); i++) {
-        u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
-        v_velocity.at(i).at(0) = 0;
+    for (int i = 1; i < grid.imaxb()-1; i++) {
+        for (int j = 1; j < grid.jmaxb()-1; j++) {
+            // NO slip boundary confitions
+            if (grid.cell(i, j)._cellType == NOSLIP) {
+                //B_NE
+                if (grid.cell(i, j)._nbNorth->_cellType > 1  && grid.cell(i, j)._nbEast->_cellType > 1) {
+                    u_velocity.at(i).at(j) = 0;
+                    v_velocity.at(i).at(j) = 0;
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1);
+                    pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i + 1).at(j)) / 2;
+                    F[i][j] = u_velocity.at(i).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_NW
+                else if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
+                    u_velocity.at(i - 1).at(j) = 0;
+                    v_velocity.at(i).at(j) = 0;
+                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
+                    pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i -1).at(j)) / 2;
+                    F[i][j] = u_velocity.at(i).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_SW
+                else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
+                    u_velocity.at(i - 1).at(j) = 0;
+                    v_velocity.at(i).at(j - 1) = 0;
+                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
+                    v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
+                    pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i - 1).at(j)) / 2;
+                    F[i][j] = u_velocity.at(i).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_SE
+                else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
+                    u_velocity.at(i).at(j) = 0;
+                    v_velocity.at(i).at(j - 1) = 0;
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
+                    v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
+                    pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i + 1).at(j)) / 2;
+                    F[i][j] = u_velocity.at(i).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_N
+                else if (grid.cell(i, j)._nbNorth->_cellType > 1 ) {
+                    v_velocity.at(i).at(j) = 0;
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
+                    u_velocity.at(i).at(j) = - u_velocity.at(i).at(j + 1);
+                    pres.at(i).at(j) = pres.at(i).at(j + 1);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_E
+                else if (grid.cell(i, j)._nbEast->_cellType > 1) {
+                    u_velocity.at(i).at(j) = 0;
+                    v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1);
+                    pres.at(i).at(j) = pres.at(i + 1).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_S
+                else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
+                    v_velocity.at(i).at(j - 1) = 0;
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
+                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1);
+                    pres.at(i).at(j) = pres.at(i).at(j - 1);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+                //B_W
+                else if (grid.cell(i, j)._nbEast->_cellType > 1) {
+                    u_velocity.at(i - 1).at(j) = 0;
+                    v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
+                    pres.at(i).at(j) = pres.at(i - 1).at(j);
+                    G[i][j] = v_velocity.at(i).at(j);
+                }
+            }
+        }
     }
 
-    // ---LEFT--- //
-    for (int j = 0; j < grid.jmaxb(); j++) {
-        u_velocity.at(0).at(j) = 0;
-        v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
-    }
-
-    // ---RIGHT--- //
-    for (int j = 0; j < grid.jmaxb(); j++) {
-        u_velocity.at(imax + 1).at(j) = 0;
-        v_velocity.at(imax + 1).at(j) = -v_velocity.at(imax).at(j);
-    }
-
-    // Note: this is related to internal most right cells of the physical domain
-    for (int j = 1; j <= jmax; j++) {
-        u_velocity.at(imax).at(j) = 0;
-    }
-
-    // ---TOP--- //
-    // Neuman boundary conditions u_wall = 1  ---> multiplication factor x2 from interpolation formula
-    // u_wall may be later provided in the input txt read file
-
-    for (int i = 0; i < grid.imaxb(); i++) {
-        v_velocity.at(i).at(jmax + 1) = 0;
-        u_velocity.at(i).at(jmax + 1) = 2 - u_velocity.at(i).at(jmax);
-    }
-    // Note: this is related to internal most upper cells of the physical domain
-    for (int i = 1; i <= imax; i++)
-        v_velocity.at(i).at(jmax) = 0;
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
 
-
-
-    // PRESSURE - Declaration and Initialisation
-    // Neuman boundary conditions
-
-    static matrix<double> pres;
-    grid.pressure(pres);
-
-    for (int j = 1; j <= jmax; j++)
-    {
-        pres.at(0).at(j) = pres.at(1).at(j);                // LEFT
-        pres.at(imax + 1).at(j) = pres.at(imax).at(j);      // RIGHT
-    }
-
-    for (int i = 1; i <= imax; i++)
-    {
-        pres.at(i).at(0) = pres.at(i).at(1);                // BOTTOM
-        pres.at(i).at(jmax + 1) = pres.at(i).at(jmax);      // TOP
-    }
-
     grid.set_pressure(pres);
 
- // TEMPERATURE - Declaration and Initialisation
- // Neuman boundary conditions
-
-    static matrix<double> temp;
-    grid.temperature(temp);
-
-    for (int j = 1; j <= jmax; j++)
-    {
-        temp.at(0).at(j) = temp.at(1).at(j);                // LEFT
-        temp.at(imax + 1).at(j) = temp.at(imax).at(j);      // RIGHT
-    }
-
-    for (int i = 1; i <= imax; i++)
-    {
-        temp.at(i).at(0) = temp.at(i).at(1);                // BOTTOM
-        temp.at(i).at(jmax + 1) = temp.at(i).at(jmax);      // TOP
-    }
 
     grid.set_temperature(temp);
 }

@@ -9,7 +9,7 @@
 /**
  * The boundary values of the problem are set.
  */
-void boundaryvalues(int imax, int jmax, Grid& grid);
+void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,matrix<double>& G);
 
 
 #endif
