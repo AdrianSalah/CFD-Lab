@@ -54,7 +54,7 @@ void calculate_fg(
 
     // ------ Discretisation of differential operators of G ----- //
 
-    for (int i = 1; i < imax; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
+    for (int i = 1; i < imax; i++) 
     {
         for (int j = 1; j <= jmax; j++)
         {
@@ -132,7 +132,63 @@ void calculate_fg(
     }
 }
 
+void calculate_temp(
+    double PR,
+    double alpha,
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid,
+    matrix<double>& T) {
 
+    static matrix<double> u;
+    static matrix<double> v;
+
+    grid.velocity(u, velocity_type::U);
+    grid.velocity(v, velocity_type::V);
+
+    static double duT_dx;
+    static double dvT_dy;
+    static double d2_T_dx2;
+    static double d2_T_dy2;
+
+    // temperature initial values (to be filled later)
+    for (int j = 1; j <= jmax; j++) {
+        T[0][j] =0;
+        T[imax][j] = 0;
+    }
+
+    for (int i = 1; i <= imax; i++) {
+        T[i][0] =0;
+        T[i][jmax] = 0;
+    }
+
+    for (int i = 1; i < imax; i++)
+    {
+        for (int j = 1; j <= jmax; j++)
+        {
+            duT_dx = (u[i][j] * (T[i][j] + T[i + 1][j]) - u[i - 1][j] * (T[i - 1][j] + T[i][j]))
+                + (alpha * std::abs(u[i][j]) * (T[i][j] - T[i + 1][j])) - (alpha * std::abs(u[i - 1][j]) * (T[i - 1][j] - T[i][j]));
+            duT_dx *= 0.5 / dx;
+
+            dvT_dy = (v[i][j] * (T[i][j] + T[i][j + 1]) - v[i][j - 1] * (T[i][j - 1] + T[i][j]))
+                + (alpha * std::abs(v[i][j]) * (T[i][j] - T[i][j + 1])) - (alpha * std::abs(v[i][j - 1]) * (T[i][j - 1] - T[i][j]));
+            dvT_dy *= 0.5 / dy;
+
+            d2_T_dx2 = (T[i + 1][j] - 2 * T[i][j] + T[i - 1][j]) / (dx * dx);
+
+            d2_T_dy2 = (T[i][j + 1] - 2 * T[i][j] + T[i][j - 1]) / (dy * dy);
+
+            // Explicit euler to solve the temperature equation
+
+            T[i][j] = T[i][j] + dt * ((1 / PR) * (d2_T_dx2 - d2_T_dy2) - duT_dx - dvT_dy);
+        }
+    }
+
+
+}
 
 // This operation computes the right hand side of the pressure poisson equation.
 void calculate_rs(

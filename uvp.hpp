@@ -42,7 +42,17 @@ void calculate_fg(
         matrix<double> &G
 );
 
-
+void calculate_temp(
+    double PR,
+    double alpha,
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid,
+    matrix<double>& T
+);
 
 /**
  * This operation computes the right hand side of the pressure poisson equation.
