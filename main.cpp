@@ -141,7 +141,7 @@ int main(int argn, char** args) {
             grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
         }
     }
-    
+
     //neighbour edges
     //bottom left
     grid.cell(0,0)._nbNorth = &grid.cell(0,1);
@@ -186,7 +186,7 @@ int main(int argn, char** args) {
     std::cout << "S " << testCell._nbSouth->_cellType << std::endl;
 
 
-/*
+
     // Initializing variables
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
@@ -261,7 +261,7 @@ int main(int argn, char** args) {
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
-*/
+
 
     //close input file
     fclose(parameterFile);
