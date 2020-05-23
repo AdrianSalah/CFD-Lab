@@ -6,11 +6,66 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     
     // VELOCITY - Declaration and Initialisation
 
-    static matrix<double> u_velocity;
-    static matrix<double> v_velocity;
+    static matrix<double> u;
+    static matrix<double> v;
 
-    grid.velocity(u_velocity, velocity_type::U);
-    grid.velocity(v_velocity, velocity_type::V);
+    grid.velocity(u, velocity_type::U);
+    grid.velocity(v, velocity_type::V);
+
+    static matrix<double> p;
+    grid.pressure(p);
+
+    /* ---- Beginning of noslip boundary value implementation [Adrian] */
+/*
+    for(int i = 0; i < grid.imaxb(); i++){
+        for(int j = 0; j < grid.jmaxb(); j++){
+            Cell cell = grid.cell(i, j);
+            if(cell._cellType == NOSLIP){
+                //check for edge cells
+                //B_N
+                if(cell._nbNorth->_cellType == FLUID and cell._nbSouth->_cellType == NOSLIP and cell._nbEast->_cellType == NOSLIP and cell._nbWest->_cellType == NOSLIP){
+                    v.at(i).at(j) = 0;
+                    u.at(i-1).at(j) = -u.at(i-1).at(j+1);
+                    u.at(i).at(j) = -u.at(i).at(j+1);
+                    p.at(i).at(j) = p.at(i).at(j+1);
+                }
+                //B_W
+                else if(cell._nbSouth->_cellType == FLUID and cell._nbNorth->_cellType == NOSLIP and cell._nbWest->_cellType == NOSLIP and cell._nbEast->_cellType == NOSLIP) {
+                    u.at(i - 1).at(j) = 0;
+                    v.at(i).at(j - 1) = -v.at(i - 1).at(j - 1);
+                    v.at(i).at(j) = -v.at(i - 1).at(j);
+                    p.at(i).at(j) = p.at(i - 1).at(j);
+                }
+                //B_E ...
+                //B_S ...
+
+
+                //check for border cells
+                //B_NE
+                if(cell._nbNorth->_cellType == FLUID and  cell._nbEast->_cellType == FLUID and cell._nbEast->_cellType == NOSLIP and cell._nbWest->_cellType == NOSLIP){
+                    u.at(i).at(j) = 0;
+                    v.at(i).at(j) = 0;
+                    u.at(i-1).at(j) = -u.at(i-1).at(j+1);
+                    v.at(i).at(j-1) = -v.at(i+1).at(j-1);
+                    p.at(i).at(j) = (p.at(i).at(j+1) + p.at(i+1).at(j)) / 2;
+                }
+                //B_NW ...
+                //B_SE ...
+                //B_SW ...
+            }
+
+
+
+        }
+    }
+}
+
+
+*/
+
+    /* ------ implementation of boundary values ws1 ------ */
+
+    /*
 
 
     // -----Boundary conditions initializaion----- //
@@ -94,4 +149,5 @@ void boundaryvalues(int imax, int jmax, Grid& grid) {
     }
 
     grid.set_temperature(temp);
+    /*
 }
