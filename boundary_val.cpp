@@ -7,11 +7,11 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
     
     // VELOCITY - Declaration and Initialisation
 
-    static matrix<double> u;
-    static matrix<double> v;
+    static matrix<double> u_velocity;
+    static matrix<double> v_velocity;
 
-    grid.velocity(u, velocity_type::U);
-    grid.velocity(v, velocity_type::V);
+    grid.velocity(u_velocity, velocity_type::U);
+    grid.velocity(v_velocity, velocity_type::V);
 
     static matrix<double> p;
     grid.pressure(p);
@@ -66,7 +66,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
 
     /* ------ implementation of boundary values ws1 ------ */
 
-    /*
+ 
 
     static matrix<double> pres;
     grid.pressure(pres);
@@ -164,5 +164,5 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
 
 
     grid.set_temperature(temp);
-    /*
+    
 }
