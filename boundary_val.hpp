@@ -9,8 +9,19 @@
 /**
  * The boundary values of the problem are set.
  */
-void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_inflow, matrix<double>& F,
-                    matrix<double>& G, double& TD, double& kappa, double& heat_flux);
+void boundaryvalues(int imax,
+                    int jmax,
+                    Grid& grid,
+                    double& v_inflow,
+                    double& u_inflow,
+                    matrix<double>& F,
+                    matrix<double>& G,
+                    double& T_h,
+                    double& T_c,
+                    double& dx,
+                    double& dy,
+                    double &kappa,
+                    double &heat_flux);
 
 /*
  * The values of boundary conditions are specified

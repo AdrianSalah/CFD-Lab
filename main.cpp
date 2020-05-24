@@ -71,7 +71,12 @@ int main(int argn, char** args) {
     double* PR = new double;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
+    double* v_inflow = new double;          /* boundary value for inflow BC */
+    double* u_inflow = new double;          /* boundary value for inflow BC */
+    double* kappa = new double;             /* thermal conductivity */
+    double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;             /* array of geometry */
+
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists("output");
 
@@ -207,7 +212,8 @@ int main(int argn, char** args) {
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, F, G);
+
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
@@ -293,6 +299,11 @@ int main(int argn, char** args) {
     delete PR;
     delete res;
     delete beta;
+    delete cell_array; //2D array! -> modify delete!
+    delete v_inflow;
+    delete u_inflow;
+    delete kappa;
+    delete heat_flux;
 
     return 0;
 }

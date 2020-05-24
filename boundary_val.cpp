@@ -2,8 +2,20 @@
 #include "datastructures.hpp"
 #include "grid.hpp"
 
-void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_inflow, matrix<double>& F,
-    matrix<double>& G, double& T_h, double& T_c) {
+void boundaryvalues(
+        int imax,
+        int jmax,
+        Grid& grid,
+        double& v_inflow,
+        double& u_inflow,
+        matrix<double>& F,
+        matrix<double>& G,
+        double& T_h,
+        double& T_c,
+        double& dx,
+        double& dy,
+        double &kappa,
+        double &heat_flux) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -77,8 +89,8 @@ void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_
 
     // ----- Boundary conditions NO SLIP inner cells ----- //
     
-    for (int i = 1; i < grid.imaxb()-1; i++) {
-        for (int j = 1; j < grid.jmaxb() - 1; j++) {
+    for (int i = 1; i < imax-1; i++) {
+        for (int j = 1; j < jmax - 1; j++) {
             // NO slip boundary confitions
             if (grid.cell(i, j)._cellType == NOSLIP) {
                 //B_NE
@@ -160,37 +172,47 @@ void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_
     /* ---- BC outer cells ---- */
 
     // bottom and top
-    for(int i = 0; i <= imax; i++){
+    for(int i = 0; i < imax; i++){
         //noslip bottom
         if(grid.cell(i,0)._cellType == NOSLIP and grid.cell(i,0)._nbNorth->_cellType == FLUID) {
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
+
+            G.at(i).at(0) = v_velocity.at(i).at(0);
         }
         //noslip top
-        if(grid.cell(i,jmax)._cellType == NOSLIP and grid.cell(i, jmax)._nbSouth->_cellType == FLUID) {
-            u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax - 1);
-            v_velocity.at(i).at(jmax) = 0;
+        if(grid.cell(i,jmax-1)._cellType == NOSLIP and grid.cell(i, jmax-1)._nbSouth->_cellType == FLUID) {
+            u_velocity.at(i).at(jmax-1) = -u_velocity.at(i).at(jmax - 2);
+            v_velocity.at(i).at(jmax-1) = 0;
+
+            G.at(i).at(jmax-1) = v_velocity.at(i).at(jmax-1);
         }
     }
 
     // left and right
-    for(int j = 0; j <= jmax; jmax++){
+    for(int j = 0; j < jmax; jmax++){
         //noslip left
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;
             v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
+
+            F.at(0).at(j) = u_velocity.at(0).at(j);
         }
 
         //noslip right
-        if(grid.cell(imax,j)._cellType == NOSLIP and grid.cell(imax, j)._nbWest->_cellType == FLUID) {
-            u_velocity.at(imax + 1).at(j) = 0;
-            v_velocity.at(imax + 1).at(j) = -v_velocity.at(imax).at(j);
+        if(grid.cell(imax-1,j)._cellType == NOSLIP and grid.cell(imax-1, j)._nbWest->_cellType == FLUID) {
+            u_velocity.at(imax - 1).at(j) = 0;
+            v_velocity.at(imax - 1).at(j) = -v_velocity.at(imax-2).at(j);
+
+            F.at(imax-1).at(j) = u_velocity.at(imax-1).at(j);
         }
 
         //inflow left
         if(grid.cell(0,j)._cellType == INFLOW and grid.cell(0,j)._nbEast->_cellType == FLUID){
                 v_velocity.at(0).at(j) = v_inflow;
                 u_velocity.at(0).at(j) = u_inflow;
+
+
         }
 
         //inflow from right
@@ -200,33 +222,53 @@ void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_
         //...
 
         //outflow to right
-        if(grid.cell(imax, j)._cellType == OUTFLOW and grid.cell(imax, j)._nbWest->_cellType == FLUID){
-            v_velocity.at(imax-1).at(j) = v_velocity.at(imax).at(j); //neumann BC also for v_velocity!
-            u_velocity.at(imax-1).at(j) = u_velocity.at(imax).at(j);
+        if(grid.cell(imax-1, j)._cellType == OUTFLOW and grid.cell(imax-1, j)._nbWest->_cellType == FLUID){
+            v_velocity.at(imax-2).at(j) = v_velocity.at(imax-1).at(j); //neumann BC also for v_velocity!
+            u_velocity.at(imax-2).at(j) = u_velocity.at(imax-1).at(j);
         }
     }
 
     /* ----  Dirichlet BC Temperature ---- */
     // Natural Convection and Fluid Trap
-    for(int j = 1; j <= jmax; j++){
+
+    for(int j = 1; j < jmax; j++){ //check indexing!
         //T_h left wall
         temp.at(0).at(j) = 2*T_h - temp.at(1).at(j);
         //T_c right wall
-        temp.at(imax+1).at(j) = 2*T_c - temp.at(imax).at(j);
+        temp.at(imax-1).at(j) = 2*T_c - temp.at(imax-2).at(j);
     }
 
     // Rayleigh-Benard Convection
     /*
-    for(int i = 1; i <= imax; i++){
+    for(int i = 1; i < imax; i++){
         //T_h bottom wall
         temp.at(i).at(0) = 2*T_h - temp.at(i).at(1);
         //T_c top wall
-        temp.at(i).at(jmax+1) = 2*T_c - temp.at(i).at(jmax);
+        temp.at(i).at(jmax-1) = 2*T_c - temp.at(i).at(jmax-2);
     }
      */
 
     /* ---- Neumann Boundary ---- */
-    //...
+
+    // Natural Convection and Fluid Trap
+    for(int i = 1; i < imax; i++){
+        //bottom wall
+        temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
+        //top wall
+        temp.at(i).at(jmax-1) = temp.at(i).at(jmax-2) + dy * heat_flux / kappa;
+    }
+
+
+    /*
+    // Rayleigh-Benard Convection
+    for(int j = 1; j < jmax; j++){
+        //left wall
+        temp.at(0).at(j) = temp.at(1).at(j) + dx * heat_flux / kappa;
+        //right wall
+        temp.at(imax-1).at(j) = temp.at(imax-2).at(j) + dx * heat_flux /kappa;
+    }
+     */
+
 
 
     grid.set_velocity(u_velocity, velocity_type::U);
