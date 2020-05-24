@@ -217,6 +217,8 @@ int main(int argn, char** args) {
         //here we set time steps manually
         calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, F, G);
+        calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 

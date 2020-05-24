@@ -157,6 +157,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1);
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i + 1).at(j)) / 2;
+                    temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i + 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
@@ -167,6 +168,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i -1).at(j)) / 2;
+                    temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i - 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
@@ -177,6 +179,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i - 1).at(j)) / 2;
+                    temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i - 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
@@ -187,6 +190,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i + 1).at(j)) / 2;
+                    temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i + 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
@@ -196,6 +200,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
                     u_velocity.at(i).at(j) = - u_velocity.at(i).at(j + 1);
                     pres.at(i).at(j) = pres.at(i).at(j + 1);
+                    temp.at(i).at(j) = temp.at(i).at(j + 1);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
                 //B_E
@@ -204,6 +209,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1);
                     pres.at(i).at(j) = pres.at(i + 1).at(j);
+                    temp.at(i).at(j) = temp.at(i + 1).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
                 //B_S
@@ -212,6 +218,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1);
                     pres.at(i).at(j) = pres.at(i).at(j - 1);
+                    temp.at(i).at(j) = temp.at(i).at(j - 1);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
                 //B_W
@@ -220,11 +227,13 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
                     pres.at(i).at(j) = pres.at(i - 1).at(j);
+                    temp.at(i).at(j) = temp.at(i - 1).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
                 else if(grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
                     grid.cell(i, j)._nbNorth->_cellType == NOSLIP&& grid.cell(i, j)._nbSouth->_cellType == NOSLIP) {
                     pres.at(i).at(j)=0;
+                    temp.at(i).at(j)=0;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
