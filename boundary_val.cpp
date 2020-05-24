@@ -2,8 +2,19 @@
 #include "datastructures.hpp"
 #include "grid.hpp"
 
-void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
-    matrix<double>& G) {
+void boundaryvalues(int imax,
+                    int jmax,
+                    Grid& grid,
+                    double& v_inflow,
+                    double& u_inflow,
+                    matrix<double>& F,
+                    matrix<double>& G,
+                    double& T_h,
+                    double& T_c,
+                    double& dx,
+                    double& dy,
+                    double &kappa,
+                    double &heat_flux) {
     
     // VELOCITY - Declaration and Initialisation
 
