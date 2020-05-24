@@ -7,7 +7,8 @@
 #include <iostream>
 #include "boundary_val.hpp"
 #include "Timer.h"
-#include <assert.h>
+
+
 /**
  * The main operation reads the configuration file, initializes the scenario and
  * contains the main loop. So here are the individual steps of the algorithm:
@@ -70,7 +71,12 @@ int main(int argn, char** args) {
     double* PR = new double;                      /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
+    double* v_inflow = new double;          /* boundary value for inflow BC */
+    double* u_inflow = new double;          /* boundary value for inflow BC */
+    double* kappa = new double;             /* thermal conductivity */
+    double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;             /* array of geometry */
+
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists("output");
 
@@ -131,66 +137,7 @@ int main(int argn, char** args) {
         std::cout << std::endl;
     }
 
-    //store pointers to neighbours for inner cells
-    // and check if the cell is a FLUID-cell. Increment by 1, if true.
-    for(int j = 1; j < *jmax-1; j++) {
-        for (int i = 1; i < *imax - 1; i++) {
-            grid.cell(i, j)._nbNorth = &grid.cell(i, j + 1);
-            grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
-            grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
-            grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
-            
-            // Can it be moved to grid cpp?
-            if (grid.cell(i, j)._cellType == FLUID)
-                grid.increment_fluid_cells();
-        }
-    }
-
-    // Checking immediately if the number of FLUID cells is not zero
-    assert(grid.get_fluid_cells_quantity() > 0 && "There are no FLUID cells in the domain");
-
-    //neighbour edges
-    //bottom left
-    grid.cell(0,0)._nbNorth = &grid.cell(0,1);
-    grid.cell(0,0)._nbEast = &grid.cell(1,0);
-    //top right
-    grid.cell(*imax-1, *jmax-1)._nbSouth = &grid.cell(*imax-1,*jmax-2);
-    grid.cell(*imax-1, *jmax-1)._nbWest = &grid.cell(*imax-2,*jmax-1);
-    //top left
-    grid.cell(0,*jmax-1)._nbEast = &grid.cell(1, *jmax-1);
-    grid.cell(0, *jmax-1)._nbSouth = &grid.cell(0, *jmax-2);
-    //bottom right
-    grid.cell(*imax-1, 0)._nbNorth = &grid.cell(*imax-1, 1);
-    grid.cell(*imax-1, 0)._nbWest = &grid.cell(*imax-2, 0);
-
-    for(int i = 1; i < *imax-1; i++){
-        //bottom
-        grid.cell(i, 0)._nbNorth = &grid.cell(i, 1);
-        grid.cell(i, 0)._nbEast = &grid.cell(i + 1, 0);
-        grid.cell(i, 0)._nbWest = &grid.cell(i-1, 0);
-        //top
-        grid.cell(i, *jmax-1)._nbSouth  = &grid.cell(i,*jmax-2);
-        grid.cell(i, *jmax-1)._nbEast = &grid.cell(i+1, *jmax-1);
-        grid.cell(i, *jmax-1)._nbWest = &grid.cell(i-1, *jmax-1);
-    }
-    for(int j = 1; j <  * jmax-1; j++){
-        //left
-        grid.cell(0, j)._nbNorth = &grid.cell(0, j+1);
-        grid.cell(0, j)._nbSouth = &grid.cell(0, j-1);
-        grid.cell(0, j)._nbEast = &grid.cell(1, j);
-        //right
-        grid.cell(*imax-1, j)._nbNorth = &grid.cell(*imax-1, j+1);
-        grid.cell(*imax-1, j)._nbSouth = &grid.cell(*imax-1, j-1);
-        grid.cell(*imax-1, j)._nbWest = &grid.cell(*imax-2, j);
-    }
-
-    Cell testCell = grid.cell(1,11);
-    //displays positions of neighbouring cells of test-cell (i=1, j=11)
-    std::cout << testCell._cellType << std::endl;
-    std::cout << "W " << testCell._nbWest->_cellType << std::endl;
-    std::cout << "E " << testCell._nbEast->_cellType << std::endl;
-    std::cout << "N " << testCell._nbNorth->_cellType << std::endl;
-    std::cout << "S " << testCell._nbSouth->_cellType << std::endl;
+    assign_ptr_nbcells(imax, jmax, grid);
 
 
     // Initializing variables
@@ -200,15 +147,17 @@ int main(int argn, char** args) {
     double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
 
+    //initialize matrices U, V, P
     matrix<double> U, V, P, T;
     init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid);
+
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
 
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
 
-    //initialize matrices U, V, P
+
 
     // Initialize timer to measure performance
     Timer runtime;
@@ -216,9 +165,8 @@ int main(int argn, char** args) {
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, F, G);
-        calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
@@ -304,6 +252,11 @@ int main(int argn, char** args) {
     delete PR;
     delete res;
     delete beta;
+    delete cell_array; //2D array! -> modify delete!
+    delete v_inflow;
+    delete u_inflow;
+    delete kappa;
+    delete heat_flux;
 
     return 0;
 }
