@@ -7,8 +7,7 @@
 #include <iostream>
 #include "boundary_val.hpp"
 #include "Timer.h"
-
-
+#include <assert.h>
 /**
  * The main operation reads the configuration file, initializes the scenario and
  * contains the main loop. So here are the individual steps of the algorithm:
@@ -133,14 +132,23 @@ int main(int argn, char** args) {
     }
 
     //store pointers to neighbours for inner cells
+    // and check if the cell is a FLUID-cell. Increment by 1, if true.
     for(int j = 1; j < *jmax-1; j++) {
         for (int i = 1; i < *imax - 1; i++) {
             grid.cell(i, j)._nbNorth = &grid.cell(i, j + 1);
             grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
             grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
             grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
+            
+            // Can it be moved to grid cpp?
+            if (grid.cell(i, j)._cellType == FLUID)
+                grid.increment_fluid_cells();
         }
     }
+
+    // Checking immediately if the number of FLUID cells is not zero
+    assert(grid.get_fluid_cells_quantity() > 0 && "There are no FLUID cells in the domain");
+
     //neighbour edges
     //bottom left
     grid.cell(0,0)._nbNorth = &grid.cell(0,1);
