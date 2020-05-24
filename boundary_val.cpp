@@ -3,7 +3,7 @@
 #include "grid.hpp"
 
 void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_inflow, matrix<double>& F,
-    matrix<double>& G, double& TD, double& kappa, double& heat_flux) {
+    matrix<double>& G, double& T_h, double& T_c) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -204,9 +204,29 @@ void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_
             v_velocity.at(imax-1).at(j) = v_velocity.at(imax).at(j); //neumann BC also for v_velocity!
             u_velocity.at(imax-1).at(j) = u_velocity.at(imax).at(j);
         }
-
     }
 
+    /* ----  Dirichlet BC Temperature ---- */
+    // Natural Convection and Fluid Trap
+    for(int j = 1; j <= jmax; j++){
+        //T_h left wall
+        temp.at(0).at(j) = 2*T_h - temp.at(1).at(j);
+        //T_c right wall
+        temp.at(imax+1).at(j) = 2*T_c - temp.at(imax).at(j);
+    }
+
+    // Rayleigh-Benard Convection
+    /*
+    for(int i = 1; i <= imax; i++){
+        //T_h bottom wall
+        temp.at(i).at(0) = 2*T_h - temp.at(i).at(1);
+        //T_c top wall
+        temp.at(i).at(jmax+1) = 2*T_c - temp.at(i).at(jmax);
+    }
+     */
+
+    /* ---- Neumann Boundary ---- */
+    //...
 
 
     grid.set_velocity(u_velocity, velocity_type::U);
@@ -218,11 +238,24 @@ void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_
 }
 
 
-void spec_boundary_val(double &u_inflow, double &v_inflow, double& TD, double &kappa, double &heat_flux, double val_u_inflow, double val_v_inflow, double val_TD, double val_kappa, double val_heat_flux) {
+void spec_boundary_val(double &u_inflow,
+        double &v_inflow,
+        double& T_c,
+        double& T_h,
+        double &kappa,
+        double &heat_flux,
+        double val_u_inflow,
+        double val_v_inflow,
+        double val_T_c,
+        double val_T_h,
+        double val_kappa,
+        double val_heat_flux) {
+
     u_inflow = val_u_inflow;
     v_inflow = val_v_inflow;
 
-    TD = val_TD;
+    T_c = val_T_c;
+    T_h = val_T_h;
     kappa = val_kappa;
     heat_flux = val_heat_flux;
 
