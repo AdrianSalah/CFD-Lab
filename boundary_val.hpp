@@ -39,7 +39,10 @@ void spec_boundary_val(double &u_inflow,
                        double val_kappa,
                        double val_heat_flux);
 
+/*
+ * Store pointers to neighbour cells for grid
+ */
 
-
+void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid);
 
 #endif

@@ -303,100 +303,49 @@ void spec_boundary_val(double &u_inflow,
 
 }
 
-// Here I tried to set boundary values for outer cells in spec_boundary_val function -> this will be discarded [Adrian]
+void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid){
 
-    /*
-    double v_inflow, u_inflow;
-
-    matrix<double> u_velocity, v_velocity;
-
-    grid.velocity(u_velocity, velocity_type::U);
-    grid.velocity(v_velocity, velocity_type::V);
-
-
-    switch (szenarioNumber) {
-        case 1: printf("set outer BC for Plane shear flow");
-            // Noslip BC
-            for(int i = 0; i < grid.imaxb(); i++){
-                //bottom
-                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
-                v_velocity.at(i).at(0) = 0;
-                //top
-                u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax-1);
-                v_velocity.at(i).at(jmax) = 0;
-            }
-
-            // Inflow BC (from left)
-            v_inflow = 0.0;
-            //To-Do:
-            double delta_y = y_length/(jmax-2);
-
-            for(int j = 1; j < grid.jmaxb()-1; j++){
-                v_velocity.at(0).at(j) = v_inflow;
-                u_velocity.at(0).at(j) = -0.5*Re*4/x_length * j*delta_y * (j*delta_y - y_length);
-            }
-
-            // Outflow BC ??
-            //To-Do: check wheter that's correct
-            for(int j = 1; j < grid.jmaxb()-1; j++){
-                //neumann for v
-                u_velocity.at(imax).at(j) = u_velocity.at(imax+1).at(j);
-            }
-
-            break;
-
-        case 2: printf("set outer BC for Karman Vortex Street");
-
-            // Noslip BC
-            for(int i = 0; i < grid.imaxb(); i++){
-                //bottom
-                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
-                v_velocity.at(i).at(0) = 0;
-                //top
-                u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax-1);
-                v_velocity.at(i).at(jmax) = 0;
-            }
-
-            u_inflow = 1.0;
-            v_inflow = 0.0;
-
-            // Inflow BC (from left)
-            for(int j = 1; j < grid.jmaxb()-1; j++) {
-                v_velocity.at(0).at(j) = v_inflow;
-                u_velocity.at(0).at(j) = u_inflow;
-            }
-
-            // Outflow BC
-
-
-
-            break;
-
-        case 3: printf("BC for flow over step");
-
-            // Noslip BC
-            for(int i = 0; i < grid.imaxb(); i++){
-                //bottom
-                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
-                v_velocity.at(i).at(0) = 0;
-                //top
-                u_velocity.at(i).at(jmax+1) = -u_velocity.at(i).at(jmax);
-                v_velocity.at(i).at(jmax+1) = 0;
-            }
-
-            u_inflow = 1.0;
-            v_inflow = 0.0;
-            break;
-
-
+    //store pointers to neighbours for inner cells
+    for(int j = 1; j < *jmax-1; j++) {
+        for (int i = 1; i < *imax - 1; i++) {
+            grid.cell(i, j)._nbNorth = &grid.cell(i, j + 1);
+            grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
+            grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
+            grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
+        }
     }
+    //neighbour edges
+    //bottom left
+    grid.cell(0,0)._nbNorth = &grid.cell(0,1);
+    grid.cell(0,0)._nbEast = &grid.cell(1,0);
+    //top right
+    grid.cell(*imax-1, *jmax-1)._nbSouth = &grid.cell(*imax-1,*jmax-2);
+    grid.cell(*imax-1, *jmax-1)._nbWest = &grid.cell(*imax-2,*jmax-1);
+    //top left
+    grid.cell(0,*jmax-1)._nbEast = &grid.cell(1, *jmax-1);
+    grid.cell(0, *jmax-1)._nbSouth = &grid.cell(0, *jmax-2);
+    //bottom right
+    grid.cell(*imax-1, 0)._nbNorth = &grid.cell(*imax-1, 1);
+    grid.cell(*imax-1, 0)._nbWest = &grid.cell(*imax-2, 0);
 
-
-
-    //set boundary values for heat transfer
-    TD = val_TD;
-    kappa = val_kappa;
-    heat_flux = val_heat_flux;
-};
-
- */
+    for(int i = 1; i < *imax-1; i++){
+        //bottom
+        grid.cell(i, 0)._nbNorth = &grid.cell(i, 1);
+        grid.cell(i, 0)._nbEast = &grid.cell(i + 1, 0);
+        grid.cell(i, 0)._nbWest = &grid.cell(i-1, 0);
+        //top
+        grid.cell(i, *jmax-1)._nbSouth  = &grid.cell(i,*jmax-2);
+        grid.cell(i, *jmax-1)._nbEast = &grid.cell(i+1, *jmax-1);
+        grid.cell(i, *jmax-1)._nbWest = &grid.cell(i-1, *jmax-1);
+    }
+    for(int j = 1; j <  *jmax-1; j++){
+        //left
+        grid.cell(0, j)._nbNorth = &grid.cell(0, j+1);
+        grid.cell(0, j)._nbSouth = &grid.cell(0, j-1);
+        grid.cell(0, j)._nbEast = &grid.cell(1, j);
+        //right
+        grid.cell(*imax-1, j)._nbNorth = &grid.cell(*imax-1, j+1);
+        grid.cell(*imax-1, j)._nbSouth = &grid.cell(*imax-1, j-1);
+        grid.cell(*imax-1, j)._nbWest = &grid.cell(*imax-2, j);
+    }
+}

@@ -137,59 +137,9 @@ int main(int argn, char** args) {
         std::cout << std::endl;
     }
 
-    //store pointers to neighbours for inner cells
-    for(int j = 1; j < *jmax-1; j++) {
-        for (int i = 1; i < *imax - 1; i++) {
-            grid.cell(i, j)._nbNorth = &grid.cell(i, j + 1);
-            grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
-            grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
-            grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
-        }
-    }
-    //neighbour edges
-    //bottom left
-    grid.cell(0,0)._nbNorth = &grid.cell(0,1);
-    grid.cell(0,0)._nbEast = &grid.cell(1,0);
-    //top right
-    grid.cell(*imax-1, *jmax-1)._nbSouth = &grid.cell(*imax-1,*jmax-2);
-    grid.cell(*imax-1, *jmax-1)._nbWest = &grid.cell(*imax-2,*jmax-1);
-    //top left
-    grid.cell(0,*jmax-1)._nbEast = &grid.cell(1, *jmax-1);
-    grid.cell(0, *jmax-1)._nbSouth = &grid.cell(0, *jmax-2);
-    //bottom right
-    grid.cell(*imax-1, 0)._nbNorth = &grid.cell(*imax-1, 1);
-    grid.cell(*imax-1, 0)._nbWest = &grid.cell(*imax-2, 0);
+    assign_ptr_nbcells(imax, jmax, grid);
 
-    for(int i = 1; i < *imax-1; i++){
-        //bottom
-        grid.cell(i, 0)._nbNorth = &grid.cell(i, 1);
-        grid.cell(i, 0)._nbEast = &grid.cell(i + 1, 0);
-        grid.cell(i, 0)._nbWest = &grid.cell(i-1, 0);
-        //top
-        grid.cell(i, *jmax-1)._nbSouth  = &grid.cell(i,*jmax-2);
-        grid.cell(i, *jmax-1)._nbEast = &grid.cell(i+1, *jmax-1);
-        grid.cell(i, *jmax-1)._nbWest = &grid.cell(i-1, *jmax-1);
-    }
-    for(int j = 1; j <  * jmax-1; j++){
-        //left
-        grid.cell(0, j)._nbNorth = &grid.cell(0, j+1);
-        grid.cell(0, j)._nbSouth = &grid.cell(0, j-1);
-        grid.cell(0, j)._nbEast = &grid.cell(1, j);
-        //right
-        grid.cell(*imax-1, j)._nbNorth = &grid.cell(*imax-1, j+1);
-        grid.cell(*imax-1, j)._nbSouth = &grid.cell(*imax-1, j-1);
-        grid.cell(*imax-1, j)._nbWest = &grid.cell(*imax-2, j);
-    }
-
-    Cell testCell = grid.cell(1,11);
-    //displays positions of neighbouring cells of test-cell (i=1, j=11)
-    std::cout << testCell._cellType << std::endl;
-    std::cout << "W " << testCell._nbWest->_cellType << std::endl;
-    std::cout << "E " << testCell._nbEast->_cellType << std::endl;
-    std::cout << "N " << testCell._nbNorth->_cellType << std::endl;
-    std::cout << "S " << testCell._nbSouth->_cellType << std::endl;
-
-
+    
     // Initializing variables
     double time = 0;                        // time
     int timesteps_total = 0;                // # of iterations for main loop
