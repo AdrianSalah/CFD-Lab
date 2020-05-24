@@ -2,8 +2,8 @@
 #include "datastructures.hpp"
 #include "grid.hpp"
 
-void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
-    matrix<double>& G) {
+void boundaryvalues(int imax, int jmax, Grid& grid, double& v_inflow, double& u_inflow, matrix<double>& F,
+    matrix<double>& G, double& TD, double& kappa, double& heat_flux) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -64,7 +64,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
 
 */
 
-    /* ------ implementation of boundary values ws1 ------ */
+    /* ------ implementation of boundary values ws2 ------ */
 
  
 
@@ -74,33 +74,34 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
 
     static matrix<double> temp;
     grid.temperature(temp);
-    // -----Boundary conditions initializaion----- //
+
+    // ----- Boundary conditions NO SLIP inner cells ----- //
     
     for (int i = 1; i < grid.imaxb()-1; i++) {
-        for (int j = 1; j < grid.jmaxb()-1; j++) {
+        for (int j = 1; j < grid.jmaxb() - 1; j++) {
             // NO slip boundary confitions
             if (grid.cell(i, j)._cellType == NOSLIP) {
                 //B_NE
-                if (grid.cell(i, j)._nbNorth->_cellType > 1  && grid.cell(i, j)._nbEast->_cellType > 1) {
+                if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
                     v_velocity.at(i).at(j) = 0;
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
-                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1);
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1);
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i + 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_NW
+                    //B_NW
                 else if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
                     u_velocity.at(i - 1).at(j) = 0;
                     v_velocity.at(i).at(j) = 0;
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
-                    pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i -1).at(j)) / 2;
+                    pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i - 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_SW
+                    //B_SW
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
                     u_velocity.at(i - 1).at(j) = 0;
                     v_velocity.at(i).at(j - 1) = 0;
@@ -110,7 +111,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_SE
+                    //B_SE
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
                     v_velocity.at(i).at(j - 1) = 0;
@@ -120,15 +121,15 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_N
-                else if (grid.cell(i, j)._nbNorth->_cellType > 1 ) {
+                    //B_N
+                else if (grid.cell(i, j)._nbNorth->_cellType > 1) {
                     v_velocity.at(i).at(j) = 0;
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1);
-                    u_velocity.at(i).at(j) = - u_velocity.at(i).at(j + 1);
+                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
                     pres.at(i).at(j) = pres.at(i).at(j + 1);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_E
+                    //B_E
                 else if (grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
@@ -136,7 +137,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     pres.at(i).at(j) = pres.at(i + 1).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_S
+                    //B_S
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
                     v_velocity.at(i).at(j - 1) = 0;
                     u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
@@ -144,7 +145,7 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                     pres.at(i).at(j) = pres.at(i).at(j - 1);
                     G[i][j] = v_velocity.at(i).at(j);
                 }
-                //B_W
+                    //B_W
                 else if (grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i - 1).at(j) = 0;
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
@@ -156,13 +157,171 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
         }
     }
 
+    /* ---- BC outer cells ---- */
+
+    // bottom and top
+    for(int i = 0; i <= imax; i++){
+        //noslip bottom
+        if(grid.cell(i,0)._cellType == NOSLIP and grid.cell(i,0)._nbNorth->_cellType == FLUID) {
+            u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+            v_velocity.at(i).at(0) = 0;
+        }
+        //noslip top
+        if(grid.cell(i,jmax)._cellType == NOSLIP and grid.cell(i, jmax)._nbSouth->_cellType == FLUID) {
+            u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax - 1);
+            v_velocity.at(i).at(jmax) = 0;
+        }
+    }
+
+    // left and right
+    for(int j = 0; j <= jmax; jmax++){
+        //noslip left
+        if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
+            u_velocity.at(0).at(j) = 0;
+            v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
+        }
+
+        //noslip right
+        if(grid.cell(imax,j)._cellType == NOSLIP and grid.cell(imax, j)._nbWest->_cellType == FLUID) {
+            u_velocity.at(imax + 1).at(j) = 0;
+            v_velocity.at(imax + 1).at(j) = -v_velocity.at(imax).at(j);
+        }
+
+        //inflow left
+        if(grid.cell(0,j)._cellType == INFLOW and grid.cell(0,j)._nbEast->_cellType == FLUID){
+                v_velocity.at(0).at(j) = v_inflow;
+                u_velocity.at(0).at(j) = u_inflow;
+        }
+
+        //inflow from right
+        //...
+
+        //outflow to left
+        //...
+
+        //outflow to right
+        if(grid.cell(imax, j)._cellType == OUTFLOW and grid.cell(imax, j)._nbWest->_cellType == FLUID){
+            v_velocity.at(imax-1).at(j) = v_velocity.at(imax).at(j); //neumann BC also for v_velocity!
+            u_velocity.at(imax-1).at(j) = u_velocity.at(imax).at(j);
+        }
+
+    }
+
+
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
 
     grid.set_pressure(pres);
 
-
     grid.set_temperature(temp);
-    
 }
+
+
+void spec_boundary_val(double &u_inflow, double &v_inflow, double& TD, double &kappa, double &heat_flux, double val_u_inflow, double val_v_inflow, double val_TD, double val_kappa, double val_heat_flux) {
+    u_inflow = val_u_inflow;
+    v_inflow = val_v_inflow;
+
+    TD = val_TD;
+    kappa = val_kappa;
+    heat_flux = val_heat_flux;
+
+}
+
+// Here I tried to set boundary values for outer cells in spec_boundary_val function -> this will be discarded [Adrian]
+
+    /*
+    double v_inflow, u_inflow;
+
+    matrix<double> u_velocity, v_velocity;
+
+    grid.velocity(u_velocity, velocity_type::U);
+    grid.velocity(v_velocity, velocity_type::V);
+
+
+    switch (szenarioNumber) {
+        case 1: printf("set outer BC for Plane shear flow");
+            // Noslip BC
+            for(int i = 0; i < grid.imaxb(); i++){
+                //bottom
+                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+                v_velocity.at(i).at(0) = 0;
+                //top
+                u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax-1);
+                v_velocity.at(i).at(jmax) = 0;
+            }
+
+            // Inflow BC (from left)
+            v_inflow = 0.0;
+            //To-Do:
+            double delta_y = y_length/(jmax-2);
+
+            for(int j = 1; j < grid.jmaxb()-1; j++){
+                v_velocity.at(0).at(j) = v_inflow;
+                u_velocity.at(0).at(j) = -0.5*Re*4/x_length * j*delta_y * (j*delta_y - y_length);
+            }
+
+            // Outflow BC ??
+            //To-Do: check wheter that's correct
+            for(int j = 1; j < grid.jmaxb()-1; j++){
+                //neumann for v
+                u_velocity.at(imax).at(j) = u_velocity.at(imax+1).at(j);
+            }
+
+            break;
+
+        case 2: printf("set outer BC for Karman Vortex Street");
+
+            // Noslip BC
+            for(int i = 0; i < grid.imaxb(); i++){
+                //bottom
+                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+                v_velocity.at(i).at(0) = 0;
+                //top
+                u_velocity.at(i).at(jmax) = -u_velocity.at(i).at(jmax-1);
+                v_velocity.at(i).at(jmax) = 0;
+            }
+
+            u_inflow = 1.0;
+            v_inflow = 0.0;
+
+            // Inflow BC (from left)
+            for(int j = 1; j < grid.jmaxb()-1; j++) {
+                v_velocity.at(0).at(j) = v_inflow;
+                u_velocity.at(0).at(j) = u_inflow;
+            }
+
+            // Outflow BC
+
+
+
+            break;
+
+        case 3: printf("BC for flow over step");
+
+            // Noslip BC
+            for(int i = 0; i < grid.imaxb(); i++){
+                //bottom
+                u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
+                v_velocity.at(i).at(0) = 0;
+                //top
+                u_velocity.at(i).at(jmax+1) = -u_velocity.at(i).at(jmax);
+                v_velocity.at(i).at(jmax+1) = 0;
+            }
+
+            u_inflow = 1.0;
+            v_inflow = 0.0;
+            break;
+
+
+    }
+
+
+
+    //set boundary values for heat transfer
+    TD = val_TD;
+    kappa = val_kappa;
+    heat_flux = val_heat_flux;
+};
+
+ */
