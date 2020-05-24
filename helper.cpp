@@ -488,6 +488,18 @@ bool assert_problem_solvability(int** PGM_cell, int imax, int jmax) {
             if (PGM_cell[i][j] == 4 && num_non_Fluid_Cells == 4) return false;
         }
     }
+    for (int i = 0; i < imax; i++) {
+        if (PGM_cell[i][0] == 4)return false;
+        else if (PGM_cell[i][0] != 0 and PGM_cell[i][1] == 0) return false;
+        if (PGM_cell[i][jmax-1] == 4)return false;
+        else if (PGM_cell[i][jmax - 1] != 0 and PGM_cell[i][jmax - 2] == 0) return false;
+    }
+    for (int j = 0; j < jmax; j++) {
+        if (PGM_cell[0][j] == 4)return false;
+        else if (PGM_cell[0][j] != 0 and PGM_cell[1][j] == 0) return false;
+        if (PGM_cell[imax - 1][j] == 4)return false;
+        else if (PGM_cell[imax - 1][j] != 0 and PGM_cell[imax - 2][j] == 0) return false;
+    }
     return true;
 }
 
