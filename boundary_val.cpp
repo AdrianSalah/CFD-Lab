@@ -224,8 +224,6 @@ void boundaryvalues(int imax, int jmax, Grid& grid, matrix<double>& F,
                 }
                 else if(grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
                     grid.cell(i, j)._nbNorth->_cellType == NOSLIP&& grid.cell(i, j)._nbSouth->_cellType == NOSLIP) {
-                    u_velocity.at(i).at(j) = 0;
-                    v_velocity.at(i).at(j) = 0;
                     pres.at(i).at(j)=0;
                     F[i][j] = u_velocity.at(i).at(j);
                     G[i][j] = v_velocity.at(i).at(j);
