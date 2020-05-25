@@ -98,7 +98,7 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1);
                     pres.at(i).at(j) = pres.at(i + 1).at(j);
                     temp.at(i).at(j) = temp.at(i + 1).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j);
                 }
                 //B_S
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
@@ -110,13 +110,13 @@ void boundaryvalues(int imax,
                     G[i][j] = v_velocity.at(i).at(j);
                 }
                 //B_W
-                else if (grid.cell(i, j)._nbEast->_cellType > 1) {
+                else if (grid.cell(i, j)._nbWest->_cellType > 1) {
                     u_velocity.at(i - 1).at(j) = 0;
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1);
                     pres.at(i).at(j) = pres.at(i - 1).at(j);
                     temp.at(i).at(j) = temp.at(i - 1).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j);
                 }
                 else if(grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
                     grid.cell(i, j)._nbNorth->_cellType == NOSLIP&& grid.cell(i, j)._nbSouth->_cellType == NOSLIP) {
