@@ -149,7 +149,7 @@ void boundaryvalues(int imax,
     }
 
     // left and right
-    for(int j = 0; j < jmax; jmax++){
+    for(int j = 0; j < jmax; j++){
         //noslip left
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;
