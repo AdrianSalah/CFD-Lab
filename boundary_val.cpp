@@ -281,6 +281,10 @@ void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid){
             grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
             grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
             grid.cell(i, j)._nbSouth = &grid.cell(i, j - 1);
+
+            // Incrementing the quantity of FLUID cells
+            if (grid.cell(i, j)._cellType == FLUID)
+                grid.increment_fluid_cells();
         }
     }
     //neighbour edges
