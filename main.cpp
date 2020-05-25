@@ -8,6 +8,9 @@
 #include "boundary_val.hpp"
 #include "Timer.h"
 
+#define SCENARIO_NAME "karman_vortex_street"
+#define SCENARIO_DAT_FILE "../karman_vortex_street.dat"
+#define SCENARIO_PGM_FILE "../karman_vortex_street.pgm"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -78,14 +81,14 @@ int main(int argn, char** args) {
     int **cell_array = new int *;             /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
-    check_dir_exists("ws2_plane_shear");
+    check_dir_exists(SCENARIO_NAME);
 
 
     FILE *parameterFile;
     FILE *geometryFile;
 
-    const char *input_parameter_file_path = "../plane_shear.dat";
-    const char *input_geometry_file_path = "../plane_shear.pgm";
+    const char *input_parameter_file_path = SCENARIO_DAT_FILE;
+    const char *input_geometry_file_path = SCENARIO_PGM_FILE;
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
@@ -155,7 +158,7 @@ int main(int argn, char** args) {
     matrix<double> F, G, RS;
 
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
-    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
+    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid);
 
 
 
@@ -169,7 +172,7 @@ int main(int argn, char** args) {
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
         calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
-        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
+        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;
@@ -199,7 +202,7 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-            vtkOutput.printVTKFile(grid, *dx, *dy, "plane_shear", "ws2_plane_shear", timesteps_total);
+            vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -211,7 +214,7 @@ int main(int argn, char** args) {
 
 
     write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-    vtkOutput.printVTKFile(grid, *dx, *dy, "plane_shear", "ws2_plane_shear", timesteps_total);
+    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
     // Print out the total time required for the solution
