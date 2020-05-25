@@ -29,6 +29,7 @@
 
 void calculate_fg(
         double Re,
+        double beta,
         double GX,
         double GY,
         double alpha,

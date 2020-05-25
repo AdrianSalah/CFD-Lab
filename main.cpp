@@ -78,14 +78,14 @@ int main(int argn, char** args) {
     int **cell_array = new int *;             /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
-    check_dir_exists("output");
+    check_dir_exists("test_ws2");
 
 
     FILE *parameterFile;
     FILE *geometryFile;
 
     const char *input_parameter_file_path = "../cavity100.dat";
-    const char *input_geometry_file_path = "../geometry.pgm";
+    const char *input_geometry_file_path = "../flow_over_step.pgm";
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
@@ -168,7 +168,7 @@ int main(int argn, char** args) {
 
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
         calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
-        calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_fg(*Re,*beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, T);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
         //reset current number of iterations for SOR
@@ -195,11 +195,12 @@ int main(int argn, char** args) {
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
+
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-            vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
+            vtkOutput.printVTKFile(grid, *dx, *dy, "flow_over_step", "test_ws2", timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -211,7 +212,7 @@ int main(int argn, char** args) {
 
 
     //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-    vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
+    vtkOutput.printVTKFile(grid, *dx, *dy, "flow_over_step", "test_ws2", timesteps_total);
 
 
     // Print out the total time required for the solution

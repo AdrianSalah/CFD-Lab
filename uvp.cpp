@@ -60,9 +60,9 @@ void calculate_fg(
 
     // ------ Discretisation of differential operators of G ----- //
 
-    for (int i = 1; i < imax; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
+    for (int i = 1; i < imax-1; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
     {
-        for (int j = 1; j <= jmax; j++)
+        for (int j = 1; j < jmax-1; j++)
         {
             //second derivative with respect to x
             d2_u_dx2 = 1 / (dx * dx) * (u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]);
@@ -92,7 +92,7 @@ void calculate_fg(
             // To check whether GX should be divided by density
             F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
 
-            F.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GX;
+            //F.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GX;
         }
     }
 
@@ -106,9 +106,9 @@ void calculate_fg(
 
     // ------ Discretisation of differential operators of F ----- //
 
-    for (int i = 1; i <= imax; i++)
+    for (int i = 1; i < imax-1; i++)
     {
-        for (int j = 1; j < jmax; j++)
+        for (int j = 1; j < jmax-1; j++)
         {
             //second derivative of v with respect to x
             d2_v_dx2 = 1 / (dx * dx) * (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]);
@@ -138,7 +138,7 @@ void calculate_fg(
             // To check whether GY should be divided by density
             G.at(i).at(j) = v[i][j] + dt * (1 / Re * (d2_v_dx2 + d2_v_dy2) - d_uv_dx - d_v2_dy + GY);
 
-            G.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GY;
+            //G.at(i).at(j) -= beta * dt/2 * (T.at(i).at(j) + T.at(i).at(j)) * GY;
         }
     }
 }
