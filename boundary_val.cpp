@@ -17,17 +17,17 @@ void boundaryvalues(int imax,
                     double &heat_flux) {
     
     // VELOCITY - Declaration and Initialisation
-
     static matrix<double> u_velocity;
     static matrix<double> v_velocity;
 
     grid.velocity(u_velocity, velocity_type::U);
     grid.velocity(v_velocity, velocity_type::V);
-    
+
+    // PRESSURE - Declaration and Initialisation
     static matrix<double> pres;
     grid.pressure(pres);
 
-
+    // Temperature - Declaration and Initialisation
     static matrix<double> temp;
     grid.temperature(temp);
 
@@ -132,38 +132,43 @@ void boundaryvalues(int imax,
 
     // bottom and top
     for(int i = 0; i < imax; i++){
-        //noslip bottom
+        //noslip bottom: checked and added pres and temp [Adrian]
         if(grid.cell(i,0)._cellType == NOSLIP and grid.cell(i,0)._nbNorth->_cellType == FLUID) {
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
-
             G.at(i).at(0) = v_velocity.at(i).at(0);
+            pres.at(i).at(0) = pres.at(i).at(1);
+            temp.at(i).at(0) = temp.at(i).at(1);
+
         }
-        //noslip top
+        //noslip top: checked and added pres and temp [Adrian]
         if(grid.cell(i,jmax-1)._cellType == NOSLIP and grid.cell(i, jmax-1)._nbSouth->_cellType == FLUID) {
             u_velocity.at(i).at(jmax-1) = -u_velocity.at(i).at(jmax - 2);
             v_velocity.at(i).at(jmax-1) = 0;
-
             G.at(i).at(jmax-1) = v_velocity.at(i).at(jmax-1);
+            pres.at(i).at(jmax-1) = pres.at(i).at(jmax-2);
+            temp.at(i).at(jmax-1) = temp.at(i).at(jmax-2);
         }
     }
 
     // left and right
     for(int j = 0; j < jmax; jmax++){
-        //noslip left
+        //noslip left: checked and added pres and temp [Adrian]
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;
             v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
-
             F.at(0).at(j) = u_velocity.at(0).at(j);
+            pres.at(0).at(j) = pres.at(1).at(j);
+            temp.at(0).at(j) = temp.at(1).at(j);
         }
 
-        //noslip right
+        //noslip right: checked and added pres and temp [Adrian]
         if(grid.cell(imax-1,j)._cellType == NOSLIP and grid.cell(imax-1, j)._nbWest->_cellType == FLUID) {
             u_velocity.at(imax - 1).at(j) = 0;
             v_velocity.at(imax - 1).at(j) = -v_velocity.at(imax-2).at(j);
-
             F.at(imax-1).at(j) = u_velocity.at(imax-1).at(j);
+            pres.at(imax-1).at(j) = pres.at(imax-2).at(j);
+            temp.at(imax-1).at(j) = temp.at(imax-2).at(j);
         }
 
         //inflow left
@@ -182,7 +187,7 @@ void boundaryvalues(int imax,
 
         //outflow to right
         if(grid.cell(imax-1, j)._cellType == OUTFLOW and grid.cell(imax-1, j)._nbWest->_cellType == FLUID){
-            v_velocity.at(imax-2).at(j) = v_velocity.at(imax-1).at(j); //neumann BC also for v_velocity!
+            //v_velocity.at(imax-2).at(j) = v_velocity.at(imax-1).at(j); //neumann BC also for v_velocity!
             u_velocity.at(imax-2).at(j) = u_velocity.at(imax-1).at(j);
         }
     }
@@ -207,7 +212,7 @@ void boundaryvalues(int imax,
     }
      */
 
-    /* ---- Neumann Boundary ---- */
+    /* ---- Neumann BC Temperature ---- */
 
     // Natural Convection and Fluid Trap
     for(int i = 1; i < imax; i++){
@@ -234,7 +239,6 @@ void boundaryvalues(int imax,
     grid.set_velocity(v_velocity, velocity_type::V);
 
     grid.set_pressure(pres);
-
 
     grid.set_temperature(temp);
 }
