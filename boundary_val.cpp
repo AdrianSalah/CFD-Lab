@@ -17,6 +17,7 @@ void boundaryvalues(int imax,
                     double &heat_flux) {
     
     // VELOCITY - Declaration and Initialisation
+
     static matrix<double> u_velocity;
     static matrix<double> v_velocity;
 
@@ -136,6 +137,7 @@ void boundaryvalues(int imax,
         if(grid.cell(i,0)._cellType == NOSLIP and grid.cell(i,0)._nbNorth->_cellType == FLUID) {
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
+
             G.at(i).at(0) = v_velocity.at(i).at(0);
             pres.at(i).at(0) = pres.at(i).at(1);
             temp.at(i).at(0) = temp.at(i).at(1);
@@ -145,6 +147,7 @@ void boundaryvalues(int imax,
         if(grid.cell(i,jmax-1)._cellType == NOSLIP and grid.cell(i, jmax-1)._nbSouth->_cellType == FLUID) {
             u_velocity.at(i).at(jmax-1) = -u_velocity.at(i).at(jmax - 2);
             v_velocity.at(i).at(jmax-1) = 0;
+
             G.at(i).at(jmax-1) = v_velocity.at(i).at(jmax-1);
             pres.at(i).at(jmax-1) = pres.at(i).at(jmax-2);
             temp.at(i).at(jmax-1) = temp.at(i).at(jmax-2);
@@ -152,11 +155,12 @@ void boundaryvalues(int imax,
     }
 
     // left and right
-    for(int j = 0; j < jmax; jmax++){
+    for(int j = 0; j < jmax; j++){
         //noslip left: checked and added pres and temp [Adrian]
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;
             v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
+
             F.at(0).at(j) = u_velocity.at(0).at(j);
             pres.at(0).at(j) = pres.at(1).at(j);
             temp.at(0).at(j) = temp.at(1).at(j);
@@ -166,6 +170,7 @@ void boundaryvalues(int imax,
         if(grid.cell(imax-1,j)._cellType == NOSLIP and grid.cell(imax-1, j)._nbWest->_cellType == FLUID) {
             u_velocity.at(imax - 1).at(j) = 0;
             v_velocity.at(imax - 1).at(j) = -v_velocity.at(imax-2).at(j);
+
             F.at(imax-1).at(j) = u_velocity.at(imax-1).at(j);
             pres.at(imax-1).at(j) = pres.at(imax-2).at(j);
             temp.at(imax-1).at(j) = temp.at(imax-2).at(j);
@@ -187,7 +192,7 @@ void boundaryvalues(int imax,
 
         //outflow to right
         if(grid.cell(imax-1, j)._cellType == OUTFLOW and grid.cell(imax-1, j)._nbWest->_cellType == FLUID){
-            //v_velocity.at(imax-2).at(j) = v_velocity.at(imax-1).at(j); //neumann BC also for v_velocity!
+            v_velocity.at(imax-2).at(j) = v_velocity.at(imax-1).at(j); //neumann BC also for v_velocity!
             u_velocity.at(imax-2).at(j) = u_velocity.at(imax-1).at(j);
         }
     }
