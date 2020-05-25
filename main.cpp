@@ -101,7 +101,7 @@ int main(int argn, char** args) {
         std::string parameterFile{input_parameter_file_path}; //relative path to cavity100.dat file
         //ready parameters from cavity100.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
-                        tau, itermax, eps, dt_value, TI, T_h, T_c, PR, beta);
+                        tau, itermax, eps, dt_value, TI, T_h, T_c, PR, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
@@ -167,6 +167,7 @@ int main(int argn, char** args) {
         calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
 
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
+        calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 

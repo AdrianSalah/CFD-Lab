@@ -24,9 +24,6 @@ void boundaryvalues(int imax,
     grid.velocity(u_velocity, velocity_type::U);
     grid.velocity(v_velocity, velocity_type::V);
 
-    static matrix<double> p;
-    grid.pressure(p);
-
     /* ---- Beginning of noslip boundary value implementation [Adrian] */
 /*
     for(int i = 0; i < grid.imaxb(); i++){
@@ -204,7 +201,7 @@ void boundaryvalues(int imax,
     }
 
     // left and right
-    for(int j = 0; j < jmax; jmax++){
+    for(int j = 0; j < jmax; j++){
         //noslip left
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;

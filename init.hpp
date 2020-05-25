@@ -38,34 +38,36 @@
  * @param dt_value   time steps for output (after how many time steps one should
  *                   write into the output file)
  */
-int read_parameters( 
-  std::string szFileName,
-  double *Re,
-  double *UI,
-  double *VI,
-  double *PI,
-  double *GX,
-  double *GY,
-  double *t_end,
-  double *xlength,
-  double *ylength,
-  double *dt,
-  double *dx,
-  double *dy,
-  int  *imax,
-  int  *jmax,
-  double *alpha,
-  double *omg,
-  double *tau,
-  int  *itermax,
-  double *eps,
-  double *dt_value, 
-  double* TI,                   
-  double* T_h,               
-  double* T_c,          
-  double* PR,
-  double* beta
-);
+int read_parameters(std::string szFileName,       /* name of the file */
+    double* Re,                /* reynolds number   */
+    double* UI,                /* velocity x-direction */
+    double* VI,                /* velocity y-direction */
+    double* PI,                /* pressure */
+    double* GX,                /* gravitation x-direction */
+    double* GY,                /* gravitation y-direction */
+    double* t_end,             /* end time */
+    double* xlength,           /* length of the domain x-dir.*/
+    double* ylength,           /* length of the domain y-dir.*/
+    double* dt,                /* time step */
+    double* dx,                /* length of a cell x-dir. */
+    double* dy,                /* length of a cell y-dir. */
+    int* imax,                /* number of cells x-direction*/
+    int* jmax,                /* number of cells y-direction*/
+    double* alpha,             /* uppwind differencing factor*/
+    double* omg,               /* relaxation factor */
+    double* tau,               /* safety factor for time step*/
+    int* itermax,             /* max. number of iterations  */
+    double* eps,                 /* accuracy bound for pressure*/
+    double* dt_value,            /* time for output */
+    double* TI,                   /* Initial temperature */
+    double* T_h,                  /* hot wall temperature */
+    double* T_c,                  /* cold wall temperature */
+    double* PR,                      /*Prandlt Number*/
+    double* beta,
+    double* v_inflow,          /* inflow y velocity */
+    double* u_inflow,          /* inflow x velocity */
+    double* kappa,             /* thermal conductivity */
+    double* heat_flux);           /* heat flux */
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on
