@@ -78,19 +78,19 @@ int main(int argn, char** args) {
     int **cell_array = new int *;             /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
-    check_dir_exists("output");
+    check_dir_exists("ws2_plane_shear");
 
 
     FILE *parameterFile;
     FILE *geometryFile;
 
-    const char *input_parameter_file_path = "../cavity100.dat";
-    const char *input_geometry_file_path = "../geometry.pgm";
+    const char *input_parameter_file_path = "../plane_shear.dat";
+    const char *input_geometry_file_path = "../plane_shear.pgm";
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
 
-    //check whether cavity100.dat exists or not
+    //check whether plane_shear.dat exists or not
     if (parameterFile == NULL) {
         printf("Error opening parameter-file");
         exit(EXIT_FAILURE);
@@ -98,8 +98,8 @@ int main(int argn, char** args) {
         printf("Error opening geometry-file");
         exit(EXIT_FAILURE);
     } else {
-        std::string parameterFile{input_parameter_file_path}; //relative path to cavity100.dat file
-        //ready parameters from cavity100.dat file and assign values to initalized parameters
+        std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
+        //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
                         tau, itermax, eps, dt_value, TI, T_h, T_c, PR, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
@@ -199,7 +199,7 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-            vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
+            vtkOutput.printVTKFile(grid, *dx, *dy, "plane_shear", "ws2_plane_shear", timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -211,7 +211,7 @@ int main(int argn, char** args) {
 
 
     //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-    vtkOutput.printVTKFile(grid, *dx, *dy, "testcase", "output", timesteps_total);
+    vtkOutput.printVTKFile(grid, *dx, *dy, "plane_shear", "ws2_plane_shear", timesteps_total);
 
 
     // Print out the total time required for the solution
