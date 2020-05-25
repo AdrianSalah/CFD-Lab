@@ -168,7 +168,7 @@ int main(int argn, char** args) {
 
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
         calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
-        calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
         //reset current number of iterations for SOR
@@ -210,7 +210,7 @@ int main(int argn, char** args) {
     grid.pressure(P);
 
 
-    //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
     vtkOutput.printVTKFile(grid, *dx, *dy, "plane_shear", "ws2_plane_shear", timesteps_total);
 
 
