@@ -2,7 +2,9 @@
 
 
 **To run the code for different scenarios**
-*  main.cpp: line 11, 12, 13 specifiy scenario-name and path (name) of .dat and .pgm files 
+*  main.cpp: line 11, 12, 13 specifiy scenario-name and path (name) of .dat and .pgm files
+
+*issue with temperature visualization *
 
 
 This repository contains:
