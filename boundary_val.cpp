@@ -179,8 +179,8 @@ void boundaryvalues(int imax,
             u_velocity.at(grid.imaxb() - 2).at(j) = 0; // Fluid cell
             v_velocity.at(grid.imaxb() - 1).at(j) = -v_velocity.at(grid.imaxb() - 2).at(j);
 
-            F.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 1).at(j); // Solid cell
-            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j); // Fluid cell
+            F.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 1).at(j); // Solid cell (no need to calculate it)
+            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j); // Fluid cell (still no need to calculate it)
             pres.at(grid.imaxb() - 1).at(j) = pres.at(grid.imaxb() - 2).at(j);
             temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
         }
@@ -208,7 +208,6 @@ void boundaryvalues(int imax,
 
     /* ----  Dirichlet BC Temperature ---- */
     // Natural Convection and Fluid Trap
-
     for(int j = 1; j < grid.jmaxb() - 1; j++){ //check indexing!
         //T_h left wall
         temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
@@ -216,18 +215,7 @@ void boundaryvalues(int imax,
         temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
     }
 
-    // Rayleigh-Benard Convection
-    /*
-    for(int i = 1; i < imax; i++){
-        //T_h bottom wall
-        temp.at(i).at(0) = 2*T_h - temp.at(i).at(1);
-        //T_c top wall
-        temp.at(i).at(jmax-1) = 2*T_c - temp.at(i).at(jmax-2);
-    }
-     */
-
     /* ---- Neumann BC Temperature ---- */
-
     // Natural Convection and Fluid Trap
     for(int i = 1; i < grid.imaxb() - 1; i++){
         //bottom wall
@@ -239,13 +227,22 @@ void boundaryvalues(int imax,
 
     /*
     // Rayleigh-Benard Convection
-    for(int j = 1; j < jmax; j++){
+    for(int i = 1; i < grid.imaxb() - 1; i++){
+        //T_h bottom wall
+        temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
+        //T_c top wall
+        temp.at(i).at(grid.jmaxb() - 1) = 2 * T_c - temp.at(i).at(grid.jmaxb() - 2);
+    }
+    
+    
+    // Rayleigh-Benard Convection
+    for(int j = 1; j < grid.jmaxb() - 1; j++){
         //left wall
         temp.at(0).at(j) = temp.at(1).at(j) + dx * heat_flux / kappa;
         //right wall
-        temp.at(imax-1).at(j) = temp.at(imax-2).at(j) + dx * heat_flux /kappa;
+        temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j) + dx * heat_flux / kappa;
     }
-     */
+    */
 
 
     for(int i = 1; i < grid.imaxb()-1; i++ ){
@@ -277,8 +274,8 @@ void spec_boundary_val(double &u_inflow,
         double val_T_c,
         double val_T_h,
         double val_kappa,
-        double val_heat_flux) {
-
+        double val_heat_flux)
+{
     u_inflow = val_u_inflow;
     v_inflow = val_v_inflow;
 
@@ -286,7 +283,6 @@ void spec_boundary_val(double &u_inflow,
     T_h = val_T_h;
     kappa = val_kappa;
     heat_flux = val_heat_flux;
-
 }
 
 void assign_ptr_nbcells(Grid &grid){

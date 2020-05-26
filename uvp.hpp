@@ -45,7 +45,8 @@ void calculate_fg(
 );
 
 void calculate_temp(
-    double PR,
+    double Re,
+    double Pr,
     double alpha,
     double dt,
     double dx,
@@ -148,10 +149,10 @@ void init_fgrs(
 void init_uvpt(
     int imax,
     int jmax,
-    matrix<double>U,
-    matrix<double>V,
-    matrix<double>P,
-    matrix<double>T,
+    matrix<double> U,
+    matrix<double> V,
+    matrix<double> P,
+    matrix<double> T,
     double UI,
     double VI,
     double PI,

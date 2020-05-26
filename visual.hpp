@@ -24,18 +24,19 @@
  * 
  * @author Tobias Neckel
  */
-void write_vtkFile(const char *szProblem,
-		  int    timeStepNumber,
-		  double xlength,
-                  double ylength,
-                  int    imax,
-                  int    jmax,
-		  double dx,
-		  double dy,
-                  matrix<double> &U,
-                  matrix<double> &V,
-                  matrix<double> &P,
-                   matrix<double> &T);
+void write_vtkFile(
+    const char *szProblem,
+	int    timeStepNumber,
+	double xlength,
+    double ylength,
+    int    imax,
+    int    jmax,
+	double dx,
+	double dy,
+    matrix<double> &U,
+    matrix<double> &V,
+    matrix<double> &P,
+    matrix<double> &T);
 
 /**
  * Method for writing header information in vtk format. 
@@ -48,8 +49,12 @@ void write_vtkFile(const char *szProblem,
  * 
  * @author Tobias Neckel
  */
-void write_vtkHeader( FILE *fp, int imax, int jmax, 
-                      double dx, double dy);
+void write_vtkHeader(
+    FILE *fp,
+    int     imax,
+    int     jmax, 
+    double  dx,
+    double  dy);
 
 /**
  * Method for writing grid coordinate information in vtk format. 
@@ -62,14 +67,23 @@ void write_vtkHeader( FILE *fp, int imax, int jmax,
  * 
  * @author Tobias Neckel
  */
-void write_vtkPointCoordinates( FILE *fp, int imax, int jmax, 
-                                double dx, double dy);
+void write_vtkPointCoordinates(
+    FILE *fp,
+    int     imax,
+    int     jmax, 
+    double  dx,
+    double  dy);
 
 
 class VTKHelper {
     public:
-    static void printVTKFile(Grid grid, double dx, double dy,
-                                 std::string casename, std::string outputdir, int timestep);
+    static void printVTKFile(
+        Grid& grid,
+        double dx,
+        double dy,
+        std::string casename,
+        std::string outputdir,
+        int timestep);
 };
 
 

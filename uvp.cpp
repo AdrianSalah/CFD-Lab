@@ -40,6 +40,7 @@ void calculate_fg(
     // G[i, 0] = v[i, 0]        i = 1...imax    BOTTOM
     // G[i, jmax] = v[i, jmax]  i = 1...imax    TOP
 
+
     for (int j = 1; j < grid.jmaxb() - 1; j++) {
         F.at(0).at(j) = u.at(0).at(j);
         F.at(grid.imaxb() - 2).at(j) = u.at(grid.imaxb() - 2).at(j);
@@ -60,38 +61,38 @@ void calculate_fg(
     // ------ Discretisation of differential operators of F ----- //
     for (int i = 1; i < grid.imaxb() - 2; i++) {
         for (int j = 1; j < grid.jmaxb() - 1; j++)
-        {
-            //second derivative with respect to x
-            d2_u_dx2 = 1 / (dx * dx) * (u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]);
-            //second derivative with respect to y
-            d2_u_dy2 = 1 / (dy * dy) * (u[i][j + 1] - 2 * u[i][j] + u[i][j - 1]);
-            //first derivative of (u*u) with respect to x
-            d_u2_dx = 1 / (4 * dx) * (
-                    (u[i][j] + u[i + 1][j]) * (u[i][j] + u[i + 1][j]) -
-                    (u[i - 1][j] + u[i][j]) * (u[i - 1][j] + u[i][j])
-            ) +
+            if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
+            {
+                //second derivative with respect to x
+                d2_u_dx2 = 1 / (dx * dx) * (u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]);
+                //second derivative with respect to y
+                d2_u_dy2 = 1 / (dy * dy) * (u[i][j + 1] - 2 * u[i][j] + u[i][j - 1]);
+                //first derivative of (u*u) with respect to x
+                d_u2_dx = 1 / (4 * dx) * (
+                        (u[i][j] + u[i + 1][j]) * (u[i][j] + u[i + 1][j]) -
+                        (u[i - 1][j] + u[i][j]) * (u[i - 1][j] + u[i][j])
+                ) +
 
-                      alpha / (4 * dx) * (
-                              abs(u[i][j] + u[i + 1][j]) * (u[i][j] - u[i + 1][j]) -
-                              abs(u[i - 1][j] + u[i][j]) * (u[i - 1][j] - u[i][j])
-                      );
-            //first derivative of (u*v) with respect to y
-            d_uv_dy = 1 / (4 * dy) * (
-                    (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
-                    (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
-            ) +
+                          alpha / (4 * dx) * (
+                                  abs(u[i][j] + u[i + 1][j]) * (u[i][j] - u[i + 1][j]) -
+                                  abs(u[i - 1][j] + u[i][j]) * (u[i - 1][j] - u[i][j])
+                          );
+                //first derivative of (u*v) with respect to y
+                d_uv_dy = 1 / (4 * dy) * (
+                        (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
+                        (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
+                ) +
 
-                      alpha / (4 * dy) * (
-                              abs(v[i][j] + v[i + 1][j]) * (u[i][j] - u[i][j + 1]) -
-                              abs(v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] - u[i][j])
-                      );
+                          alpha / (4 * dy) * (
+                                  abs(v[i][j] + v[i + 1][j]) * (u[i][j] - u[i][j + 1]) -
+                                  abs(v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] - u[i][j])
+                          );
 
-            // To check whether GX should be divided by density
-            F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
+                // To check whether GX should be divided by density
+                F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
 
-            F.at(i).at(j) -= 0.5* beta * dt * (T.at(i).at(j) + T.at(i+1).at(j)) * GX;
-
-        }
+                F.at(i).at(j) -= 0.5* beta * dt * (T.at(i).at(j) + T.at(i+1).at(j)) * GX;
+            }
     }
 
     // ----- G function initialisation ----- //
@@ -106,7 +107,8 @@ void calculate_fg(
     for (int i = 1; i < grid.imaxb() - 1; i++)
     {
         for (int j = 1; j < grid.jmaxb() - 2; j++)
-        {
+            if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
+            {
             //second derivative of v with respect to x
             d2_v_dx2 = 1 / (dx * dx) * (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]);
             //second derivative of v with respect to y
@@ -137,14 +139,15 @@ void calculate_fg(
 
             G.at(i).at(j) -= 0.5 * beta * dt  * (T.at(i).at(j) + T.at(i).at(j+1)) * GY;
 
-        }
+            }
     }
 }
 
 
 // Calculates temperature
 void calculate_temp(
-    double PR,
+    double Re,
+    double Pr,
     double alpha,
     double dt,
     double dx,
@@ -155,39 +158,41 @@ void calculate_temp(
 {
     static matrix<double> u;
     static matrix<double> v;
-    static matrix<double> T;
+    static matrix<double> T_old;
+    static matrix<double> T_new;
 
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
-    grid.temperature(T);
+    grid.temperature(T_old);
+    grid.temperature(T_new);
 
     static double duT_dx;
     static double dvT_dy;
     static double d2_T_dx2;
     static double d2_T_dy2;
 
-    for (int i = 2; i < grid.imaxb() - 2; i++)
+    for (int i = 1; i < grid.imaxb() - 1; i++)
     {
-        for (int j = 2; j < grid.jmaxb() - 2; j++)
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
         {
-            duT_dx = (u[i][j] * (T[i][j] + T[i + 1][j]) - u[i - 1][j] * (T[i - 1][j] + T[i][j]))
-                + (alpha * std::abs(u[i][j]) * (T[i][j] - T[i + 1][j])) - (alpha * std::abs(u[i - 1][j]) * (T[i - 1][j] - T[i][j]));
+            duT_dx = (u[i][j] * (T_old[i][j] + T_old[i + 1][j]) - u[i - 1][j] * (T_old[i - 1][j] + T_old[i][j]))
+                + (alpha * std::abs(u[i][j]) * (T_old[i][j] - T_old[i + 1][j])) - (alpha * std::abs(u[i - 1][j]) * (T_old[i - 1][j] - T_old[i][j]));
             duT_dx *= 0.5 / dx;
 
-            dvT_dy = (v[i][j] * (T[i][j] + T[i][j + 1]) - v[i][j - 1] * (T[i][j - 1] + T[i][j]))
-                + (alpha * std::abs(v[i][j]) * (T[i][j] - T[i][j + 1])) - (alpha * std::abs(v[i][j - 1]) * (T[i][j - 1] - T[i][j]));
+            dvT_dy = (v[i][j] * (T_old[i][j] + T_old[i][j + 1]) - v[i][j - 1] * (T_old[i][j - 1] + T_old[i][j]))
+                + (alpha * std::abs(v[i][j]) * (T_old[i][j] - T_old[i][j + 1])) - (alpha * std::abs(v[i][j - 1]) * (T_old[i][j - 1] - T_old[i][j]));
             dvT_dy *= 0.5 / dy;
 
-            d2_T_dx2 = (T[i + 1][j] - 2 * T[i][j] + T[i - 1][j]) / (dx * dx);
+            d2_T_dx2 = (T_old[i + 1][j] - 2 * T_old[i][j] + T_old[i - 1][j]) / (dx * dx);
 
-            d2_T_dy2 = (T[i][j + 1] - 2 * T[i][j] + T[i][j - 1]) / (dy * dy);
+            d2_T_dy2 = (T_old[i][j + 1] - 2 * T_old[i][j] + T_old[i][j - 1]) / (dy * dy);
 
             // Explicit euler to solve the temperature equation
 
-            T[i][j] = T[i][j] + dt * ((1 / PR) * (d2_T_dx2 - d2_T_dy2) - duT_dx - dvT_dy);
+            T_new[i][j] = T_old[i][j] + dt * ((1 / (Pr * Re)) * (d2_T_dx2 + d2_T_dy2) - duT_dx - dvT_dy);
         }
     }
-    grid.set_temperature(T);
+    grid.set_temperature(T_new);
 }
 
 
@@ -252,7 +257,7 @@ double max_abs_velocity(
 // Calculates the value of timestep dt, considering stability conditions
 void calculate_dt(
     double Re,
-    double PR,
+    double Pr,
     double tau,
     double* dt,
     double dx,
@@ -268,10 +273,10 @@ void calculate_dt(
     static double max_abs_V;
     max_abs_V = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V);
 
-    // Explicit time-steooing stability condition
+    // Explicit time-stepping stability condition
     static double condition12;
-    // PR=nu/alpha so Re*PR= alpha
-    condition12 = 0.5 * std::min(PR, 1.0) * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+    // Pr=nu/alpha so Re*Pr= 1/alpha
+    condition12 = 0.5 * std::min(Pr, 1.0) * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
 
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06) // error tolerance used 1e-06
@@ -302,16 +307,21 @@ void calculate_uv(
     grid.pressure(pressure);
 
 
-    for(int i = 1; i < grid.imaxb() - 1; i++){
-        for(int j = 1; j < grid.jmaxb() - 1; j++){
-            u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
-        }
+    for(int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        for(int j = 1; j < grid.jmaxb() - 1; j++)
+            if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
+            {
+                u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
+            }
     }
 
     for (int i = 1; i < grid.imaxb() - 1; i++){
-        for(int j = 1; j < grid.jmaxb() - 1; j++){
-            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
-        }
+        for(int j = 1; j < grid.jmaxb() - 1; j++)
+            if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID) 
+            {
+                v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
+            }
     }
 
     grid.set_velocity(u_velocity, velocity_type::U);
@@ -348,10 +358,10 @@ void init_fgrs(int imax,
 void init_uvpt(
     int imax,
     int jmax,
-    matrix<double>U,
-    matrix<double>V,
-    matrix<double>P,
-    matrix<double>T,
+    matrix<double> U,
+    matrix<double> V,
+    matrix<double> P,
+    matrix<double> T,
     double UI,
     double VI,
     double PI,
@@ -375,7 +385,7 @@ void init_uvpt(
                 U.at(i).at(j) = 0;
                 V.at(i).at(j) = 0;
                 P.at(i).at(j) = 0;
-                T.at(i).at(j) = 0;
+                // T.at(i).at(j) = 0;
             }
         }
     }

@@ -8,9 +8,10 @@
 #include "boundary_val.hpp"
 #include "Timer.h"
 
-#define SCENARIO_NAME "natural_convection"
-#define SCENARIO_DAT_FILE "../natural_convection1.dat"
-#define SCENARIO_PGM_FILE "../natural_convection.pgm"
+#define BOUNDARY_SIZE 1
+#define SCENARIO_NAME "karman_vortex_street"
+#define SCENARIO_DAT_FILE "../karman_vortex_street.dat"
+#define SCENARIO_PGM_FILE "../karman_vortex_street.pgm"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -71,14 +72,14 @@ int main(int argn, char** args) {
     double* TI = new double;                /* Initial Temperature*/
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
-    double* PR = new double;                      /* Prandlt Number*/
+    double* Pr = new double;                /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
     double* v_inflow = new double;          /* boundary value for inflow BC */
     double* u_inflow = new double;          /* boundary value for inflow BC */
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
-    int **cell_array = new int *;             /* array of geometry */
+    int **cell_array = new int *;           /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -104,13 +105,13 @@ int main(int argn, char** args) {
         std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
-                        tau, itermax, eps, dt_value, TI, T_h, T_c, PR, beta, v_inflow, u_inflow, kappa, heat_flux);
+                        tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
-    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
+    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
 
     /*
     if (!assert_problem_solvability(cell_array, grid.imaxb(), grid.jmaxb())) {
@@ -162,19 +163,17 @@ int main(int argn, char** args) {
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid);
 
-
-
     // Initialize timer to measure performance
     Timer runtime;
 
     while (time < *t_end) {
         //here we set time steps manually
-        calculate_dt(*Re, *PR, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-
+        calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
-        calculate_temp(*PR, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+        calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
+        
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;
@@ -205,8 +204,8 @@ int main(int argn, char** args) {
             grid.pressure(P);
             grid.temperature(T);
 
-            write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-            //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+            //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+            vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -215,24 +214,48 @@ int main(int argn, char** args) {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
+    grid.temperature(T);
+
+    //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
-    write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
+    std::cout << "T temperature" << std::endl;
+    for (int i = 0; i < grid.imaxb() / 2; ++i) {
+        for (int j = 0; j < grid.jmaxb() / 2; ++j)
+            std::cout << T[i][j] << " ";
+        std::cout << std::endl;
+    }
 
+    /*
+    std::cout << "U velocity " << std::endl;
+    for (int i = 0; i < grid.imaxb() / 2; ++i) {
+        for (int j = 0; j < grid.jmaxb() / 2; ++j)
+            std::cout << U[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+    
+    std::cout << "V velocity " <<std::endl;
+    for (int i = 0; i < grid.imaxb() / 2; ++i) {
+        for (int j = 0; j < grid.jmaxb() / 2; ++j)
+            std::cout << V[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+    */
+          
     // Print out the total time required for the solution
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
 
-
     //close input file
     fclose(parameterFile);
     fclose(geometryFile);
-
-    
+   
     // Free dynamically allocated memory
     delete Re;
     delete UI;
@@ -257,7 +280,7 @@ int main(int argn, char** args) {
     delete TI;
     delete T_h;
     delete T_c;
-    delete PR;
+    delete Pr;
     delete res;
     delete beta;
     delete cell_array; //2D array! -> modify delete!

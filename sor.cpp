@@ -25,6 +25,32 @@ void sor(
     grid.pressure(P);
 
 
+    // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
+    grid.set_pressure_for_internal_boundaries();
+
+
+    // Set boundary values for the outmost cells of the domain
+    for (i = 1; i < grid.imaxb() - 1; i++) {
+        // BOTTOM
+        if (grid.cell(i, 0)._cellType == NOSLIP)
+            P.at(i).at(0) = P.at(i).at(1);
+
+        // TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP)
+            P.at(i).at(grid.jmaxb() - 1) = P.at(i).at(grid.jmaxb() - 2);
+    }
+
+    for (j = 1; j < grid.jmaxb() - 1; j++) {
+        // LEFT
+        if (grid.cell(0, j)._cellType == NOSLIP)
+            P.at(0).at(j) = P.at(1).at(j);
+
+        // RIGHT
+        if (grid.cell(grid.imaxb() - 1, j)._cellType == NOSLIP)
+            P.at(grid.imaxb() - 1).at(j) = P.at(grid.imaxb() - 2).at(j);
+    }
+    
+    
     /* SOR iteration for FLUID-cells only*/
     for(i = 1; i < grid.imaxb() - 1; i++) {
         for(j = 1; j < grid.jmaxb() - 1; j++) {
@@ -61,32 +87,6 @@ void sor(
     /* set residual */
     *res = rloc;
 
-    /*
-    // Set boundary values for the outmost cells of the domain
-    for (i = 1; i < grid.imaxb() - 1; i++) {
-        // BOTTOM
-        if (grid.cell(i, 0)._cellType == NOSLIP)
-            P.at(i).at(0) = P.at(i).at(1);
-
-        // TOP
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP)
-            P.at(i).at(grid.jmaxb() - 1) = P.at(i).at(grid.jmaxb() - 2);
-    }
-
-    for (j = 1; j < grid.jmaxb() - 1; j++) {
-        // LEFT
-        if (grid.cell(0, j)._cellType == NOSLIP)
-            P.at(0).at(j) = P.at(1).at(j);
-
-        // RIGHT
-        if (grid.cell(grid.imaxb() - 2, j)._cellType == NOSLIP)
-            P.at(grid.imaxb() - 1).at(j) = P.at(grid.imaxb() - 2).at(j);
-    }
-    */
-
-
-    // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
-    grid.set_pressure_for_internal_boundaries();
 
     // Setting pressure for the entire domain after the SOR algorithm
     grid.set_pressure(P);
