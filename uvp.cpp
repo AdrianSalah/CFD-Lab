@@ -254,10 +254,10 @@ void calculate_dt(
 {
     // Maximum absolute values for U, V on grid for current time step
     static double max_abs_U;
-    max_abs_U = max_abs_velocity(imax, jmax, grid, velocity_type::U);
+    max_abs_U = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::U);
 
     static double max_abs_V;
-    max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
+    max_abs_V = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V);
 
     // Explicit time-steooing stability condition
     static double condition12;
@@ -293,14 +293,14 @@ void calculate_uv(
     grid.pressure(pressure);
 
 
-    for(int i = 1; i < grid.imaxb() - 2; i++){
+    for(int i = 1; i < grid.imaxb() - 1; i++){
         for(int j = 1; j < grid.jmaxb() - 1; j++){
             u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
         }
     }
 
     for (int i = 1; i < grid.imaxb() - 1; i++){
-        for(int j = 1; j < grid.jmaxb() - 2; j++){
+        for(int j = 1; j < grid.jmaxb() - 1; j++){
             v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
         }
     }

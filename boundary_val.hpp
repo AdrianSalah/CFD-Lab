@@ -43,6 +43,6 @@ void spec_boundary_val(double &u_inflow,
  * Store pointers to neighbour cells for grid
  */
 
-void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid);
+void assign_ptr_nbcells(Grid &grid);
 
 #endif

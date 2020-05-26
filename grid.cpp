@@ -178,6 +178,7 @@ void Grid::set_pressure_for_internal_boundaries() {
                     Grid::cell(i, j).set_pressure(pressure);
                 }
 
+                
                 // NORTHERN-cell
                 else if ((Grid::cell(i, j)._nbNorth)->_cellType == FLUID)
                     Grid::cell(i, j).set_pressure((Grid::cell(i, j)._nbNorth)->pressure());
@@ -193,6 +194,25 @@ void Grid::set_pressure_for_internal_boundaries() {
                 // WESTERN-cell (cowboy)
                 else if ((Grid::cell(i, j)._nbWest)->_cellType == FLUID)
                     Grid::cell(i, j).set_pressure((Grid::cell(i, j)._nbWest)->pressure());
+                
+
+                /*
+                // NORTHERN-cell
+                else if ((Grid::cell(i, j)._nbNorth)->_cellType == FLUID)
+                    Grid::cell(i, j).set_pressure(pressure);
+
+                // EASTERN-cell
+                else if ((Grid::cell(i, j)._nbEast)->_cellType == FLUID)
+                    Grid::cell(i, j).set_pressure(pressure);
+
+                // SOUTHERN-cell
+                else if ((Grid::cell(i, j)._nbSouth)->_cellType == FLUID)
+                    Grid::cell(i, j).set_pressure(pressure);
+
+                // WESTERN-cell (cowboy)
+                else if ((Grid::cell(i, j)._nbWest)->_cellType == FLUID)
+                    Grid::cell(i, j).set_pressure(pressure);
+                */
 
                 // If there are no neighbor FLUID-cells, when taking the average pressure of four surrounding BOUNDARY cells
                 else

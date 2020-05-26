@@ -26,8 +26,8 @@ void sor(
 
 
     /* SOR iteration for FLUID-cells only*/
-    for(i = 1; i < imax - 1; i++) {
-        for(j = 1; j < jmax - 1; j++) {
+    for(i = 1; i < grid.imaxb() - 1; i++) {
+        for(j = 1; j < grid.jmaxb() - 1; j++) {
             if (grid.cell(i, j)._cellType == FLUID)
             {
                 P.at(i).at(j) = (1.0 - omg) * P.at(i).at(j)
@@ -42,8 +42,8 @@ void sor(
 
     /* compute the residual for FLUID-cells only*/
     rloc = 0;
-    for(i = 1; i < imax - 1; i++) {
-        for(j = 1; j < jmax - 1; j++) {
+    for(i = 1; i < grid.imaxb() - 1; i++) {
+        for(j = 1; j < grid.jmaxb() - 1; j++) {
             if (grid.cell(i, j)._cellType == FLUID)
             {
                 rloc += ((P.at(i + 1).at(j) - 2.0 * P.at(i).at(j) + P.at(i - 1).at(j)) / (dx * dx)
@@ -61,27 +61,29 @@ void sor(
     /* set residual */
     *res = rloc;
 
-
-    /* Set boundary values for the outmost cells of the domain */
-    for (i = 1; i < imax - 1; i++) {
+    /*
+    // Set boundary values for the outmost cells of the domain
+    for (i = 1; i < grid.imaxb() - 1; i++) {
         // BOTTOM
         if (grid.cell(i, 0)._cellType == NOSLIP)
             P.at(i).at(0) = P.at(i).at(1);
 
         // TOP
-        if (grid.cell(i, jmax - 1)._cellType == NOSLIP)
-            P.at(i).at(jmax - 1) = P.at(i).at(jmax - 2);
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP)
+            P.at(i).at(grid.jmaxb() - 1) = P.at(i).at(grid.jmaxb() - 2);
     }
 
-    for (j = 1; j < jmax - 1; j++) {
+    for (j = 1; j < grid.jmaxb() - 1; j++) {
         // LEFT
         if (grid.cell(0, j)._cellType == NOSLIP)
             P.at(0).at(j) = P.at(1).at(j);
 
         // RIGHT
-        if (grid.cell(imax - 1, j)._cellType == NOSLIP)
-            P.at(imax - 1).at(j) = P.at(imax - 2).at(j);
+        if (grid.cell(grid.imaxb() - 2, j)._cellType == NOSLIP)
+            P.at(grid.imaxb() - 1).at(j) = P.at(grid.imaxb() - 2).at(j);
     }
+    */
+
 
     // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
     grid.set_pressure_for_internal_boundaries();

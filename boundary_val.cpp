@@ -162,7 +162,7 @@ void boundaryvalues(int imax,
     }
 
     // left and right
-    for(int j = 0; j < grid.jmaxb() - 1; j++){
+    for(int j = 0; j < grid.jmaxb(); j++){
         //noslip left: checked and added pres and temp [Adrian]
         if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID) {
             u_velocity.at(0).at(j) = 0;
@@ -281,11 +281,11 @@ void spec_boundary_val(double &u_inflow,
 
 }
 
-void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid){
+void assign_ptr_nbcells(Grid &grid){
 
     //store pointers to neighbours for inner cells
-    for (int i = 1; i < grid.imaxb() - 2; i++) {
-        for(int j = 1; j < grid.jmaxb() - 2; j++) {
+    for (int i = 1; i < grid.imaxb() - 1; i++) {
+        for(int j = 1; j < grid.jmaxb() - 1; j++) {
             grid.cell(i, j)._nbNorth = &grid.cell(i, j + 1);
             grid.cell(i, j)._nbEast = &grid.cell(i + 1, j);
             grid.cell(i, j)._nbWest = &grid.cell(i - 1, j);
@@ -310,7 +310,7 @@ void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid){
     grid.cell(grid.imaxb() - 1, 0)._nbNorth = &grid.cell(grid.imaxb() - 1, 1);
     grid.cell(grid.imaxb() - 1, 0)._nbWest = &grid.cell(grid.imaxb() - 2, 0);
 
-    for(int i = 1; i < grid.imaxb() - 2; i++){
+    for(int i = 1; i < grid.imaxb() - 1; i++){
         //bottom
         grid.cell(i, 0)._nbNorth = &grid.cell(i, 1);
         grid.cell(i, 0)._nbEast = &grid.cell(i + 1, 0);
@@ -320,7 +320,7 @@ void assign_ptr_nbcells(int *imax, int *jmax, Grid &grid){
         grid.cell(i, grid.jmaxb() - 1)._nbEast = &grid.cell(i + 1, grid.jmaxb() - 1);
         grid.cell(i, grid.jmaxb() - 1)._nbWest = &grid.cell(i - 1, grid.jmaxb() - 1);
     }
-    for(int j = 1; j <  grid.jmaxb() - 2; j++){
+    for(int j = 1; j <  grid.jmaxb() - 1; j++){
         //left
         grid.cell(0, j)._nbNorth = &grid.cell(0, j + 1);
         grid.cell(0, j)._nbSouth = &grid.cell(0, j - 1);

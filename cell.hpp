@@ -4,7 +4,7 @@
 #include "enums.hpp"
 
 enum CellType{
-    NOSLIP = 0, FLUID = 4, INFLOW = 2, OUTFLOW = 3, FREESLIP = 1 
+    NOSLIP = 0, FLUID = 4, INFLOW = 3, OUTFLOW = 2, FREESLIP = 1 
 };
 
 class Cell {

@@ -8,9 +8,9 @@
 #include "boundary_val.hpp"
 #include "Timer.h"
 
-#define SCENARIO_NAME "karman_vortex_street"
-#define SCENARIO_DAT_FILE "../karman_vortex_street.dat"
-#define SCENARIO_PGM_FILE "../karman_vortex_street.pgm"
+#define SCENARIO_NAME "flow_over_step"
+#define SCENARIO_DAT_FILE "../flow_over_step.dat"
+#define SCENARIO_PGM_FILE "../flow_over_step.pgm"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -109,20 +109,22 @@ int main(int argn, char** args) {
 
     cell_array = read_pgm(input_geometry_file_path);
 
-    if (!assert_problem_solvability(cell_array, *imax, *jmax)) {
+    // Set up grid
+    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
+
+    /*
+    if (!assert_problem_solvability(cell_array, grid.imaxb(), grid.jmaxb())) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
+    */
 
     //for output to vtk-file
     VTKHelper vtkOutput;
     
-    // Set up grid
-    Grid grid(*imax, *jmax, 1, *PI, *UI, *VI, *TI);
-
     //TO DO: check wheather imax and jmax same as grid size in geometry file
-    for (int j = *jmax-1; j >= 0; j--){
-        for (int i = 0; i < *imax; i++){
+    for (int j = grid.jmaxb() - 1; j >= 0; j--){
+        for (int i = 0; i < grid.imaxb(); i++){
             //assign cell type
             if (cell_array[i][j] == 0){grid.cell(i,j)._cellType = NOSLIP;}
             else if(cell_array[i][j] == 4){grid.cell(i,j)._cellType = FLUID;}
@@ -140,7 +142,7 @@ int main(int argn, char** args) {
         std::cout << std::endl;
     }
 
-    assign_ptr_nbcells(imax, jmax, grid);
+    assign_ptr_nbcells(grid);
 
 
     // Initializing variables
