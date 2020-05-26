@@ -8,9 +8,9 @@
 #include "boundary_val.hpp"
 #include "Timer.h"
 
-#define SCENARIO_NAME "flow_over_step"
-#define SCENARIO_DAT_FILE "../flow_over_step.dat"
-#define SCENARIO_PGM_FILE "../flow_over_step.pgm"
+#define SCENARIO_NAME "natural_convection"
+#define SCENARIO_DAT_FILE "../natural_convection1.dat"
+#define SCENARIO_PGM_FILE "../natural_convection.pgm"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -152,7 +152,7 @@ int main(int argn, char** args) {
     double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
 
-    //initialize matrices U, V, P
+    //initialize matrices U, V, P, T
     matrix<double> U, V, P, T;
     init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid);
 
@@ -203,8 +203,10 @@ int main(int argn, char** args) {
             grid.velocity(U, velocity_type::U);
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
-            //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-            vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+            grid.temperature(T);
+
+            write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+            //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -215,8 +217,8 @@ int main(int argn, char** args) {
     grid.pressure(P);
 
 
-    write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
-    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+    write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
     // Print out the total time required for the solution

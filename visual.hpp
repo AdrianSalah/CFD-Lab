@@ -34,7 +34,8 @@ void write_vtkFile(const char *szProblem,
 		  double dy,
                   matrix<double> &U,
                   matrix<double> &V,
-                  matrix<double> &P);
+                  matrix<double> &P,
+                   matrix<double> &T);
 
 /**
  * Method for writing header information in vtk format. 

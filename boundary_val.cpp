@@ -248,6 +248,14 @@ void boundaryvalues(int imax,
      */
 
 
+    for(int i = 1; i < grid.imaxb()-1; i++ ){
+        if(grid.cell(i,grid.jmaxb()-1)._cellType == FREESLIP) {
+            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
+            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb()-2);
+        }
+
+    }
+
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);

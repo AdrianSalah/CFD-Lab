@@ -26,9 +26,12 @@ void calculate_fg(
 {
     static matrix<double> u;
     static matrix<double> v;
+    static matrix<double> T;
+
 
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
+    grid.temperature(T);
 
     // ----- Boundary values for F and G ----- //
     // F[0, j] = u[0, j]        j = 1...jmax    LEFT
@@ -85,6 +88,9 @@ void calculate_fg(
 
             // To check whether GX should be divided by density
             F.at(i).at(j) = u[i][j] + dt * (1 / Re * (d2_u_dx2 + d2_u_dy2) - d_u2_dx - d_uv_dy + GX);
+
+            F.at(i).at(j) -= 0.5* beta * dt * (T.at(i).at(j) + T.at(i+1).at(j)) * GX;
+
         }
     }
 
@@ -128,6 +134,9 @@ void calculate_fg(
 
             // To check whether GY should be divided by density
             G.at(i).at(j) = v[i][j] + dt * (1 / Re * (d2_v_dx2 + d2_v_dy2) - d_uv_dx - d_v2_dy + GY);
+
+            G.at(i).at(j) -= 0.5 * beta * dt  * (T.at(i).at(j) + T.at(i).at(j+1)) * GY;
+
         }
     }
 }
@@ -157,9 +166,9 @@ void calculate_temp(
     static double d2_T_dx2;
     static double d2_T_dy2;
 
-    for (int i = 1; i < grid.imaxb() - 1; i++)
+    for (int i = 2; i < grid.imaxb() - 2; i++)
     {
-        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        for (int j = 2; j < grid.jmaxb() - 2; j++)
         {
             duT_dx = (u[i][j] * (T[i][j] + T[i + 1][j]) - u[i - 1][j] * (T[i - 1][j] + T[i][j]))
                 + (alpha * std::abs(u[i][j]) * (T[i][j] - T[i + 1][j])) - (alpha * std::abs(u[i - 1][j]) * (T[i - 1][j] - T[i][j]));
