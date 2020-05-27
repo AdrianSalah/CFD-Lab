@@ -14,7 +14,11 @@ void boundaryvalues(int imax,
                     double& dx,
                     double& dy,
                     double &kappa,
-                    double &heat_flux) {
+                    double &heat_flux,
+                    double &beta,
+                    double &delta_t,
+                    double &GX,
+                    double &GY) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -46,8 +50,10 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1); // Was commented by Issa, but is actually reasonable
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i + 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i + 1).at(j)) / 2;
-                    F[i][j] = u_velocity.at(i).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    //F[i][j] = u_velocity.at(i).at(j);
+                    //G[i][j] = v_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
+                    G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
                 //B_NW
                 else if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
@@ -57,8 +63,8 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i - 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i - 1).at(j)) / 2;
-                    F[i][j] = u_velocity.at(i).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
+                    G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
                 //B_SW
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
@@ -68,8 +74,8 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i - 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i - 1).at(j)) / 2;
-                    F[i][j] = u_velocity.at(i).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
+                    G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_SE
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
@@ -79,8 +85,8 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i + 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i + 1).at(j)) / 2;
-                    F[i][j] = u_velocity.at(i).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
+                    G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_N
                 else if (grid.cell(i, j)._nbNorth->_cellType > 1 ) {
@@ -89,7 +95,7 @@ void boundaryvalues(int imax,
                     u_velocity.at(i).at(j) = - u_velocity.at(i).at(j + 1);
                     pres.at(i).at(j) = pres.at(i).at(j + 1);
                     temp.at(i).at(j) = temp.at(i).at(j + 1);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
                 //B_E
                 else if (grid.cell(i, j)._nbEast->_cellType > 1) {
@@ -98,7 +104,7 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1); // Was commented by Issa, but is actually reasonable
                     pres.at(i).at(j) = pres.at(i + 1).at(j);
                     temp.at(i).at(j) = temp.at(i + 1).at(j);
-                    F[i][j] = u_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
                 }
                 //B_S
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
@@ -107,7 +113,7 @@ void boundaryvalues(int imax,
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1);
                     pres.at(i).at(j) = pres.at(i).at(j - 1);
                     temp.at(i).at(j) = temp.at(i).at(j - 1);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_W
                 else if (grid.cell(i, j)._nbWest->_cellType > 1) {
@@ -116,7 +122,7 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
                     pres.at(i).at(j) = pres.at(i - 1).at(j);
                     temp.at(i).at(j) = temp.at(i - 1).at(j);
-                    F[i][j] = u_velocity.at(i).at(j);
+                    F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
                 }
                 else if(grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
                     grid.cell(i, j)._nbNorth->_cellType == NOSLIP&& grid.cell(i, j)._nbSouth->_cellType == NOSLIP) {
@@ -127,8 +133,8 @@ void boundaryvalues(int imax,
 
                     pres.at(i).at(j)=0;
                     temp.at(i).at(j)=0;
-                    F[i][j] = u_velocity.at(i).at(j);
-                    G[i][j] = v_velocity.at(i).at(j);
+                    F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
+                    G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
             }
         }
@@ -143,7 +149,8 @@ void boundaryvalues(int imax,
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
 
-            G.at(i).at(0) = v_velocity.at(i).at(0);
+            //G.at(i).at(0) = v_velocity.at(i).at(0);
+            G.at(i).at(0) = v_velocity.at(i).at(0) - beta * delta_t / 2 * (temp.at(i).at(0) + temp.at(i).at(1)) * GY;
             pres.at(i).at(0) = pres.at(i).at(1);
             temp.at(i).at(0) = temp.at(i).at(1);
 
@@ -155,7 +162,13 @@ void boundaryvalues(int imax,
             v_velocity.at(i).at(grid.jmaxb() - 2) = 0; // Fluid cell below
 
             G.at(i).at(grid.jmaxb() - 1) = v_velocity.at(i).at(grid.jmaxb() - 1); // Solid cell
-            G.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 2); // Fluid cell below
+            
+
+            //G.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 2);
+
+            G.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 2)
+                - beta * delta_t / 2 * (temp.at(i).at(grid.jmaxb() - 2) + temp.at(i).at(grid.jmaxb() - 1)) * GY; // Fluid cell below
+            
             pres.at(i).at(grid.jmaxb() - 1) = pres.at(i).at(grid.jmaxb() - 2);
             temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
         }
@@ -168,7 +181,9 @@ void boundaryvalues(int imax,
             u_velocity.at(0).at(j) = 0;
             v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
 
-            F.at(0).at(j) = u_velocity.at(0).at(j);
+            //F.at(0).at(j) = u_velocity.at(0).at(j);
+
+            F.at(0).at(j) = u_velocity.at(0).at(j) - beta * delta_t / 2 * (temp.at(0).at(j) + temp.at(1).at(j)) * GX;
             pres.at(0).at(j) = pres.at(1).at(j);
             temp.at(0).at(j) = temp.at(1).at(j);
         }
@@ -180,7 +195,12 @@ void boundaryvalues(int imax,
             v_velocity.at(grid.imaxb() - 1).at(j) = -v_velocity.at(grid.imaxb() - 2).at(j);
 
             F.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 1).at(j); // Solid cell (no need to calculate it)
-            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j); // Fluid cell (still no need to calculate it)
+
+            //F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j);
+
+            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j)
+                - beta * delta_t / 2 * (temp.at(grid.imaxb() - 2).at(j) + temp.at(grid.imaxb() - 1).at(j)) * GX; // Fluid cell (still no need to calculate it)
+            
             pres.at(grid.imaxb() - 1).at(j) = pres.at(grid.imaxb() - 2).at(j);
             temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
         }
@@ -206,26 +226,27 @@ void boundaryvalues(int imax,
         }
     }
 
+
     /* ----  Dirichlet BC Temperature ---- */
-    // Natural Convection and Fluid Trap
-    for(int j = 1; j < grid.jmaxb() - 1; j++){ //check indexing!
-        //T_h left wall
-        temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
-        //T_c right wall
-        temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
-    }
+    //// Natural Convection and Fluid Trap
+    //for(int j = 1; j < grid.jmaxb() - 1; j++){ //check indexing! // MODIFIED THE CODE 
+    //    //T_h left wall
+    //    temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
+    //    //T_c right wall
+    //    temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
+    //}
 
-    /* ---- Neumann BC Temperature ---- */
-    // Natural Convection and Fluid Trap
-    for(int i = 1; i < grid.imaxb() - 1; i++){
-        //bottom wall
-        temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
-        //top wall
-        temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
-    }
+    ///* ---- Neumann BC Temperature ---- */
+    //// Natural Convection and Fluid Trap
+    //for(int i = 1; i < grid.imaxb() - 1; i++){
+    //    //bottom wall
+    //    temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
+    //    //top wall
+    //    temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
+    //}
 
 
-    /*
+    
     // Rayleigh-Benard Convection
     for(int i = 1; i < grid.imaxb() - 1; i++){
         //T_h bottom wall
@@ -242,7 +263,7 @@ void boundaryvalues(int imax,
         //right wall
         temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j) + dx * heat_flux / kappa;
     }
-    */
+    
 
 
     for(int i = 1; i < grid.imaxb()-1; i++ ){

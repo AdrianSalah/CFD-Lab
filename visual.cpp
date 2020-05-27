@@ -64,7 +64,7 @@ void write_vtkFile(
   }
   
 
-  /*
+  // TEMPERATURE
     fprintf(fp,"\n");
     fprintf(fp,"CELL_DATA %i \n", ((imax)*(jmax)) );
     fprintf(fp, "SCALARS temperature float 1 \n");
@@ -74,7 +74,7 @@ void write_vtkFile(
             fprintf(fp, "%f\n", T[i][j] );
         }
     }
-   */ 
+    
 
   if( fclose(fp) )
   {
@@ -161,12 +161,12 @@ void VTKHelper::printVTKFile(
     
     
     
-    /*
+    // TEMPERATURE
     // Temperature Array
     vtkDoubleArray* Temperature = vtkDoubleArray::New();
     Temperature->SetName("temperature");
     Temperature->SetNumberOfComponents(1);
-    */
+    
 
     // Velocity Array
     vtkDoubleArray* Velocity = vtkDoubleArray::New();
@@ -182,10 +182,10 @@ void VTKHelper::printVTKFile(
     
 
 
-    /*
+    // TEMPERATURE
     std::vector<std::vector<double>> temperature;
     grid.temperature(temperature);
-    */
+    
 
 
     
@@ -197,14 +197,14 @@ void VTKHelper::printVTKFile(
     }
     
 
-    /*
+    // TEMPERATURE
     // Print temperature from bottom to top
     for (int j = 1; j < grid.jmaxb() - 1; j++) {
         for (int i = 1; i < grid.imaxb() - 1; i++) {
             Temperature->InsertNextTuple(&temperature.at(i).at(j));
         }
     }
-    */
+    
 
     // Temp Velocity
     float vel[3];
@@ -230,10 +230,10 @@ void VTKHelper::printVTKFile(
     structuredGrid->GetCellData()->AddArray(Pressure);
     
 
-    /*
+    // TEMPERATURE
     // Add Temperature to Structured Grid
     structuredGrid->GetCellData()->AddArray(Temperature);
-    */
+    
 
 
     // Add Velocity to Structured Grid

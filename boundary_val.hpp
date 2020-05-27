@@ -21,7 +21,11 @@ void boundaryvalues(int imax,
                     double& dx,
                     double& dy,
                     double &kappa,
-                    double &heat_flux);
+                    double &heat_flux,
+                    double &beta,
+                    double &delta_t,
+                    double& GX,
+                    double& GY);
 
 /*
  * The values of boundary conditions are specified

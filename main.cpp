@@ -9,9 +9,9 @@
 #include "Timer.h"
 
 #define BOUNDARY_SIZE 1
-#define SCENARIO_NAME "karman_vortex_street"
-#define SCENARIO_DAT_FILE "../karman_vortex_street.dat"
-#define SCENARIO_PGM_FILE "../karman_vortex_street.pgm"
+#define SCENARIO_NAME "rayleigh_benard_convection"
+#define SCENARIO_DAT_FILE "../rayleigh_benard_convection.dat"
+#define SCENARIO_PGM_FILE "../rayleigh_benard_convection.pgm"
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -107,6 +107,7 @@ int main(int argn, char** args) {
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
+    *eps = 0.00001;
 
     cell_array = read_pgm(input_geometry_file_path);
 
@@ -163,13 +164,17 @@ int main(int argn, char** args) {
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid);
 
+
+    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+
+
     // Initialize timer to measure performance
     Timer runtime;
 
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux);
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);

@@ -59,7 +59,7 @@ void calculate_fg(
     static double d_uv_dy;
 
     // ------ Discretisation of differential operators of F ----- //
-    for (int i = 1; i < grid.imaxb() - 2; i++) {
+    for (int i = 1; i < grid.imaxb() - 1; i++) {
         for (int j = 1; j < grid.jmaxb() - 1; j++)
             if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
             {
@@ -106,7 +106,7 @@ void calculate_fg(
 
     for (int i = 1; i < grid.imaxb() - 1; i++)
     {
-        for (int j = 1; j < grid.jmaxb() - 2; j++)
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
             if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
             {
             //second derivative of v with respect to x
