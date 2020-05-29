@@ -57,6 +57,7 @@ std::string SCENARIO_PGM_FILE;
 
 int main(int argn, char** args) {
 
+    //select scenario 
     if (argn == 1)
         scenarioSpec = 1;
 
@@ -66,7 +67,6 @@ int main(int argn, char** args) {
     }
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
-
 
 
 
@@ -122,7 +122,7 @@ int main(int argn, char** args) {
             break;
 
         default:
-            printf("Couldn't select any secnario");
+            printf("Couldn't select any secnario \n");
             exit(EXIT_FAILURE);
 
     }
