@@ -490,13 +490,13 @@ bool assert_problem_solvability(int** PGM_cell, Grid &grid) {
             if (PGM_cell[i][j] == 4 && num_non_Fluid_Cells == 4) return false;
         }
     }
-    for (int i = 0; i < grid.imaxb(); i++) {
+    for (int i = 1; i < grid.imaxb()-1; i++) {
         if (PGM_cell[i][0] == 4)return false;
         else if (PGM_cell[i][0] != 0 and PGM_cell[i][1] == 0) return false;
         if (PGM_cell[i][grid.jmaxb() -1] == 4)return false;
         else if (PGM_cell[i][grid.jmaxb() - 1] != 0 and PGM_cell[i][grid.jmaxb() - 2] == 0) return false;
     }
-    for (int j = 0; j < grid.jmaxb(); j++) {
+    for (int j = 1; j < grid.jmaxb()-1; j++) {
         if (PGM_cell[0][j] == 4)return false;
         else if (PGM_cell[0][j] != 0 and PGM_cell[1][j] == 0) return false;
         if (PGM_cell[grid.imaxb() - 1][j] == 4)return false;
