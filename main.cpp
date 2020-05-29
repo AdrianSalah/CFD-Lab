@@ -197,13 +197,11 @@ int main(int argn, char** args) {
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
 
-/*
-    if (!assert_problem_solvability(cell_array, grid.imaxb(), grid.jmaxb())) {
+    if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
-*/
-
+ 
     //for output to vtk-file
     VTKHelper vtkOutput;
     
