@@ -57,7 +57,7 @@ std::string SCENARIO_PGM_FILE;
 
 int main(int argn, char** args) {
 
-    //select scenario 
+    //select scenario
     if (argn == 1)
         scenarioSpec = 1;
 
@@ -87,8 +87,8 @@ int main(int argn, char** args) {
             break;
 
         case 3:
-            printf("plane shear \n");
-            SCENARIO_NAME = "plane_shear";
+            printf("karman vortex street \n");
+            SCENARIO_NAME = "karman_vortex_street";
             SCENARIO_DAT_FILE = "../parameters/karman_vortex_street.dat";
             SCENARIO_PGM_FILE = "../geometry/karman_vortex_street.pgm";
             break;
