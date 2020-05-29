@@ -25,7 +25,8 @@ void boundaryvalues(int imax,
                     double &beta,
                     double &delta_t,
                     double& GX,
-                    double& GY);
+                    double& GY,
+                    int scenarioSpec);
 
 /*
  * The values of boundary conditions are specified

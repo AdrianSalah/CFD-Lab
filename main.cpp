@@ -5,13 +5,22 @@
 #include "uvp.hpp"
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
 
 #define BOUNDARY_SIZE 1
-#define SCENARIO_NAME "rayleigh_benard_convection"
-#define SCENARIO_DAT_FILE "../rayleigh_benard_convection.dat"
-#define SCENARIO_PGM_FILE "../rayleigh_benard_convection.pgm"
+
+int scenarioSpec;
+std::string SCENARIO_NAME;
+std::string SCENARIO_DAT_FILE;
+std::string SCENARIO_PGM_FILE;
+
+//define scenarios using macros
+//#define SCENARIO_NAME "lid_driven_cavity"
+//#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
+//#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
+
 
 /**
  * The main operation reads the configuration file, initializes the scenario and
@@ -47,6 +56,78 @@
  */
 
 int main(int argn, char** args) {
+
+    if (argn == 1)
+        scenarioSpec = 1;
+
+    else if (argn == 2) {
+
+        scenarioSpec = atoi(args[1]);
+    }
+    else {std::cout << "more arguments given" << std::endl;
+        exit(EXIT_FAILURE);}
+
+
+
+
+    switch(scenarioSpec)
+    {
+        case 1:
+            printf("lid driven cavity \n");
+            SCENARIO_NAME = "lid_driven_cavity";
+            SCENARIO_DAT_FILE = "../parameters/lid_driven_cavity.dat";
+            SCENARIO_PGM_FILE = "../geometry/lid_driven_cavity.pgm";
+            break;
+
+        case 2:
+            printf("plane shear \n");
+            SCENARIO_NAME = "plane_shear";
+            SCENARIO_DAT_FILE = "../parameters/plane_shear.dat";
+            SCENARIO_PGM_FILE = "../geometry/plane_shear.pgm";
+            break;
+
+        case 3:
+            printf("plane shear \n");
+            SCENARIO_NAME = "plane_shear";
+            SCENARIO_DAT_FILE = "../parameters/karman_vortex_street.dat";
+            SCENARIO_PGM_FILE = "../geometry/karman_vortex_street.pgm";
+            break;
+
+        case 4:
+            printf("flow over step \n");
+            SCENARIO_NAME = "flow_over_step";
+            SCENARIO_DAT_FILE = "../parameters/flow_over_step.dat";
+            SCENARIO_PGM_FILE = "../geometry/flow_over_step.pgm";
+            break;
+
+        case 5:
+            printf("natural convection \n");
+            SCENARIO_NAME = "natural_convection";
+            SCENARIO_DAT_FILE = "../parameters/natural_convection.dat";
+            SCENARIO_PGM_FILE = "../geometry/natural_convection.pgm";
+            break;
+
+        case 6:
+            printf("fluid trap \n");
+            SCENARIO_NAME = "fluid_trap";
+            SCENARIO_DAT_FILE = "../parameters/fluid_trap.dat";
+            SCENARIO_PGM_FILE = "../geometry/fluid_trap.pgm";
+            break;
+
+        case 7:
+            printf("rayleigh benard convection \n");
+            SCENARIO_NAME = "rayleigh_benard_convection";
+            SCENARIO_DAT_FILE = "../parameters/rayleigh_benard_convection.dat";
+            SCENARIO_PGM_FILE = "../geometry/rayleigh_benard_convection.pgm";
+            break;
+
+        default:
+            printf("Couldn't select any secnario");
+            exit(EXIT_FAILURE);
+
+    }
+
+
 
     //initialize all relevant parameters
     double* Re = new double;                /* reynolds number   */
@@ -84,12 +165,11 @@ int main(int argn, char** args) {
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
 
-
     FILE *parameterFile;
     FILE *geometryFile;
 
-    const char *input_parameter_file_path = SCENARIO_DAT_FILE;
-    const char *input_geometry_file_path = SCENARIO_PGM_FILE;
+    const char *input_parameter_file_path = SCENARIO_DAT_FILE.c_str();
+    const char *input_geometry_file_path = SCENARIO_PGM_FILE.c_str();
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
@@ -107,19 +187,22 @@ int main(int argn, char** args) {
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
-    *eps = 0.00001;
+
+        //assure eps not equal to zero. Due to an issue in the read_parameters function
+        *eps = std::max(0.00001, *eps);
+
 
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
 
-    /*
+/*
     if (!assert_problem_solvability(cell_array, grid.imaxb(), grid.jmaxb())) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
-    */
+*/
 
     //for output to vtk-file
     VTKHelper vtkOutput;
@@ -174,7 +257,7 @@ int main(int argn, char** args) {
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY);
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);

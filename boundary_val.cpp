@@ -18,7 +18,8 @@ void boundaryvalues(int imax,
                     double &beta,
                     double &delta_t,
                     double &GX,
-                    double &GY) {
+                    double &GY,
+                    int scenarioSpec) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -209,8 +210,6 @@ void boundaryvalues(int imax,
         if(grid.cell(0,j)._cellType == INFLOW and grid.cell(0,j)._nbEast->_cellType == FLUID){
                 v_velocity.at(0).at(j) = v_inflow;
                 u_velocity.at(0).at(j) = u_inflow;
-
-
         }
 
         //inflow from right
@@ -226,53 +225,54 @@ void boundaryvalues(int imax,
         }
     }
 
+    if(scenarioSpec == 5 or scenarioSpec == 6) {
 
-    /* ----  Dirichlet BC Temperature ---- */
-    //// Natural Convection and Fluid Trap
-    //for(int j = 1; j < grid.jmaxb() - 1; j++){ //check indexing! // MODIFIED THE CODE 
-    //    //T_h left wall
-    //    temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
-    //    //T_c right wall
-    //    temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
-    //}
-
-    ///* ---- Neumann BC Temperature ---- */
-    //// Natural Convection and Fluid Trap
-    //for(int i = 1; i < grid.imaxb() - 1; i++){
-    //    //bottom wall
-    //    temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
-    //    //top wall
-    //    temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
-    //}
-
-
-    
-    // Rayleigh-Benard Convection
-    for(int i = 1; i < grid.imaxb() - 1; i++){
-        //T_h bottom wall
-        temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-        //T_c top wall
-        temp.at(i).at(grid.jmaxb() - 1) = 2 * T_c - temp.at(i).at(grid.jmaxb() - 2);
-    }
-    
-    
-    // Rayleigh-Benard Convection
-    for(int j = 1; j < grid.jmaxb() - 1; j++){
-        //left wall
-        temp.at(0).at(j) = temp.at(1).at(j) + dx * heat_flux / kappa;
-        //right wall
-        temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j) + dx * heat_flux / kappa;
-    }
-    
-
-
-    for(int i = 1; i < grid.imaxb()-1; i++ ){
-        if(grid.cell(i,grid.jmaxb()-1)._cellType == FREESLIP) {
-            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
-            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb()-2);
+        /* ----  Dirichlet BC Temperature ---- */
+        // Natural Convection and Fluid Trap
+        for (int j = 1; j < grid.jmaxb() - 1; j++) { //check indexing! // MODIFIED THE CODE
+            //T_h left wall
+            temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
+            //T_c right wall
+            temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
         }
 
+        /* ---- Neumann BC Temperature ---- */
+        // Natural Convection and Fluid Trap
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            //bottom wall
+            temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
+            //top wall
+            temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
+        }
     }
+        // Rayleigh-Benard Convection
+    else if (scenarioSpec == 7) {
+
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            //T_h bottom wall
+            temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
+            //T_c top wall
+            temp.at(i).at(grid.jmaxb() - 1) = 2 * T_c - temp.at(i).at(grid.jmaxb() - 2);
+        }
+
+        // Rayleigh-Benard Convection
+        for (int j = 1; j < grid.jmaxb() - 1; j++) {
+            //left wall
+            temp.at(0).at(j) = temp.at(1).at(j) + dx * heat_flux / kappa;
+            //right wall
+            temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j) + dx * heat_flux / kappa;
+        }
+    }
+
+        /* ---- Freeslip BC for lid driven cavity ---- */
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP) {
+                v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
+                u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
+            }
+
+        }
+
 
 
     grid.set_velocity(u_velocity, velocity_type::U);
