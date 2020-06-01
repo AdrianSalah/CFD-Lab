@@ -19,11 +19,14 @@ public:
     void velocity(matrix<double>& vec, velocity_type type);
     void set_velocity(matrix<double>& vec, velocity_type type);
 
-    // Get and Set Velocity
+    // Get and Set Pressure
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
 
-    // Get and Set Pressure
+    // Set Pressure for internal boundaries (NOSLIP) only
+    void set_pressure_for_internal_boundaries();
+
+    // Get and Set Temperature
     void temperature(matrix<double>& vec);
     void set_temperature(matrix<double>& vec);
 
@@ -51,6 +54,12 @@ public:
     void print_pressure();
     void print_temperature();
 
+    // Increment fluid cells quantity by 1
+    void increment_fluid_cells();
+
+    // Get quantity of fluid cells
+    int get_fluid_cells_quantity();
+
 private:
     matrix<Cell> _cells;
     std::array<matrix<double>, 2> _velocities;
@@ -59,6 +68,7 @@ private:
     const int _imax_b;
     const int _jmax_b;
     const int _boundary_size;
+    int _fluid_cells_quantity;
 
 };
 

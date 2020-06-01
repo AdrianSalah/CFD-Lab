@@ -27,8 +27,10 @@
  *
  */
 
+
 void calculate_fg(
         double Re,
+        double beta,
         double GX,
         double GY,
         double alpha,
@@ -43,16 +45,17 @@ void calculate_fg(
 );
 
 void calculate_temp(
-    double PR,
+    double Re,
+    double Pr,
     double alpha,
     double dt,
     double dx,
     double dy,
     int imax,
     int jmax,
-    Grid& grid,
-    matrix<double>& T
+    Grid& grid
 );
+
 
 /**
  * This operation computes the right hand side of the pressure poisson equation.
@@ -69,10 +72,9 @@ void calculate_rs(
         int jmax,
         matrix<double> &F,
         matrix<double> &G,
-        matrix<double> &RS
+        matrix<double> &RS,
+        Grid& grid
 );
-
-
 
 
 /* Function used for searching the maximum absolute element in a matrix */
@@ -131,14 +133,29 @@ void calculate_uv(
  * initializes matrices of F, G and R with constant values FI, GI and RSI on the hole domain
  */
 
-void init_fgrs(int imax,
-               int jmax,
-               matrix<double> &F,
-               matrix<double> &G,
-               matrix<double> &RS,
-               double FI,
-               double GI,
-               double RSI
+void init_fgrs(
+    int imax,
+    int jmax,
+    matrix<double> &F,
+    matrix<double> &G,
+    matrix<double> &RS,
+    double FI,
+    double GI,
+    double RSI,
+    Grid& grid
 );
 
+
+void init_uvpt(
+    int imax,
+    int jmax,
+    matrix<double> U,
+    matrix<double> V,
+    matrix<double> P,
+    matrix<double> T,
+    double UI,
+    double VI,
+    double PI,
+    double TI,
+    Grid &grid);
 #endif

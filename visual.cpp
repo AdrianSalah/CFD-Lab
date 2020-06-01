@@ -11,17 +11,19 @@
 #include <vtkStructuredGridWriter.h>
 #include "vector"
 
-void write_vtkFile(const char *szProblem,
-		         int    timeStepNumber,
-		         double xlength,
-                 double ylength,
-                 int    imax,
-                 int    jmax,
-		         double dx,
-		         double dy,
-                 matrix <double> &U,
-                 matrix <double> &V,
-                 matrix <double> &P)
+void write_vtkFile(
+    const char *szProblem,
+	int    timeStepNumber,
+	double xlength,
+    double ylength,
+    int    imax,
+    int    jmax,
+	double dx,
+	double dy,
+    matrix <double> &U,
+    matrix <double> &V,
+    matrix <double> &P,
+    matrix<double> &T)
 {
   int i,j;
   char szFileName[80];
@@ -49,6 +51,8 @@ void write_vtkFile(const char *szProblem,
     }
   }
 
+
+  
   fprintf(fp,"\n");
   fprintf(fp,"CELL_DATA %i \n", ((imax)*(jmax)) );
   fprintf(fp, "SCALARS pressure float 1 \n"); 
@@ -58,6 +62,19 @@ void write_vtkFile(const char *szProblem,
       fprintf(fp, "%f\n", P[i][j] );
     }
   }
+  
+
+  // TEMPERATURE
+    fprintf(fp,"\n");
+    fprintf(fp,"CELL_DATA %i \n", ((imax)*(jmax)) );
+    fprintf(fp, "SCALARS temperature float 1 \n");
+    fprintf(fp, "LOOKUP_TABLE default \n");
+    for(j = 1; j < jmax+1; j++) {
+        for(i = 1; i < imax+1; i++) {
+            fprintf(fp, "%f\n", T[i][j] );
+        }
+    }
+    
 
   if( fclose(fp) )
   {
@@ -104,8 +121,14 @@ void write_vtkPointCoordinates( FILE *fp, int imax, int jmax,
   }
 }
 
-void VTKHelper::printVTKFile(Grid grid, double dx, double dy,
-        std::string casename, std::string outputdir, int timestep) {
+void VTKHelper::printVTKFile(
+    Grid& grid,
+    double dx,
+    double dy,
+    std::string casename,
+    std::string outputdir,
+    int timestep)
+{
 
     // Create a new structured grid
     vtkSmartPointer<vtkStructuredGrid> structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
@@ -129,10 +152,21 @@ void VTKHelper::printVTKFile(Grid grid, double dx, double dy,
     structuredGrid->SetDimensions(grid.imaxb()-1,grid.jmaxb()-1,1);
     structuredGrid->SetPoints(points);
 
+
+    
     // Pressure Array
     vtkDoubleArray* Pressure = vtkDoubleArray::New();
     Pressure->SetName("pressure");
     Pressure->SetNumberOfComponents(1);
+    
+    
+    
+    // TEMPERATURE
+    // Temperature Array
+    vtkDoubleArray* Temperature = vtkDoubleArray::New();
+    Temperature->SetName("temperature");
+    Temperature->SetNumberOfComponents(1);
+    
 
     // Velocity Array
     vtkDoubleArray* Velocity = vtkDoubleArray::New();
@@ -141,15 +175,36 @@ void VTKHelper::printVTKFile(Grid grid, double dx, double dy,
 
     // Set number of tuples
     std::vector<std::vector<Cell>> cells;
+    
+    
     std::vector<std::vector<double>> pressure;
     grid.pressure(pressure);
+    
 
+
+    // TEMPERATURE
+    std::vector<std::vector<double>> temperature;
+    grid.temperature(temperature);
+    
+
+
+    
     // Print pressure from bottom to top
     for(int j = 1; j < grid.jmaxb()-1; j++) {
         for(int i = 1; i < grid.imaxb()-1; i++) {
             Pressure->InsertNextTuple(&pressure.at(i).at(j));
         }
     }
+    
+
+    // TEMPERATURE
+    // Print temperature from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            Temperature->InsertNextTuple(&temperature.at(i).at(j));
+        }
+    }
+    
 
     // Temp Velocity
     float vel[3];
@@ -170,8 +225,16 @@ void VTKHelper::printVTKFile(Grid grid, double dx, double dy,
         }
     }
 
+    
     // Add Pressure to Structured Grid
     structuredGrid->GetCellData()->AddArray(Pressure);
+    
+
+    // TEMPERATURE
+    // Add Temperature to Structured Grid
+    structuredGrid->GetCellData()->AddArray(Temperature);
+    
+
 
     // Add Velocity to Structured Grid
     structuredGrid->GetPointData()->AddArray(Velocity);

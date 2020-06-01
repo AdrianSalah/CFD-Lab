@@ -13,6 +13,7 @@
 #include "string"
 #include "enums.hpp"
 #include "vector"
+#include "grid.hpp"
 
 #ifdef PI
 #undef PI
@@ -185,6 +186,7 @@ void read_matrix( const char* szFileName,	               /* filehandle */
 		  int nch );                   /* last row */
 
 
+
 /**
  * matrix(...)        storage allocation for a matrix (nrl..nrh, ncl..nch)
  * free_matrix(...)   storage deallocation
@@ -269,6 +271,8 @@ void init_imatrix( int **m, int nrl, int nrh, int ncl, int nch, int a);
 /**
  * reads in a ASCII pgm-file and returns the colour information in a two-dimensional integer array.
  */
+bool assert_problem_solvability(int** PGM_cell, Grid &grid);
+
 int **read_pgm(const char *filename);
 
 

@@ -6,6 +6,7 @@
 #include "regex"
 #include "iostream"
 #include "enums.hpp"
+#include "grid.hpp"
 #ifdef gpp9
 // gcc Version >= 9
 #include "filesystem"
@@ -466,6 +467,43 @@ void init_imatrix( int **m, int nrl, int nrh, int ncl, int nch, int a)
 	   m[i][j] = a;
 }
 
+bool assert_problem_solvability(int** PGM_cell, Grid &grid) {
+
+    int num_Fluid_Cells;
+    int num_non_Fluid_Cells;
+
+    for (int i = 0; i < grid.imaxb(); i++) {
+        if (PGM_cell[i][0] == 4 || PGM_cell[i][grid.jmaxb() -1] == 4)
+            return false;
+    }
+    for (int j = 0; j < grid.jmaxb(); j++) {
+        if (PGM_cell[0][j] == 4 || PGM_cell[grid.imaxb() -1][j] == 4)
+            return false;
+    }
+
+    for (int i = 1; i < grid.imaxb() - 1; i++) {
+        for (int j = 1; j < grid.jmaxb() - 1; j++) {
+            num_Fluid_Cells = (PGM_cell[i][j + 1] == 4) + (PGM_cell[i][j - 1] == 4) + (PGM_cell[i+1][j] == 4) + (PGM_cell[i-1][j] == 4);
+            num_non_Fluid_Cells = (PGM_cell[i][j + 1] != 4) + (PGM_cell[i][j - 1] != 4) + (PGM_cell[i + 1][j] != 4) + (PGM_cell[i - 1][j] != 4);
+            if (PGM_cell[i][j] == 0 && PGM_cell[i][j+1] > 1 && PGM_cell[i][j - 1] > 1) return false;
+            if (PGM_cell[i][j] == 0 && PGM_cell[i-1][j] > 1 && PGM_cell[i+1][j] > 1) return false;
+            if (PGM_cell[i][j] == 4 && num_non_Fluid_Cells == 4) return false;
+        }
+    }
+    for (int i = 1; i < grid.imaxb()-1; i++) {
+        if (PGM_cell[i][0] == 4)return false;
+        else if (PGM_cell[i][0] != 0 and PGM_cell[i][1] == 0) return false;
+        if (PGM_cell[i][grid.jmaxb() -1] == 4)return false;
+        else if (PGM_cell[i][grid.jmaxb() - 1] != 0 and PGM_cell[i][grid.jmaxb() - 2] == 0) return false;
+    }
+    for (int j = 1; j < grid.jmaxb()-1; j++) {
+        if (PGM_cell[0][j] == 4)return false;
+        else if (PGM_cell[0][j] != 0 and PGM_cell[1][j] == 0) return false;
+        if (PGM_cell[grid.imaxb() - 1][j] == 4)return false;
+        else if (PGM_cell[grid.imaxb() - 1][j] != 0 and PGM_cell[grid.imaxb() - 2][j] == 0) return false;
+    }
+    return true;
+}
 
 int **read_pgm(const char *filename) {
     FILE *input = NULL;

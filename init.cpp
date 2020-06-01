@@ -26,7 +26,11 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double *T_h,                  /* hot wall temperature */
                     double *T_c,                  /* cold wall temperature */
                     double *PR,                      /*Prandlt Number*/
-                    double *beta)                      /*beta value*/
+                    double *beta,
+                    double* v_inflow,          /* inflow y velocity */
+                    double* u_inflow,          /* inflow x velocity */
+                    double* kappa,             /* thermal conductivity */
+                    double* heat_flux )             /* heat flux */         
 {
     // Reading Parameters
     get_file_double( szFileName, "xlength", *xlength);
@@ -50,6 +54,10 @@ int read_parameters( std::string szFileName,       /* name of the file */
     get_file_double( szFileName, "tau", *tau);
     get_file_double(szFileName, "PR", *PR);
     get_file_double(szFileName, "beta", *beta);
+    get_file_double(szFileName, "v_inflow", *v_inflow);
+    get_file_double(szFileName, "u_inflow", *u_inflow);
+    get_file_double(szFileName, "kappa", *kappa);
+    get_file_double(szFileName, "heat_flux", *heat_flux);
 
     get_file_int(szFileName, "itermax", *itermax);
     get_file_int(szFileName, "imax", *imax);

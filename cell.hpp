@@ -3,11 +3,23 @@
 #include <array>
 #include "enums.hpp"
 
+enum CellType{
+    NOSLIP = 0, FLUID = 4, INFLOW = 3, OUTFLOW = 2, FREESLIP = 1 
+};
+
 class Cell {
 public:
     // Constructors
     Cell();
     Cell(double& PI, double& UI, double& VI, double& TI);
+
+    CellType _cellType;
+
+    Cell* _nbNorth;
+    Cell* _nbSouth;
+    Cell* _nbWest;
+    Cell* _nbEast;
+
 
     // Get + Set pressure
     double& pressure();
