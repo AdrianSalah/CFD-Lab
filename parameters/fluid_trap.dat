@@ -17,14 +17,14 @@ jmax        50
 # tau: safety factor for time step size control
 #--------------------------------------------
 dt           0.05
-t_end        2000.0
+t_end        100
 tau          0.5
 
 #--------------------------------------------
 #               output
 # dt_value: time interval for writing files
 #--------------------------------------------
-dt_value     10.0
+dt_value     1.0
 
 #--------------------------------------------
 #               pressure
@@ -73,7 +73,7 @@ T_c         -0.5
 #     Temperature variables
 #--------------------------------------------
 kappa         1.0
-heat_flux     0.0
+heat_flux     1.0
 
 #--------------------------------------------
 #     Prandlt Number

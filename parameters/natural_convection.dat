@@ -73,7 +73,7 @@ T_c         0.0
 #     Temperature variables
 #--------------------------------------------
 kappa         1.0
-heat_flux     0.0
+heat_flux     1.0
 
 #--------------------------------------------
 #     Prandlt Number

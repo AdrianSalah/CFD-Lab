@@ -17,7 +17,7 @@ jmax        18
 # tau: safety factor for time step size control
 #--------------------------------------------
 dt           0.05
-t_end        1000
+t_end        10000
 tau          0.5
 
 #--------------------------------------------
@@ -73,7 +73,7 @@ T_c         291.20
 #     Temperature variables
 #--------------------------------------------
 kappa         1.0
-heat_flux     0.0
+heat_flux     1.0
 
 #--------------------------------------------
 #     Prandlt Number
