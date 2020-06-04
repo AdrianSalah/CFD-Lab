@@ -5,10 +5,10 @@
 #include "uvp.hpp"
 #include <cstdio>
 #include <iostream>
-#include <sstream>
+#include <mpi.h>
 #include "boundary_val.hpp"
 #include "Timer.h"
-
+#include "parallel.hpp"
 #define BOUNDARY_SIZE 1
 
 int scenarioSpec;
@@ -69,7 +69,6 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
 
-
     switch(scenarioSpec)
     {
         case 1:
@@ -128,7 +127,6 @@ int main(int argn, char** args) {
     }
 
 
-
     //initialize all relevant parameters
     double* Re = new double;                /* reynolds number   */
     double* UI = new double;                /* velocity x-direction */
@@ -161,6 +159,22 @@ int main(int argn, char** args) {
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;           /* array of geometry */
+    int* iproc = new int(2);               /* division in processes in x direction */
+    int* jproc  = new int(2);              /* division in processes in y direction */
+    int *il = new int;
+    int *ir = new int;
+    int *jb = new int;
+    int *jt = new int;
+    int *rank_l = new int;
+    int *rank_r = new int;
+    int *rank_b = new int;
+    int *rank_t = new int;
+    int *omg_i = new int;
+    int *omg_j = new int;
+
+
+
+
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -201,7 +215,27 @@ int main(int argn, char** args) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
- 
+
+
+    // Initialize MPI
+    MPI_Init(&argn, &args);
+
+    // get size of the communication world (default communicator)
+    int num_proc;
+    MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
+
+    //get process id (rank) in this communicator
+    int myrank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+    init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
+
+    //std::cout << myrank << " "  << omg_i << " " << omg_j << std::endl;
+
+    std::cout << "number of processes: " << num_proc << std::endl;
+    std::cout << "myrank: " << myrank << std::endl;
+
+    /*
     //for output to vtk-file
     VTKHelper vtkOutput;
     
@@ -314,6 +348,8 @@ int main(int argn, char** args) {
         std::cout << std::endl;
     }
 
+    */
+
     /*
     std::cout << "U velocity " << std::endl;
     for (int i = 0; i < grid.imaxb() / 2; ++i) {
@@ -331,16 +367,23 @@ int main(int argn, char** args) {
     }
 
     */
-          
+
+    /*
+
     // Print out the total time required for the solution
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
 
+    */
+
     //close input file
     fclose(parameterFile);
     fclose(geometryFile);
+
+
+    MPI_Finalize();
    
     // Free dynamically allocated memory
     delete Re;
@@ -369,11 +412,20 @@ int main(int argn, char** args) {
     delete Pr;
     delete res;
     delete beta;
-    delete cell_array; //2D array! -> modify delete!
+
     delete v_inflow;
     delete u_inflow;
     delete kappa;
     delete heat_flux;
+
+    delete cell_array; //2D array! -> modify delete!
+    /*
+    for(int i = 0; i < cell_array_elements; i++)
+    {
+        delete [] cell_array[i];
+    }
+    delete [] cell_array;
+    */
 
     return 0;
 }
