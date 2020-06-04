@@ -69,7 +69,6 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
 
-
     switch(scenarioSpec)
     {
         case 1:
@@ -178,19 +177,17 @@ int main(int argn, char** args) {
     if (parameterFile == NULL) {
         printf("Error opening parameter-file");
         exit(EXIT_FAILURE);
-    } else if (geometryFile == NULL) {
+    } 
+    else if (geometryFile == NULL) {
         printf("Error opening geometry-file");
         exit(EXIT_FAILURE);
-    } else {
+    }
+    else {
         std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
     }
-
-        //assure eps not equal to zero. Due to an issue in the read_parameters function
-        *eps = std::max(0.00001, *eps);
-
 
     cell_array = read_pgm(input_geometry_file_path);
 
@@ -343,6 +340,7 @@ int main(int argn, char** args) {
     fclose(geometryFile);
    
     // Free dynamically allocated memory
+    delete[] cell_array;
     delete Re;
     delete UI;
     delete VI;
@@ -369,7 +367,6 @@ int main(int argn, char** args) {
     delete Pr;
     delete res;
     delete beta;
-    delete cell_array; //2D array! -> modify delete!
     delete v_inflow;
     delete u_inflow;
     delete kappa;

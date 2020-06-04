@@ -1,5 +1,5 @@
-#include "helper.hpp"
 #include "init.hpp"
+#include <fstream>
 
 int read_parameters( std::string szFileName,       /* name of the file */
                     double* Re,                /* reynolds number   */
@@ -33,39 +33,50 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double* heat_flux )             /* heat flux */         
 {
     // Reading Parameters
-    get_file_double( szFileName, "xlength", *xlength);
-    get_file_double( szFileName, "ylength", *ylength);
-    get_file_double( szFileName, "Re", *Re);
-    get_file_double( szFileName, "t_end", *t_end);
-    get_file_double( szFileName, "dt", *dt);
-    get_file_double( szFileName, "omg", *omg);
-    get_file_double( szFileName, "eps", *eps);
-    get_file_double( szFileName, "tau", *tau);
-    get_file_double( szFileName, "alpha", *alpha);
-    get_file_double( szFileName, "dt_value", *dt_value);
-    get_file_double( szFileName, "UI", *UI);
-    get_file_double( szFileName, "VI", *VI);
-    get_file_double( szFileName, "GX", *GX);
-    get_file_double( szFileName, "GY", *GY);
-    get_file_double( szFileName, "PI", *PI);
-    get_file_double( szFileName, "TI", *TI);
-    get_file_double( szFileName, "T_h", *T_h);
-    get_file_double( szFileName, "T_c", *T_c);
-    get_file_double( szFileName, "tau", *tau);
-    get_file_double(szFileName, "PR", *PR);
-    get_file_double(szFileName, "beta", *beta);
-    get_file_double(szFileName, "v_inflow", *v_inflow);
-    get_file_double(szFileName, "u_inflow", *u_inflow);
-    get_file_double(szFileName, "kappa", *kappa);
-    get_file_double(szFileName, "heat_flux", *heat_flux);
+	std::ifstream file(szFileName);
+	if (!file.is_open()) return -1;
+	std::string var;
+	while (!file.eof() && file.good()) {
+		file >> var;
+		if (var[0] == '#') {     /* ignore comment line*/
+			file.ignore(MAX_LINE_LENGTH, '\n');
+		}
+		else {
+			if (var == "xlength")  file >> *xlength;
+			if (var == "ylength")  file >> *ylength;
+			if (var == "Re")       file >> *Re;
+			if (var == "t_end")    file >> *t_end;
+			if (var == "dt")       file >> *dt;
+			if (var == "omg")      file >> *omg;
+			if (var == "eps")      file >> *eps;
+			if (var == "tau")      file >> *tau;
+			if (var == "alpha")    file >> *alpha;
+			if (var == "dt_value") file >> *dt_value;
+			if (var == "UI")       file >> *UI;
+			if (var == "VI")       file >> *VI;
+			if (var == "GX")       file >> *GX;
+			if (var == "GY")       file >> *GY;
+			if (var == "PI")       file >> *PI;
+			if (var == "itermax")  file >> *itermax;
+			if (var == "imax")     file >> *imax;
+			if (var == "jmax")     file >> *jmax;
+			if (var == "TI")       file >> *TI;
+			if (var == "T_h")      file >> *T_h;
+			if (var == "T_c")      file >> *T_c;
+			if (var == "PR")       file >> *PR;
+			if (var == "beta")     file >> *beta;
+			if (var == "u_inflow") file >> *u_inflow;
+			if (var == "v_inflow") file >> *v_inflow;
+			if (var == "kappa")    file >> *kappa;
+			if (var == "heat_flux")file >> *heat_flux;
+		}
+	}
 
-    get_file_int(szFileName, "itermax", *itermax);
-    get_file_int(szFileName, "imax", *imax);
-    get_file_int(szFileName, "jmax", *jmax);
-  
+	*dx = *xlength / (double)(*imax);
+	*dy = *ylength / (double)(*jmax);
 
-    *dx = *xlength / (double)(*imax);
-    *dy = *ylength / (double)(*jmax);
+	if (!file.good() && !file.eof()) return -1;
 
-    return 1;
+	return 1;
 }
+

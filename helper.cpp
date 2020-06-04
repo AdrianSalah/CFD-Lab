@@ -203,67 +203,6 @@ void read_double( const char* szFileName, const char* szVarName, double* pVariab
 	                              *pVariable );
 }
 
-
-/* --------------------------------------------------------------------------*/
-/*         Definition of helper functions for reading parameter files        */
-/* --------------------------------------------------------------------------*/
-std::pair<double, int> read_file_regex(std::string filename, std::string sZName, read_type type) {
-
-    // Definition of pair (Alternative is struct)
-    std::pair<double, int> res;
-    // File
-    std::ifstream file(filename);
-    // Line Variable is used for search
-    std::string line;
-
-    // Regex Variables
-    std::smatch match;
-    std::regex word("[a-zA-Z_]+");
-    std::regex number_int("\\d+");
-    std::regex number_float("\\d+\\.\\d{1,3}");
-
-    // Open File and
-    if (file.is_open()) {
-        // read line by line
-        while (std::getline(file, line)) {
-            // Find parameter name
-            std::regex_search(line, match, word);
-            // Check if found string matches required parameter
-            if (match.str(0) == sZName) {
-                // Check if float is in line
-                if (std::regex_search(line, match, number_float))
-                    break;
-                // Check if int is in line
-                if (std::regex_search(line, match, number_int))
-                    break;
-            }
-        }
-        file.close();
-    }
-    // if the paramter value is not found the match variable has a length of zero
-    if (match.length() == 0)
-        std::cerr << "Parameter " << sZName <<  " not found" << std::endl;
-    else {
-        if (type == read_type::INT)
-            std::get<int>(res) = std::stoi(match.str(0));
-        else if (type == read_type::DOUBLE)
-            std::get<double>(res) = std::stod(match.str(0));
-        else
-            std::cerr << "The provided value type is not defined" << std::endl;
-    }
-    return res;
-}
-
-void get_file_double(std::string filename, std::string sZName, double& value) {
-    std::pair<double, int> res = read_file_regex(filename, sZName, read_type::DOUBLE);
-    value = std::get<double>(res);
-}
-
-void get_file_int(std::string filename, std::string sZName, int& value) {
-    std::pair<double, int> res = read_file_regex(filename, sZName, read_type::INT);
-    value = std::get<int>(res);
-}
-
 /* ----------------------------------------------------------------------- */
 /*                   write matrices to a file                              */
 /* ----------------------------------------------------------------------- */

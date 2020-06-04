@@ -1,5 +1,11 @@
 #ifndef __INIT_H_
 #define __INIT_H_
+#include <string>
+
+/**
+ * Maximum length of input lines
+ */
+#define MAX_LINE_LENGTH 1024
 
 /**
  * This operation initializes all the local variables reading a configuration

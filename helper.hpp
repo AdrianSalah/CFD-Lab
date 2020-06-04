@@ -101,12 +101,6 @@ void  errhandler( int nLine, const char *szFile, const char *szString );
 void read_string( const char* szFilename, const char* szName, char*  sValue);
 void read_int   ( const char* szFilename, const char* szName, int*    nValue);
 void read_double( const char* szFilename, const char* szName, double*  Value);
-
-// Reading Parameter File
-std::pair<double, int> read_file_regex(std::string filename, std::string sZName, read_type type);
-void get_file_double(std::string filename, std::string sZName, double& value);
-void get_file_int(std::string filename, std::string sZName, int& value);
-
 /**
  * Writing matrices to a file.
  * -----------------------------------------------------------------------
