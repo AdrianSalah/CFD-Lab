@@ -26,7 +26,7 @@ void sor(
 
 
     // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
-    grid.set_pressure_for_internal_boundaries();
+    boundary_val_sor(grid);
 
 
     // Set boundary values for the outmost cells of the domain

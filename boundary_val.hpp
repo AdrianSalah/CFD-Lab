@@ -50,4 +50,6 @@ void spec_boundary_val(double &u_inflow,
 
 void assign_ptr_nbcells(Grid &grid);
 
+void boundary_val_sor(Grid& grid);
+
 #endif

@@ -23,9 +23,6 @@ public:
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
 
-    // Set Pressure for internal boundaries (NOSLIP) only
-    void set_pressure_for_internal_boundaries();
-
     // Get and Set Temperature
     void temperature(matrix<double>& vec);
     void set_temperature(matrix<double>& vec);

@@ -67,8 +67,6 @@ int main(int argn, char** args) {
     }
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
-
-
     switch(scenarioSpec)
     {
         case 1:
@@ -310,24 +308,6 @@ int main(int argn, char** args) {
             std::cout << T[i][j] << " ";
         std::cout << std::endl;
     }
-
-    /*
-    std::cout << "U velocity " << std::endl;
-    for (int i = 0; i < grid.imaxb() / 2; ++i) {
-        for (int j = 0; j < grid.jmaxb() / 2; ++j)
-            std::cout << U[i][j] << " ";
-        std::cout << std::endl;
-    }
-
-    
-    std::cout << "V velocity " <<std::endl;
-    for (int i = 0; i < grid.imaxb() / 2; ++i) {
-        for (int j = 0; j < grid.jmaxb() / 2; ++j)
-            std::cout << V[i][j] << " ";
-        std::cout << std::endl;
-    }
-
-    */
           
     // Print out the total time required for the solution
     runtime.printTimer();

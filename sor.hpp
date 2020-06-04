@@ -3,6 +3,7 @@
 
 #include "datastructures.hpp"
 #include "grid.hpp"
+#include "boundary_val.hpp"
 
 /**
  * One GS iteration for the pressure Poisson equation. Besides, the routine must 

@@ -356,3 +356,65 @@ void assign_ptr_nbcells(Grid &grid){
         grid.cell(grid.imaxb() - 1, j)._nbWest = &grid.cell(grid.imaxb() - 2, j);
     }
 }
+void boundary_val_sor(Grid& grid) {
+    static matrix<double> pres;
+    grid.pressure(pres);
+
+    // Iterate over internal cells
+    for (int i = 1; i < grid.imax() - 1; ++i) {
+        for (int j = 1; j < grid.jmax() - 1; ++j) {
+            // Setting pressure for all boundary (NOSLIP) cells
+            if (grid.cell(i, j)._cellType == NOSLIP) {
+
+                // Checking whether the neighbor cells belongs to FLUID, and taking its pressure
+
+                // NORTH-EAST-ERN-cell
+                if (((grid.cell(i, j)._nbNorth)->_cellType == FLUID) &&
+                    ((grid.cell(i, j)._nbEast)->_cellType == FLUID))
+                {
+                    pres[i][j] = ((grid.cell(i, j)._nbNorth)->pressure() + (grid.cell(i, j)._nbEast)->pressure())/2;
+                }
+
+                // SOUTH-EAST-ERN-cell
+                else if (((grid.cell(i, j)._nbSouth)->_cellType == FLUID) &&
+                    ((grid.cell(i, j)._nbEast)->_cellType == FLUID))
+                {
+                    pres[i][j] = ((grid.cell(i, j)._nbSouth)->pressure() + (grid.cell(i, j)._nbEast)->pressure())/2;
+                }
+
+                // NORTH-WEST-ERN-cell
+                else if (((grid.cell(i, j)._nbNorth)->_cellType == FLUID) &&
+                    ((grid.cell(i, j)._nbWest)->_cellType == FLUID))
+                {
+                    pres[i][j] = ((grid.cell(i, j)._nbNorth)->pressure() + (grid.cell(i, j)._nbWest)->pressure()) / 2;
+                }
+
+                // SOUTH-WEST-ERN-cell
+                else if (((grid.cell(i, j)._nbSouth)->_cellType == FLUID) &&
+                    ((grid.cell(i, j)._nbWest)->_cellType == FLUID))
+                {
+                    pres[i][j] = ((grid.cell(i, j)._nbSouth)->pressure() + (grid.cell(i, j)._nbWest)->pressure()) / 2;
+                }
+
+
+                // NORTHERN-cell
+                else if ((grid.cell(i, j)._nbNorth)->_cellType == FLUID)
+                    pres[i][j] = (grid.cell(i, j)._nbNorth)->pressure() ;
+
+                // EASTERN-cell
+                else if ((grid.cell(i, j)._nbEast)->_cellType == FLUID)
+                    pres[i][j] = (grid.cell(i, j)._nbEast)->pressure();
+
+                // SOUTHERN-cell
+                else if ((grid.cell(i, j)._nbSouth)->_cellType == FLUID)
+                    pres[i][j] = (grid.cell(i, j)._nbSouth)->pressure();
+
+                // WESTERN-cell (cowboy)
+                else if ((grid.cell(i, j)._nbWest)->_cellType == FLUID)
+                    pres[i][j] = (grid.cell(i, j)._nbWest)->pressure();
+
+            }
+        }
+    }
+    grid.set_pressure(pres);
+}
