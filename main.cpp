@@ -214,10 +214,10 @@ int main(int argn, char** args) {
                 exit(EXIT_FAILURE);
             }
             //for debugging
-            std::cout << cell_array[i][j] << " ";
+            //std::cout << cell_array[i][j] << " ";
         }
         //for debugging
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
 
     assign_ptr_nbcells(grid);
@@ -301,13 +301,15 @@ int main(int argn, char** args) {
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
-
+    // print Temperature in final timestep
+    /*
     std::cout << "T temperature" << std::endl;
     for (int i = 0; i < grid.imaxb() / 2; ++i) {
         for (int j = 0; j < grid.jmaxb() / 2; ++j)
             std::cout << T[i][j] << " ";
         std::cout << std::endl;
     }
+     */
           
     // Print out the total time required for the solution
     runtime.printTimer();
