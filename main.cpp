@@ -11,7 +11,7 @@
 #include <mpi.h>
 
 #define BOUNDARY_SIZE 1
-
+int num_processors=4;
 int scenarioSpec;
 std::string SCENARIO_NAME;
 std::string SCENARIO_DAT_FILE;
@@ -155,7 +155,14 @@ int main(int argn, char** args) {
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, iproc, jproc);
     }
-
+    // asserting iproc and jproc values
+    if ((*iproc) * (*jproc) > num_processors) {
+        std::cout << "Too many subdomains. ";
+        int num_proc = num_processors;
+        *jproc = std::floor(std::sqrt(num_processors*(*jmax)/(*imax)));
+        *iproc = num_processors / (*jproc);
+        std::cout << "new iproc = " << * iproc << "  new jproc = " << *jproc << std::endl;
+    }
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
