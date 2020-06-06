@@ -65,8 +65,8 @@ void init_parallel(
     if (*myrank == 0) {
         for (int j = 0; j < jproc; j++) {
             for (int i = 0; i < iproc; i++) {
-                int proc = (i + j * iproc) % num_proc; //start sending to process 0
-                int tag = (i + j * iproc);
+                int proc = (i + j * iproc); //% num_proc; //start sending to process 0
+                //int tag = (i + j * iproc);
 
                 *omg_i = omg_i_arr[i];
                 *omg_j = omg_j_arr[j];
@@ -89,18 +89,18 @@ void init_parallel(
 
 
 
-                MPI_Send(omg_i, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(omg_j, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
+                MPI_Send(omg_i, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(omg_j, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
 
-                MPI_Send(il, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(ir, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(jb, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(jt, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
+                MPI_Send(il, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(ir, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(jb, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(jt, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
 
-                MPI_Send(rank_l, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(rank_r, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(rank_b, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
-                MPI_Send(rank_t, 1, MPI_INT, proc, tag, MPI_COMM_WORLD);
+                MPI_Send(rank_l, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(rank_r, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(rank_b, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
+                MPI_Send(rank_t, 1, MPI_INT, proc, proc, MPI_COMM_WORLD);
 
             }
         }
@@ -111,18 +111,18 @@ void init_parallel(
             int tag = (i + j * iproc);
             int proc = (i + j * iproc) % num_proc;
             if (*myrank == proc) {
-                MPI_Recv(omg_i, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(omg_j, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(omg_i, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(omg_j, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                MPI_Recv(il, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(ir, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(jb, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(jt, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(il, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(ir, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(jb, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(jt, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                MPI_Recv(rank_l, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(rank_r, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(rank_b, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(rank_t, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(rank_l, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(rank_r, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(rank_b, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(rank_t, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
         }
     }
@@ -132,24 +132,6 @@ void init_parallel(
 
 
 
-        // suggestion [Oleg]
-        /*
-        int x_cells_tot, y_cells_tot;
-        int x_layer_full_width;
-        int y_layer_full_width;
-        int x_layer_res, y_layer_res;
-        int x_uniform_add;
-        int x_uniform_res;
-        int x_layer_width_final;
-        int x_layer_width_final_last_col;
-
-        x_layer_full_width = x_cells_tot/ iproc;
-        x_layer_res = x_cells_tot % iproc;
-        x_uniform_add = x_layer_res / (iproc - 1);
-
-        x_layer_width_final = x_layer_full_width + x_uniform_add;
-        x_layer_width_final_last_col = x_layer_width_final + x_layer_res % (iproc - 1);
-        */
 
 
 
@@ -169,16 +151,50 @@ void pressure_comm(
         MPI_Status *status,
         int chunk){
 
-    /* --- this is kind of a sketch [Adrian] ---- */
-    /*
-    int num_ghostcells_j = (jt +1) - (jb -1);
-    int num_ghostcells_i = (ir +1) - (il -1);
-    //fill send buffer for right ghost cell
-    for(int k; k < num_ghostcells_j; k++){
-        bufSend[k] = P[ir+1][jb-1 + k];
+    int num_ghostcells_j = jt - jb + 2; //inner cells + 2 ghost layers in y-direction
+    int num_ghostcells_i = ir - il + 2; //inner cells + 2 ghost layers in y-direction
+
+    bufSend[num_ghostcells_j] = {0};
+    //fill send buffer with left ghost cells
+    for(int j = 0; j < num_ghostcells_j; j++){
+        bufSend[j] = P[0][j];
     }
-    //send ghost cells to right, receive ghost cells from left
-    MPI_Sendrecv(bufSend, num_ghostcells_j, MPI_DOUBLE, rank_r, 123, bufRecv, num_ghostcells_j,
-            MPI_DOUBLE, chunk, 123, MPI_COMM_WORLD, status );
-*/
+    /* ---- send to the left - receive from the right ---- */
+    MPI_Sendrecv(bufSend, num_ghostcells_j, MPI_DOUBLE, rank_l, 1, bufRecv, num_ghostcells_j,
+                 MPI_DOUBLE, chunk, 2, MPI_COMM_WORLD, status );
+
+
+    bufSend[num_ghostcells_j] = {0};
+    //fill send buffer with right ghost cells
+    for(int j = 0; j < num_ghostcells_j; j++){
+        bufSend[j] = P[ir+2][j];
+    }
+    /* ---- send to right - receive from left ---- */
+    MPI_Sendrecv(bufSend, num_ghostcells_j, MPI_DOUBLE, rank_r, 2, bufRecv, num_ghostcells_j,
+            MPI_DOUBLE, chunk, 1, MPI_COMM_WORLD, status );
+
+
+    bufSend[num_ghostcells_i] = {0};
+    //fill send buffer with bottom ghost cells
+    for(int i = 0; i < num_ghostcells_i; i++){
+        bufSend[i] = P[i][0];
+    }
+    /* ---- send to bottom - receive from top ---- */
+    MPI_Sendrecv(bufSend, num_ghostcells_i, MPI_DOUBLE, rank_b, 3, bufRecv, num_ghostcells_i,
+                 MPI_DOUBLE, chunk, 4, MPI_COMM_WORLD, status );
+
+
+    bufSend[num_ghostcells_i] = {0};
+    //fill send buffer with bottom ghost cells
+    for(int i = 0; i < num_ghostcells_i; i++){
+        bufSend[i] = P[i][jt + 2];
+    }
+    /* ---- send to top - receive from bottom ---- */
+    MPI_Sendrecv(bufSend, num_ghostcells_i, MPI_DOUBLE, rank_t, 4, bufRecv, num_ghostcells_i,
+                 MPI_DOUBLE, chunk, 3, MPI_COMM_WORLD, status );
+
+
+
+
+
 }

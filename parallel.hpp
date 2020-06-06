@@ -1,3 +1,4 @@
+#include <mpi.h>
 
 void init_parallel(
         int iproc,
@@ -17,6 +18,7 @@ void init_parallel(
         int *omg_j,
         int num_proc);
 
+
 void pressure_comm(
         double **P,
         int il,
@@ -30,4 +32,4 @@ void pressure_comm(
         double *bufSend,
         double *bufRecv,
         MPI_Status *status,
-        int chunk)
+        int chunk);
