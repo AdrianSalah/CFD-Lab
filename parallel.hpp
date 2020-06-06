@@ -34,3 +34,5 @@ void pressure_comm(
         double *bufRecv,
         MPI_Status *status,
         int chunk)
+
+#endif // __PARALLEL_HPP__
