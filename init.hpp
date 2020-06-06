@@ -73,7 +73,9 @@ int read_parameters(std::string szFileName,       /* name of the file */
     double* v_inflow,          /* inflow y velocity */
     double* u_inflow,          /* inflow x velocity */
     double* kappa,             /* thermal conductivity */
-    double* heat_flux);           /* heat flux */
+    double* heat_flux,             /* heat flux */
+    int* iproc,
+    int* jproc);          
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on

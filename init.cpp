@@ -30,7 +30,9 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double* v_inflow,          /* inflow y velocity */
                     double* u_inflow,          /* inflow x velocity */
                     double* kappa,             /* thermal conductivity */
-                    double* heat_flux )             /* heat flux */         
+                    double* heat_flux,
+					int* iproc,
+					int* jproc)                     
 {
     // Reading Parameters
 	std::ifstream file(szFileName);
@@ -69,6 +71,8 @@ int read_parameters( std::string szFileName,       /* name of the file */
 			if (var == "v_inflow") file >> *v_inflow;
 			if (var == "kappa")    file >> *kappa;
 			if (var == "heat_flux")file >> *heat_flux;
+			if (var == "iproc")file >> *iproc;
+			if (var == "jproc")file >> *jproc;
 		}
 	}
 

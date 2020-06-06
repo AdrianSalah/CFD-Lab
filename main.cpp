@@ -21,40 +21,6 @@ std::string SCENARIO_PGM_FILE;
 //#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
 //#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
 
-
-/**
- * The main operation reads the configuration file, initializes the scenario and
- * contains the main loop. So here are the individual steps of the algorithm:
- *
- * - read the program configuration file using read_parameters()
- * - set up the matrices (arrays) needed. Use the predefined matrix<typename> type and give initial values in the constructor.
- * - perform the main loop
- * - at the end: destroy any memory allocated and print some useful statistics
- *
- * The layout of the grid is decribed by the first figure below, the enumeration
- * of the whole grid is given by the second figure. All the unknowns corresond
- * to a two-dimensional degree of freedom layout, so they are not stored in
- * arrays, but in a matrix.
- *
- * @image html grid.jpg
- *
- * @image html whole-grid.jpg
- *
- * Within the main loop, the following steps are required (for some of the 
- * operations, a definition is defined already within uvp.h):
- *
- * - calculate_dt() Determine the maximal time step size.
- * - boundaryvalues() Set the boundary values for the next time step.
- * - calculate_fg() Determine the values of F and G (diffusion and confection).
- *   This is the right hand side of the pressure equation and used later on for
- *   the time step transition.
- * - calculate_rs()
- * - Iterate the pressure poisson equation until the residual becomes smaller
- *   than eps or the maximal number of iterations is performed. Within the
- *   iteration loop the operation sor() is used.
- * - calculate_uv() Calculate the velocity at the next time step.
- */
-
 int main(int argn, char** args) {
 
     //select scenario
@@ -158,6 +124,8 @@ int main(int argn, char** args) {
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;           /* array of geometry */
+    int* iproc = new int;
+    int* jproc = new int;
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -184,7 +152,7 @@ int main(int argn, char** args) {
         std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
-                        tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
+                        tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, iproc, jproc);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
@@ -353,6 +321,8 @@ int main(int argn, char** args) {
     delete u_inflow;
     delete kappa;
     delete heat_flux;
+    delete iproc;
+    delete jproc;
 
     return 0;
 }
