@@ -8,6 +8,7 @@
 #include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
+#include <mpi.h>
 
 #define BOUNDARY_SIZE 1
 
