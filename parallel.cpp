@@ -108,8 +108,8 @@ void init_parallel(
     // receive indices from rank 0
     for (int j = 0; j < jproc; j++) {
         for (int i = 0; i < iproc; i++) {
-            int tag = (i + j * iproc);
-            int proc = (i + j * iproc) % num_proc;
+            //int tag = (i + j * iproc);
+            int proc = (i + j * iproc); //% num_proc;
             if (*myrank == proc) {
                 MPI_Recv(omg_i, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Recv(omg_j, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -151,8 +151,8 @@ void pressure_comm(
         MPI_Status *status,
         int chunk){
 
-    int num_ghostcells_j = jt - jb + 2; //inner cells + 2 ghost layers in y-direction
-    int num_ghostcells_i = ir - il + 2; //inner cells + 2 ghost layers in y-direction
+    int num_ghostcells_j = jt - jb + 3; //inner cells + 2 ghost layers in y-direction
+    int num_ghostcells_i = ir - il + 3; //inner cells + 2 ghost layers in y-direction
 
     bufSend[num_ghostcells_j] = {0};
     //fill send buffer with left ghost cells
@@ -167,7 +167,7 @@ void pressure_comm(
     bufSend[num_ghostcells_j] = {0};
     //fill send buffer with right ghost cells
     for(int j = 0; j < num_ghostcells_j; j++){
-        bufSend[j] = P[ir+2][j];
+        bufSend[j] = P[ir+1][j];
     }
     /* ---- send to right - receive from left ---- */
     MPI_Sendrecv(bufSend, num_ghostcells_j, MPI_DOUBLE, rank_r, 2, bufRecv, num_ghostcells_j,
@@ -187,7 +187,7 @@ void pressure_comm(
     bufSend[num_ghostcells_i] = {0};
     //fill send buffer with bottom ghost cells
     for(int i = 0; i < num_ghostcells_i; i++){
-        bufSend[i] = P[i][jt + 2];
+        bufSend[i] = P[i][jt + 1];
     }
     /* ---- send to top - receive from bottom ---- */
     MPI_Sendrecv(bufSend, num_ghostcells_i, MPI_DOUBLE, rank_t, 4, bufRecv, num_ghostcells_i,
