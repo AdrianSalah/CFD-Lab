@@ -8,14 +8,16 @@
 #include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
+#include <math.h>
 #include <mpi.h>
 
 #define BOUNDARY_SIZE 1
-int num_processors=4;
+
 int scenarioSpec;
 std::string SCENARIO_NAME;
 std::string SCENARIO_DAT_FILE;
 std::string SCENARIO_PGM_FILE;
+
 
 //define scenarios using macros
 //#define SCENARIO_NAME "lid_driven_cavity"
@@ -23,7 +25,13 @@ std::string SCENARIO_PGM_FILE;
 //#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
 
 int main(int argn, char** args) {
-
+    MPI_Init(&argn, &args);
+    int num_proc = 4;
+    //MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
+    int jb, jt, il, ir;
+    int myrank, rank_b, rank_t, rank_l, rank, r;
+    int omg_i, omg_j, chunk;
+    double* bufSend, *bufRecv;
     //select scenario
     if (argn == 1)
         scenarioSpec = 1;
@@ -156,11 +164,10 @@ int main(int argn, char** args) {
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, iproc, jproc);
     }
     // asserting iproc and jproc values
-    if ((*iproc) * (*jproc) > num_processors) {
+    if ((*iproc) * (*jproc) > num_proc) {
         std::cout << "Too many subdomains. ";
-        int num_proc = num_processors;
-        *jproc = std::floor(std::sqrt(num_processors*(*jmax)/(*imax)));
-        *iproc = num_processors / (*jproc);
+        *jproc = std::floor(std::sqrt(num_proc *(*jmax)/(*imax)));
+        *iproc = num_proc / (*jproc);
         std::cout << "new iproc = " << * iproc << "  new jproc = " << *jproc << std::endl;
     }
     cell_array = read_pgm(input_geometry_file_path);
