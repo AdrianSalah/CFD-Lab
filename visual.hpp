@@ -86,5 +86,52 @@ class VTKHelper {
         int timestep);
 };
 
+/*
+ *
+ *
+ *
+ */
 
+void output_uvp_parallel(
+        double **U,
+        double **V,
+        double **P,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int omg_i,
+        int omg_j,
+        char *output_file,
+        int timestep,
+        int dx,
+        int dy);
+
+/*
+ *
+ *
+ */
+
+void write_vtkPointCoordinates_parallel(
+        FILE *fp,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        double dx,
+        double dy);
+
+/*
+ *
+ *
+ */
+
+void write_vtkHeader_parallel(
+        FILE *fp,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        double dx,
+        double dy);
 #endif

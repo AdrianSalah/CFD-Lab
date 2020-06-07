@@ -5,7 +5,6 @@
 #include "uvp.hpp"
 #include <cstdio>
 #include <iostream>
-#include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
 #include <math.h>
@@ -13,25 +12,53 @@
 
 #define BOUNDARY_SIZE 1
 
-int scenarioSpec;
-std::string SCENARIO_NAME;
-std::string SCENARIO_DAT_FILE;
-std::string SCENARIO_PGM_FILE;
-
+//int scenarioSpec;
+//std::string SCENARIO_NAME;
+//std::string SCENARIO_DAT_FILE;
+//std::string SCENARIO_PGM_FILE;
 
 //define scenarios using macros
-//#define SCENARIO_NAME "lid_driven_cavity"
-//#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
-//#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
+#define SCENARIO_NAME "lid_driven_cavity"
+#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
+#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
+
+
+/**
+ * The main operation reads the configuration file, initializes the scenario and
+ * contains the main loop. So here are the individual steps of the algorithm:
+ *
+ * - read the program configuration file using read_parameters()
+ * - set up the matrices (arrays) needed. Use the predefined matrix<typename> type and give initial values in the constructor.
+ * - perform the main loop
+ * - at the end: destroy any memory allocated and print some useful statistics
+ *
+ * The layout of the grid is decribed by the first figure below, the enumeration
+ * of the whole grid is given by the second figure. All the unknowns corresond
+ * to a two-dimensional degree of freedom layout, so they are not stored in
+ * arrays, but in a matrix.
+ *
+ * @image html grid.jpg
+ *
+ * @image html whole-grid.jpg
+ *
+ * Within the main loop, the following steps are required (for some of the 
+ * operations, a definition is defined already within uvp.h):
+ *
+ * - calculate_dt() Determine the maximal time step size.
+ * - boundaryvalues() Set the boundary values for the next time step.
+ * - calculate_fg() Determine the values of F and G (diffusion and confection).
+ *   This is the right hand side of the pressure equation and used later on for
+ *   the time step transition.
+ * - calculate_rs()
+ * - Iterate the pressure poisson equation until the residual becomes smaller
+ *   than eps or the maximal number of iterations is performed. Within the
+ *   iteration loop the operation sor() is used.
+ * - calculate_uv() Calculate the velocity at the next time step.
+ */
 
 int main(int argn, char** args) {
-    MPI_Init(&argn, &args);
-    int num_proc = 4;
-    //MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
-    int jb, jt, il, ir;
-    int myrank, rank_b, rank_t, rank_l, rank, r;
-    int omg_i, omg_j, chunk;
-    double* bufSend, *bufRecv;
+
+    /*
     //select scenario
     if (argn == 1)
         scenarioSpec = 1;
@@ -42,6 +69,8 @@ int main(int argn, char** args) {
     }
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
+
+
     switch(scenarioSpec)
     {
         case 1:
@@ -98,8 +127,7 @@ int main(int argn, char** args) {
             exit(EXIT_FAILURE);
 
     }
-
-
+*/
 
     //initialize all relevant parameters
     double* Re = new double;                /* reynolds number   */
@@ -133,8 +161,22 @@ int main(int argn, char** args) {
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;           /* array of geometry */
-    int* iproc = new int;
-    int* jproc = new int;
+    int* iproc = new int(2);               /* division in processes in x direction */
+    int* jproc  = new int(2);              /* division in processes in y direction */
+    int *il = new int;
+    int *ir = new int;
+    int *jb = new int;
+    int *jt = new int;
+    int *rank_l = new int;
+    int *rank_r = new int;
+    int *rank_b = new int;
+    int *rank_t = new int;
+    int *omg_i = new int;
+    int *omg_j = new int;
+
+
+
+
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -142,8 +184,8 @@ int main(int argn, char** args) {
     FILE *parameterFile;
     FILE *geometryFile;
 
-    const char *input_parameter_file_path = SCENARIO_DAT_FILE.c_str();
-    const char *input_geometry_file_path = SCENARIO_PGM_FILE.c_str();
+    const char *input_parameter_file_path = SCENARIO_DAT_FILE; //.c_str();
+    const char *input_geometry_file_path = SCENARIO_PGM_FILE; //.c_str();
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
@@ -152,7 +194,7 @@ int main(int argn, char** args) {
     if (parameterFile == NULL) {
         printf("Error opening parameter-file");
         exit(EXIT_FAILURE);
-    } 
+    }
     else if (geometryFile == NULL) {
         printf("Error opening geometry-file");
         exit(EXIT_FAILURE);
@@ -179,7 +221,27 @@ int main(int argn, char** args) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
- 
+
+
+    // Initialize MPI
+    MPI_Init(&argn, &args);
+
+    // get size of the communication world (default communicator)
+    int num_proc;
+    MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
+
+    //get process id (rank) in this communicator
+    int myrank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+    init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
+
+    //std::cout << myrank << " "  << omg_i << " " << omg_j << std::endl;
+
+    std::cout << "number of processes: " << num_proc << std::endl;
+    std::cout << "myrank: " << myrank << std::endl;
+
+    /*
     //for output to vtk-file
     VTKHelper vtkOutput;
     
@@ -292,20 +354,45 @@ int main(int argn, char** args) {
             std::cout << T[i][j] << " ";
         std::cout << std::endl;
     }
-     */
-          
+
+    */
+
+    /*
+    std::cout << "U velocity " << std::endl;
+    for (int i = 0; i < grid.imaxb() / 2; ++i) {
+        for (int j = 0; j < grid.jmaxb() / 2; ++j)
+            std::cout << U[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+    
+    std::cout << "V velocity " <<std::endl;
+    for (int i = 0; i < grid.imaxb() / 2; ++i) {
+        for (int j = 0; j < grid.jmaxb() / 2; ++j)
+            std::cout << V[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+    */
+
+    /*
+
     // Print out the total time required for the solution
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
 
+    */
+
     //close input file
     fclose(parameterFile);
     fclose(geometryFile);
+
+
+    MPI_Finalize();
    
     // Free dynamically allocated memory
-    delete[] cell_array;
     delete Re;
     delete UI;
     delete VI;
@@ -332,10 +419,19 @@ int main(int argn, char** args) {
     delete Pr;
     delete res;
     delete beta;
+
     delete v_inflow;
     delete u_inflow;
     delete kappa;
     delete heat_flux;
+    delete cell_array; //2D array! -> modify delete!
+    /*
+    for(int i = 0; i < cell_array_elements; i++)
+    {
+        delete [] cell_array[i];
+    }
+    delete [] cell_array;
+    */
     delete iproc;
     delete jproc;
 
