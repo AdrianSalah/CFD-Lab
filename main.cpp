@@ -8,7 +8,6 @@
 #include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
-#include <math.h>
 #include <mpi.h>
 
 #define BOUNDARY_SIZE 1
@@ -27,11 +26,12 @@ std::string SCENARIO_PGM_FILE;
 int main(int argn, char** args) {
     MPI_Init(&argn, &args);
     int num_proc = 4;
-    //MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     int jb, jt, il, ir;
     int myrank, rank_b, rank_t, rank_l, rank, r;
-    int omg_i, omg_j, chunk;
+    int omg_i, omg_j, chunk, my_rank;
     double* bufSend, *bufRecv;
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     //select scenario
     if (argn == 1)
         scenarioSpec = 1;
@@ -170,10 +170,17 @@ int main(int argn, char** args) {
         *iproc = num_proc / (*jproc);
         std::cout << "new iproc = " << * iproc << "  new jproc = " << *jproc << std::endl;
     }
+ 
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
+    if (*iproc == 1 and *jproc == 1) {
+        il = 0;
+        ir = grid.imaxb() - 1;
+        jb = 0;
+        jt= grid.jmaxb() - 1;
+    }
 
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
@@ -215,29 +222,29 @@ int main(int argn, char** args) {
 
     //initialize matrices U, V, P, T
     matrix<double> U, V, P, T;
-    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid);
-
+    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, il, ir, jb, jt);
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
 
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
-    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid);
+    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, il, ir, jb, jt);
 
 
-    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
     // Initialize timer to measure performance
     Timer runtime;
-
+    *dt = 0.005;
     while (time < *t_end) {
+   
         //here we set time steps manually
-        calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
-        calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
-        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
-        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
-        
+        //calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
+        //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
+        spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, il, ir, jb, jt);
+        //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
+        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, il, ir, jb, jt);
+        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, il, ir, jb, jt);
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;
@@ -246,39 +253,42 @@ int main(int argn, char** args) {
         *res = INFINITY;
 
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
-            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
+            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, il, ir, jb, jt,my_rank);
+            
             current_timestep_iteration++;
         }
+        grid.pressure(P, il, ir, jb, jt);
+        //std::cout<<P[7][33]<<std::endl;
         //count number of failed SOR iterations
         if(*res > *eps){
             //print warning message after failed SOR iteration
-            //std::cout << "Warning: current #SOR iterations: " << current_timestep_iteration <<  " exceeded max #SOR iterations: " << *itermax << "!" << std::endl;
             count_failed_SOR++;
         }
 
-        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, il, ir, jb, jt);
         visualization_time_accumulator += * dt;
         timesteps_total++;
         time += *dt;
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
-            grid.velocity(U, velocity_type::U);
-            grid.velocity(V, velocity_type::V);
-            grid.pressure(P);
-            grid.temperature(T);
+            grid.velocity(U, velocity_type::U, il, ir, jb, jt);
+            grid.velocity(V, velocity_type::V, il, ir, jb, jt);
+            grid.pressure(P, il, ir, jb, jt);
+            grid.temperature(T, il, ir, jb, jt);
 
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+            if(myrank==0)
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
     }
 
-    grid.velocity(U, velocity_type::U);
-    grid.velocity(V, velocity_type::V);
-    grid.pressure(P);
-    grid.temperature(T);
+    grid.velocity(U, velocity_type::U, il, ir, jb, jt);
+    grid.velocity(V, velocity_type::V, il, ir, jb, jt);
+    grid.pressure(P, il, ir, jb, jt);
+    grid.temperature(T, il, ir, jb, jt);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);

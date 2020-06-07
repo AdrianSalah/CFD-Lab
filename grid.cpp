@@ -67,6 +67,122 @@ void Grid::set_cell(Cell& cell, int i, int j) {
     _cells.at(i).at(j) = cell;
 };
 
+void Grid::velocity(matrix<double>& vec, velocity_type type,int il,int ir,int jb,int jt) {
+    if (!(type == velocity_type::U || type == velocity_type::V)) {
+        std::cerr << "Wrong velocity type" << std::endl;
+    }
+    else {
+        if (type == velocity_type::U) {
+            // Resize vector and set all values to 0
+            vec.resize(ir-il + 4, std::vector<double>(jt-jb + 3, 0));
+            for (int x = il; x <= ir; x++) {
+                for (int y = jb; y <= jt; y++) {
+                    // Accessing velocity
+                    vec.at(x+2).at(y+1) = _cells.at(x).at(y).velocity(type);
+                }
+            }
+        }
+        if (type == velocity_type::V) {
+            // Resize vector and set all values to 0
+            vec.resize(ir - il + 3, std::vector<double>(jt - jb + 4, 0));
+            for (int x = il; x <= ir; x++) {
+                for (int y = jb; y <= jt; y++) {
+                    // Accessing velocity
+                    vec.at(x + 1).at(y + 2) = _cells.at(x).at(y).velocity(type);
+                }
+            }
+        }
+    }
+}
+
+void Grid::set_velocity(matrix<double>& vec, velocity_type type, int il, int ir, int jb, int jt) {
+    if (!(type == velocity_type::U || type == velocity_type::V)) {
+        std::cerr << "Wrong velocity type" << std::endl;
+    }
+    else {
+        if (type == velocity_type::U) {
+            for (int x = il; x <= ir; x++) {
+                for (int y = jb; y <= jt; y++) {
+                    // Setting velocity
+                    _cells.at(x).at(y).set_velocity(vec.at(x+2).at(y+1), type);
+                }
+            }
+        }
+        if (type == velocity_type::V) {
+            for (int x = il; x <= ir; x++) {
+                for (int y = jb; y <= jt; y++) {
+                    // Setting velocity
+                    _cells.at(x).at(y).set_velocity(vec.at(x + 1).at(y + 2), type);
+                }
+            }
+        }
+    }
+}
+
+void Grid::pressure(matrix<double>& vec, int il, int ir, int jb, int jt) {
+
+    // We don't need to do it every time, only once at first iteration. Some performance improvement.
+    // static bool first_call_of_this_funtion = true; 
+
+    // Resize vector and set all values to 0
+    // if (first_call_of_this_funtion)
+    vec.resize(ir-il+3, std::vector<double>(jt-jb+3, 0));
+
+    // Iterate over cells
+    for (int x = il; x <= ir; x++) {
+        for (int y = jb; y <= jt; y++) {
+            // Accessing pressure
+            vec.at(x+1).at(y+1) = _cells.at(x).at(y).pressure();
+        }
+    }
+    
+    // first_call_of_this_funtion = false;
+}
+
+void Grid::set_pressure(matrix<double>& vec, int il, int ir, int jb, int jt) {
+
+    // Iterate over cells
+    for (int x = il; x <= ir; x++) {
+        for (int y = jb; y <= jt; y++) {
+            // Setting pressure
+            _cells.at(x).at(y).set_pressure(vec.at(x+1).at(y+1));
+        }
+    }
+}
+
+// Increment quantity of fluid cells by 1
+void Grid::increment_fluid_cells() {
+    _fluid_cells_quantity += 1;
+};
+
+// Get quantity of fluid cells
+int Grid::get_fluid_cells_quantity() {
+    return _fluid_cells_quantity;
+}
+
+void Grid::temperature(matrix<double>& vec, int il, int ir, int jb, int jt) {
+    // Resize vector and set all values to 0
+    vec.resize(ir-il+3, std::vector<double>(jt-jb+3, 0));
+
+    // Iterate over cells
+    for (int x = il; x <= ir; x++) {
+        for (int y = jb; y <= jt; y++) {
+            // Accessing temperature
+            vec.at(x+1).at(y+1) = _cells.at(x).at(y).temperature();
+        }
+    }
+}
+
+void Grid::set_temperature(matrix<double>& vec, int il, int ir, int jb, int jt) {
+
+    // Iterate over cells
+    for (int x = il; x <= ir; x++) {
+        for (int y = jb; y <= jt; y++) {
+            // Setting temperature
+            _cells.at(x).at(y).set_temperature(vec.at(x+1).at(y+1));
+        }
+    }
+}
 void Grid::velocity(matrix<double>& vec, velocity_type type) {
     if (!(type == velocity_type::U || type == velocity_type::V)) {
         std::cerr << "Wrong velocity type" << std::endl;
@@ -74,8 +190,8 @@ void Grid::velocity(matrix<double>& vec, velocity_type type) {
     else {
         // Resize vector and set all values to 0
         vec.resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), 0));
-        for(int x=0; x < Grid::imaxb();x++) {
-            for (int y=0; y < Grid::jmaxb(); y++) {
+        for (int x = 0; x < Grid::imaxb(); x++) {
+            for (int y = 0; y < Grid::jmaxb(); y++) {
                 // Accessing velocity
                 vec.at(x).at(y) = _cells.at(x).at(y).velocity(type);
             }
@@ -88,8 +204,8 @@ void Grid::set_velocity(matrix<double>& vec, velocity_type type) {
         std::cerr << "Wrong velocity type" << std::endl;
     }
     else {
-        for(int x=0; x< Grid::imaxb();x++) {
-            for (int y=0; y < Grid::jmaxb(); y++) {
+        for (int x = 0; x < Grid::imaxb(); x++) {
+            for (int y = 0; y < Grid::jmaxb(); y++) {
                 // Setting velocity
                 _cells.at(x).at(y).set_velocity(vec.at(x).at(y), type);
             }
@@ -113,29 +229,19 @@ void Grid::pressure(matrix<double>& vec) {
             vec.at(x).at(y) = _cells.at(x).at(y).pressure();
         }
     }
-    
+
     // first_call_of_this_funtion = false;
 }
 
 void Grid::set_pressure(matrix<double>& vec) {
 
     // Iterate over cells
-    for(int x=0; x < Grid::imaxb();x++) {
-        for (int y=0; y < Grid::jmaxb(); y++) {
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
             // Setting pressure
             _cells.at(x).at(y).set_pressure(vec.at(x).at(y));
         }
     }
-}
-
-// Increment quantity of fluid cells by 1
-void Grid::increment_fluid_cells() {
-    _fluid_cells_quantity += 1;
-};
-
-// Get quantity of fluid cells
-int Grid::get_fluid_cells_quantity() {
-    return _fluid_cells_quantity;
 }
 
 void Grid::temperature(matrix<double>& vec) {
@@ -161,6 +267,7 @@ void Grid::set_temperature(matrix<double>& vec) {
         }
     }
 }
+
 
 void Grid::cells(std::vector<Cell>& cells, matrix_selection m, int index) {
     // Resizing cells vector

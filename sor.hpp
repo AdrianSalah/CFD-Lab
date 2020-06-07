@@ -32,7 +32,12 @@ void sor(
         int    jmax,
         Grid &grid,
         matrix<double> &RS,
-        double *res
+        double *res,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int my_rank
 );
 
 

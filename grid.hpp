@@ -16,12 +16,24 @@ public:
     Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI, double& TI);
     
     // Get and Set Velocity
+    void velocity(matrix<double>& vec, velocity_type type,int il, int ir, int jb, int jt);
+    void set_velocity(matrix<double>& vec, velocity_type type, int il, int ir, int jb, int jt);
+
+    // Get and Set Pressure
+    void pressure(matrix<double>& vec, int il, int ir, int jb, int jt);
+    void set_pressure(matrix<double>& vec, int il, int ir, int jb, int jt);
+
+    // Get and Set Temperature
+    void temperature(matrix<double>& vec, int il, int ir, int jb, int jt);
+    void set_temperature(matrix<double>& vec, int il, int ir, int jb, int jt);
+
     void velocity(matrix<double>& vec, velocity_type type);
     void set_velocity(matrix<double>& vec, velocity_type type);
 
     // Get and Set Pressure
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
+
 
     // Get and Set Temperature
     void temperature(matrix<double>& vec);

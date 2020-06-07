@@ -41,7 +41,11 @@ void calculate_fg(
         int jmax,
         Grid& grid,
         matrix<double> &F,
-        matrix<double> &G
+        matrix<double> &G,
+    int il,
+    int ir,
+    int jb,
+    int jt
 );
 
 void calculate_temp(
@@ -53,7 +57,11 @@ void calculate_temp(
     double dy,
     int imax,
     int jmax,
-    Grid& grid
+    Grid& grid,
+    int il,
+    int ir,
+    int jb,
+    int jt
 );
 
 
@@ -73,7 +81,11 @@ void calculate_rs(
         matrix<double> &F,
         matrix<double> &G,
         matrix<double> &RS,
-        Grid& grid
+        Grid& grid,
+        int il,
+        int ir,
+        int jb,
+        int jt
 );
 
 
@@ -101,7 +113,11 @@ void calculate_dt(double Re,
         double dy,
         int imax,
         int jmax,
-        Grid &grid);
+        Grid &grid,
+        int il,
+        int ir,
+        int jb,
+        int jt);
 
 
 /**
@@ -126,8 +142,12 @@ void calculate_uv(
         int jmax,
         Grid &grid,
         matrix<double> &F,
-        matrix<double> &G
-);
+        matrix<double> &G,
+        int il,
+        int ir,
+        int jb,
+        int jt)
+;
 
 /*
  * initializes matrices of F, G and R with constant values FI, GI and RSI on the hole domain
@@ -142,8 +162,11 @@ void init_fgrs(
     double FI,
     double GI,
     double RSI,
-    Grid& grid
-);
+    Grid& grid, 
+    int il,
+    int ir,
+    int jb,
+    int jt);
 
 
 void init_uvpt(
@@ -157,5 +180,9 @@ void init_uvpt(
     double VI,
     double PI,
     double TI,
-    Grid &grid);
+    Grid &grid, 
+    int il,
+    int ir,
+    int jb,
+    int jt);
 #endif
