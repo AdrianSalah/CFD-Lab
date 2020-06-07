@@ -154,6 +154,10 @@ void pressure_comm(
     int num_ghostcells_j = jt - jb + 3; //inner cells + 2 ghost layers in y-direction
     int num_ghostcells_i = ir - il + 3; //inner cells + 2 ghost layers in y-direction
 
+    int i_ghostlayer_right = ir - il + 1; // i index for ghostlayer of this subdomain on the right
+    int j_ghostlayer_top = jt - jb + 1; // j index for ghostlayer of this subdomain on the top
+
+
     bufSend[num_ghostcells_j] = {0};
     //fill send buffer with left ghost cells
     for(int j = 0; j < num_ghostcells_j; j++){
@@ -167,7 +171,7 @@ void pressure_comm(
     bufSend[num_ghostcells_j] = {0};
     //fill send buffer with right ghost cells
     for(int j = 0; j < num_ghostcells_j; j++){
-        bufSend[j] = P[ir+1][j];
+        bufSend[j] = P[i_ghostlayer_right][j];
     }
     /* ---- send to right - receive from left ---- */
     MPI_Sendrecv(bufSend, num_ghostcells_j, MPI_DOUBLE, rank_r, 2, bufRecv, num_ghostcells_j,
@@ -185,9 +189,9 @@ void pressure_comm(
 
 
     bufSend[num_ghostcells_i] = {0};
-    //fill send buffer with bottom ghost cells
+    //fill send buffer with top ghost cells
     for(int i = 0; i < num_ghostcells_i; i++){
-        bufSend[i] = P[i][jt + 1];
+        bufSend[i] = P[i][j_ghostlayer_top];
     }
     /* ---- send to top - receive from bottom ---- */
     MPI_Sendrecv(bufSend, num_ghostcells_i, MPI_DOUBLE, rank_t, 4, bufRecv, num_ghostcells_i,
