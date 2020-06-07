@@ -284,26 +284,76 @@ void boundaryvalues(int imax,
 }
 
 
-void spec_boundary_val(double &u_inflow,
+void spec_boundary_val(Grid& grid, 
+        double &u_inflow,
         double &v_inflow,
         double& T_c,
         double& T_h,
         double &kappa,
         double &heat_flux,
-        double val_u_inflow,
-        double val_v_inflow,
-        double val_T_c,
-        double val_T_h,
-        double val_kappa,
-        double val_heat_flux)
+        matrix<double>& U,
+        matrix<double>& V,
+        matrix<double>& P,
+        matrix<double>& T,   
+        matrix<double>& F,
+        matrix<double>& G,
+        int il,
+        int ir,
+        int jb,
+        int jt)
 {
-    u_inflow = val_u_inflow;
-    v_inflow = val_v_inflow;
-
-    T_c = val_T_c;
-    T_h = val_T_h;
-    kappa = val_kappa;
-    heat_flux = val_heat_flux;
+        grid.velocity(U, velocity_type::U, il, ir, jb, jt);
+        grid.velocity(V, velocity_type::V, il, ir, jb, jt);
+        grid.pressure(P, il, ir, jb, jt);
+        grid.temperature(T, il, ir, jb, jt);
+        // left boundary
+        if (il == 0) {
+            for (int j = jb+1; j < jt; j++) {
+                U[2][j+1] = 0;
+                V[1][j+2] = -V[2][j+2];
+                F[2][j+1] = U[2][j + 1];
+                G[1][j+2] = V[1][j + 2];
+                P[1][j+1] = P[2][j+1];
+                T[1][j+1] = T[2][j+1];
+            }
+        }
+        //right boundary
+        if (ir == grid.imaxb()-1) {
+            for (int j = jb+1; j < jt; j++) {
+                U[ir+2][j+1] = 0;
+                V[ir+1][j+2] = -V[ir][j+2];
+                F[ir+2][j+1] = U[ir+2][j+1];
+                G[ir+1][j+2] = V[ir+1][j+2];
+                P[ir+1][j+1] = P[ir][j+1];
+                T[ir+1][j+1] = T[ir][j+1];
+            }
+        }
+        //bottom boundary
+        if (jb == 0) {
+            for (int i = il+1; i < ir; i++) {
+                V[i+1][2] = 0;
+                U[i+2][1] = -U[i+2][2];
+                F[i+2][1] = U[i+2][1];
+                G[i+1][2] = V[i+1][2];
+                P[i+1][1] = P[i+1][2];
+                T[i+1][1] = T[i+1][2];
+            }
+        }
+        //top boundary free slip
+        if (jt == grid.jmaxb()-1) {
+            for (int i = il+1; i < ir; i++) {
+                V[i+1][jt+1] = 0;
+                U[i+2][jt+1] = 2-U[i+2][jt];
+                F[i+2][jt+1] = U[i+2][jt+1];
+                G[i+1][jt+2] = V[i+1][jt+2];
+                P[i+1][jt+1] = P[i+1][jt];
+                T[i+1][jt+1] = T[i+1][jt];
+            }
+        }
+        grid.set_velocity(U, velocity_type::U, il, ir, jb, jt);
+        grid.set_velocity(V, velocity_type::V, il, ir, jb, jt);
+        grid.set_pressure(P, il, ir, jb, jt);
+        grid.set_temperature(T, il, ir, jb, jt);
 }
 
 void assign_ptr_nbcells(Grid &grid){

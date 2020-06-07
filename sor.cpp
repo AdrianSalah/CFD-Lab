@@ -9,7 +9,12 @@ void sor(
         int    jmax,
         Grid& grid,
         matrix<double> &RS,
-        double *res
+        double *res,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int my_rank
 ) {
     static int i,j;
     static double rloc;
@@ -22,74 +27,74 @@ void sor(
     // grid.set_pressure_for_internal_boundaries();
 
     // Getting pressure over the whole domain
-    grid.pressure(P);
+    grid.pressure(P, il, ir, jb, jt);
 
 
     // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
-    boundary_val_sor(grid);
+    //boundary_val_sor(grid);
 
 
     // Set boundary values for the outmost cells of the domain
-    for (i = 1; i < grid.imaxb() - 1; i++) {
-        // BOTTOM
-        if (grid.cell(i, 0)._cellType == NOSLIP)
-            P.at(i).at(0) = P.at(i).at(1);
-
-        // TOP
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP)
-            P.at(i).at(grid.jmaxb() - 1) = P.at(i).at(grid.jmaxb() - 2);
+    if (il == 0) {
+        for (int j = 2; j < jt-jb+1; j++) {
+            P[1][j] = P[2][j];
+        }
     }
-
-    for (j = 1; j < grid.jmaxb() - 1; j++) {
-        // LEFT
-        if (grid.cell(0, j)._cellType == NOSLIP)
-            P.at(0).at(j) = P.at(1).at(j);
-
-        // RIGHT
-        if (grid.cell(grid.imaxb() - 1, j)._cellType == NOSLIP)
-            P.at(grid.imaxb() - 1).at(j) = P.at(grid.imaxb() - 2).at(j);
+    if (ir == grid.imaxb() - 1) {
+        for (int j = 2; j < jt - jb + 1; j++) {
+            P[ir-il+1][j] = P[ir - il ][j];
+        }
+    }
+    if (jb == 0) {
+        for (int i = 2; i < ir-il+1; i++) {
+            P[i][1] = P[i][2];
+        }
+    }
+    if (jt == grid.jmaxb() - 1) {
+        for (int i = 2; i < ir - il + 1; i++) {
+            P[i][jt-jb+1] = P[i][jt-jb];
+        }
     }
     
     
     /* SOR iteration for FLUID-cells only*/
-    for(i = 1; i < grid.imaxb() - 1; i++) {
-        for(j = 1; j < grid.jmaxb() - 1; j++) {
-            if (grid.cell(i, j)._cellType == FLUID)
+    for(i = 1+(il==0); i < ir-il+2 -(ir==(grid.imaxb() - 1)); i++) {
+        for(j = 1+(jb==0); j <jt-jb+2 -(jt==(grid.jmaxb() - 1)); j++) {
+            //if (grid.cell(i, j)._cellType == FLUID)
             {
                 P.at(i).at(j) = (1.0 - omg) * P.at(i).at(j)
                     + coeff * (
                         (P.at(i + 1).at(j) + P.at(i - 1).at(j)) / (dx * dx)
                         + (P.at(i).at(j + 1) + P.at(i).at(j - 1)) / (dy * dy)
-                        - RS.at(i).at(j)
+                        - RS.at(i-1).at(j-1)
                     );
             }
         }
     }
 
     /* compute the residual for FLUID-cells only*/
-    rloc = 0;
-    for(i = 1; i < grid.imaxb() - 1; i++) {
-        for(j = 1; j < grid.jmaxb() - 1; j++) {
-            if (grid.cell(i, j)._cellType == FLUID)
-            {
-                rloc += ((P.at(i + 1).at(j) - 2.0 * P.at(i).at(j) + P.at(i - 1).at(j)) / (dx * dx)
-                    + (P.at(i).at(j + 1) - 2.0 * P.at(i).at(j) + P.at(i).at(j - 1)) / (dy * dy) - RS.at(i).at(j)) *
-                    ((P.at(i + 1).at(j) - 2.0 * P.at(i).at(j) + P.at(i - 1).at(j)) / (dx * dx)
-                        + (P.at(i).at(j + 1) - 2.0 * P.at(i).at(j) + P.at(i).at(j - 1)) / (dy * dy) - RS.at(i).at(j));
+        rloc = 0;
+        for (i = 1 + (il == 0); i < ir - il + 2 - (ir == (grid.imaxb() - 1)); i++) {
+            for (j = 1 + (jb == 0); j < jt - jb + 2 - (jt == (grid.jmaxb() - 1)); j++) {
+                //if (grid.cell(i, j)._cellType == FLUID)
+                {
+                    rloc += ((P.at(i + 1).at(j) - 2.0 * P.at(i).at(j) + P.at(i - 1).at(j)) / (dx * dx)
+                        + (P.at(i).at(j + 1) - 2.0 * P.at(i).at(j) + P.at(i).at(j - 1)) / (dy * dy) - RS.at(i-1).at(j-1)) *
+                        ((P.at(i + 1).at(j) - 2.0 * P.at(i).at(j) + P.at(i - 1).at(j)) / (dx * dx)
+                            + (P.at(i).at(j + 1) - 2.0 * P.at(i).at(j) + P.at(i).at(j - 1)) / (dy * dy) - RS.at(i-1).at(j-1));
+                }
             }
         }
-    }
 
-    // Compute residual of SOR iteration for FLUID-cells only
-    // (now dividing by the quantity of fluid cells instead of by (imax*jmax)
-    rloc = rloc / (grid.get_fluid_cells_quantity());
-    rloc = sqrt(rloc);
-    /* set residual */
-    *res = rloc;
-
+        // Compute residual of SOR iteration for FLUID-cells only
+        // (now dividing by the quantity of fluid cells instead of by (imax*jmax)
+        rloc = rloc / ((imax) * (jmax));
+        rloc = sqrt(rloc);
+        /* set residual */
+        *res = rloc;
 
     // Setting pressure for the entire domain after the SOR algorithm
-    grid.set_pressure(P);
+    grid.set_pressure(P, il, ir, jb, jt);
 
 }
 

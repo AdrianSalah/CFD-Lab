@@ -31,18 +31,23 @@ void boundaryvalues(int imax,
 /*
  * The values of boundary conditions are specified
  */
-void spec_boundary_val(double &u_inflow,
-                       double &v_inflow,
-                       double& T_c,
-                       double& T_h,
-                       double &kappa,
-                       double &heat_flux,
-                       double val_u_inflow,
-                       double val_v_inflow,
-                       double val_T_c,
-                       double val_T_h,
-                       double val_kappa,
-                       double val_heat_flux);
+void spec_boundary_val(Grid& grid,
+    double& u_inflow,
+    double& v_inflow,
+    double& T_c,
+    double& T_h,
+    double& kappa,
+    double& heat_flux,
+    matrix<double>& U,
+    matrix<double>& V,
+    matrix<double>& P,
+    matrix<double>& T,
+    matrix<double>& F,
+    matrix<double>& G,
+    int il,
+    int ir,
+    int jb,
+    int jt);
 
 /*
  * Store pointers to neighbour cells for grid
