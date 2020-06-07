@@ -181,7 +181,6 @@ int main(int argn, char** args) {
         jb = 0;
         jt= grid.jmaxb() - 1;
     }
-
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
@@ -235,7 +234,7 @@ int main(int argn, char** args) {
 
     // Initialize timer to measure performance
     Timer runtime;
-    *dt = 0.005;
+    *dt = 0.01;
     while (time < *t_end) {
    
         //here we set time steps manually
@@ -257,8 +256,14 @@ int main(int argn, char** args) {
             
             current_timestep_iteration++;
         }
+        double summ = 0;
         grid.pressure(P, il, ir, jb, jt);
-        //std::cout<<P[7][33]<<std::endl;
+        for (int i = 0; i < 54; i++) {
+            for (int j = 0; j < 54; j++) {
+                summ += P[i][j];
+            }
+        }
+        std::cout << summ / ((double)54 * 54) << std:: endl;
         //count number of failed SOR iterations
         if(*res > *eps){
             //print warning message after failed SOR iteration
@@ -276,7 +281,6 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V, il, ir, jb, jt);
             grid.pressure(P, il, ir, jb, jt);
             grid.temperature(T, il, ir, jb, jt);
-
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
             if(myrank==0)

@@ -308,7 +308,7 @@ void spec_boundary_val(Grid& grid,
         grid.temperature(T, il, ir, jb, jt);
         // left boundary
         if (il == 0) {
-            for (int j = jb+1; j < jt; j++) {
+            for (int j = jb; j < jt+1; j++) {
                 U[2][j+1] = 0;
                 V[1][j+2] = -V[2][j+2];
                 F[2][j+1] = U[2][j + 1];
@@ -319,10 +319,12 @@ void spec_boundary_val(Grid& grid,
         }
         //right boundary
         if (ir == grid.imaxb()-1) {
-            for (int j = jb+1; j < jt; j++) {
+            for (int j = jb; j < jt+1; j++) {
                 U[ir+2][j+1] = 0;
+                U[ir+1][j+1] = 0;
                 V[ir+1][j+2] = -V[ir][j+2];
                 F[ir+2][j+1] = U[ir+2][j+1];
+                F[ir+1][j+1] = U[ir+1][j+1];
                 G[ir+1][j+2] = V[ir+1][j+2];
                 P[ir+1][j+1] = P[ir][j+1];
                 T[ir+1][j+1] = T[ir][j+1];
@@ -330,7 +332,7 @@ void spec_boundary_val(Grid& grid,
         }
         //bottom boundary
         if (jb == 0) {
-            for (int i = il+1; i < ir; i++) {
+            for (int i = il; i < ir+1; i++) {
                 V[i+1][2] = 0;
                 U[i+2][1] = -U[i+2][2];
                 F[i+2][1] = U[i+2][1];
@@ -341,11 +343,13 @@ void spec_boundary_val(Grid& grid,
         }
         //top boundary free slip
         if (jt == grid.jmaxb()-1) {
-            for (int i = il+1; i < ir; i++) {
+            for (int i = il; i < ir+1; i++) {
+                V[i+1][jt+2] = 0;
                 V[i+1][jt+1] = 0;
                 U[i+2][jt+1] = 2-U[i+2][jt];
                 F[i+2][jt+1] = U[i+2][jt+1];
                 G[i+1][jt+2] = V[i+1][jt+2];
+                G[i+1][jt+1] = V[i+1][jt+1];
                 P[i+1][jt+1] = P[i+1][jt];
                 T[i+1][jt+1] = T[i+1][jt];
             }
