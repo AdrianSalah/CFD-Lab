@@ -34,30 +34,32 @@ void init_parallel(
     /* omg_i = {1, 2,..., iproc}, omg_j = {1, 2,..., jproc} */
     int omg_i_arr[iproc], omg_j_arr[jproc];
 
+
     // store indices for columns
     for (int i = 0; i < iproc - 1; i++) {
         il_arr[i] = i * i_delta;
-        ir_arr[i] = i * i_delta + i_delta;
+        ir_arr[i] = i * i_delta + i_delta - 1;
 
         omg_i_arr[i] = i + 1;
     }
+
     // store indices for last column
     il_arr[iproc - 1] = (iproc - 1) * i_delta;
-    ir_arr[iproc - 1] = (iproc - 1) * i_delta + i_delta_last_col;
+    ir_arr[iproc - 1] = (iproc - 1) * i_delta + i_delta_last_col - 1;
 
     omg_i_arr[iproc - 1] = iproc;
 
     // store indices for rows
     for (int j = 0; j < jproc - 1; j++) {
         jb_arr[j] = j * j_delta;
-        jt_arr[j] = j * j_delta + j_delta;
+        jt_arr[j] = j * j_delta + j_delta - 1;
 
         omg_j_arr[j] = j + 1;
     }
 
     //store indices for last row
     jb_arr[jproc - 1] = (jproc - 1) * j_delta;
-    jt_arr[jproc - 1] = (jproc - 1) * j_delta + j_delta_last_row;
+    jt_arr[jproc - 1] = (jproc - 1) * j_delta + j_delta_last_row - 1;
 
     omg_j_arr[jproc - 1] = jproc;
 
