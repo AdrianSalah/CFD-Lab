@@ -171,8 +171,7 @@ void pressure_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = P[1][j];
 
-
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, 1, MPI_COMM_WORLD);
+    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_LEFT, MPI_COMM_WORLD);
 
 
     // ---------- Send to the RIGHT - receive from the LEFT ---------- //
@@ -184,8 +183,7 @@ void pressure_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = P[chunk_size_X - 2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_r, 2, MPI_COMM_WORLD);
-
+    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
 
 
     // ---------- Send to the BOTTOM - receive from the TOP ---------- //
@@ -196,7 +194,7 @@ void pressure_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = P[i][1];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b, 3, MPI_COMM_WORLD);
+    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
 
 
     // ---------- Send to the TOP - receive from the BOTTOM ---------- //
@@ -207,50 +205,46 @@ void pressure_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = P[i][chunk_size_Y - 2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_t, 4, MPI_COMM_WORLD);
+    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_TOP, MPI_COMM_WORLD);
 
 
-    if(rank_r != MPI_PROC_NULL){
+    // UPDATE the pressure values of the ghost cells in accordance with the received message:
 
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, 1, MPI_COMM_WORLD, status);
+    // RIGHT wall 
+    if(rank_r != MPI_PROC_NULL)
+    {
+        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
 
-        // UPDATE the pressure values of the RIGHT wall ghost cells in accordance with the received message:
         for (int j = 0; j < chunk_size_Y; j++)
             P[chunk_size_X - 1][j] = bufRecv[j];
-
     }
 
-    if(rank_l != MPI_PROC_NULL){
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, 2, MPI_COMM_WORLD, status);
+    // LEFT wall
+    if(rank_l != MPI_PROC_NULL)
+    {
+        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
 
-        // UPDATE the pressure values of the LEFT wall ghost cells in accordance with the received message:
         for (int j = 0; j < chunk_size_Y; j++)
             P[0][j] = bufRecv[j];
-
-
     }
 
-    if(rank_t != MPI_PROC_NULL){
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, 3, MPI_COMM_WORLD, status);
+    // TOP wall
+    if(rank_t != MPI_PROC_NULL)
+    {
+        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
 
-        // UPDATE the pressure values of the TOP row ghost cells in accordance with the received message:
         for (int i = 0; i < chunk_size_X; i++)
             P[i][chunk_size_Y - 1] = bufRecv[i];
-
     }
 
-    if(rank_b != MPI_PROC_NULL){
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, 4, MPI_COMM_WORLD, status);
+    // BOTTOM wall
+    if(rank_b != MPI_PROC_NULL)
+    {
+        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
 
-        // UPDATE the pressure values of the BOTTOM row ghost cells in accordance with the received message:
         for (int i = 0; i < chunk_size_X; i++)
             P[i][0] = bufRecv[i];
     }
-
-
-
-
-
 }
 
 
