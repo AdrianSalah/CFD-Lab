@@ -1,6 +1,7 @@
 #ifndef __PARALLEL_HPP__
 #define __PARALLEL_HPP__
 #include <mpi.h>
+#include "datastructures.hpp"
 
 void init_parallel(
     int iproc,
@@ -22,7 +23,7 @@ void init_parallel(
 
 
 void pressure_comm(
-    double** P,
+        matrix<double>& P,
     int il,
     int ir,
     int jb,

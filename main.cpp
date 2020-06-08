@@ -160,8 +160,8 @@ int main(int argn, char** args) {
     int *rank_t = new int;
     int *omg_i = new int;
     int *omg_j = new int;
-    double* bufSend = new double;
-    double* bufRecv = new double;
+    double* bufSend = new double[50];
+    double* bufRecv = new double[50];
 
 
 
@@ -229,10 +229,10 @@ int main(int argn, char** args) {
     init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
     //std::cout << "myrank: " << myrank << std::endl;
 
-
+    //std::cout << *rank_l << " " << *rank_r << " " << *rank_b << " " << *rank_t << std::endl;
     //for debugging
     //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
-    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
+    std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
     //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
 
  
@@ -288,8 +288,6 @@ int main(int argn, char** args) {
 
 
 
-
-
     // Initialize timer to measure performance
     Timer runtime;
     *dt = 0.005;
@@ -311,9 +309,11 @@ int main(int argn, char** args) {
 
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, *il, *ir, *jb, *jt, myrank);
-            
             current_timestep_iteration++;
         }
+
+        //MPI_Status status;
+        //pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
 
 
 
@@ -344,7 +344,7 @@ int main(int argn, char** args) {
             grid.temperature(T, *il, *ir, *jb, *jt);
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-
+            //output_uvp_parallel(U,V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j,  )
 
 
             if(myrank==0)
@@ -366,7 +366,6 @@ int main(int argn, char** args) {
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
-
 
 
     //close input file
@@ -417,6 +416,8 @@ int main(int argn, char** args) {
     delete rank_t;
     delete omg_i;
     delete omg_j;
+    delete[] bufSend;
+    delete[] bufRecv;
 
     MPI_Finalize();
 
