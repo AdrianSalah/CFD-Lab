@@ -8,31 +8,45 @@
 #include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
+#include "parallel.hpp"
 #include <mpi.h>
 
 #define BOUNDARY_SIZE 1
 
+
+// NOT USED in ws3: specify Scenario with input from console
+/*
 int scenarioSpec;
 std::string SCENARIO_NAME;
 std::string SCENARIO_DAT_FILE;
 std::string SCENARIO_PGM_FILE;
+*/
 
 
-//define scenarios using macros
-//#define SCENARIO_NAME "lid_driven_cavity"
-//#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
-//#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
+// USED in ws3: specify Scenario using macros
+#define SCENARIO_NAME "lid_driven_cavity"
+#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
+#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
 
 int main(int argn, char** args) {
+
     MPI_Init(&argn, &args);
-    int num_proc = 4;
+
+    int num_proc;
+
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
-    int jb, jt, il, ir;
-    int myrank, rank_b, rank_t, rank_l, rank, r;
-    int omg_i, omg_j, chunk, my_rank;
-    double* bufSend, *bufRecv;
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-    //select scenario
+
+    int myrank;
+
+    int chunk;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+
+
+
+    // NOT USED in ws3: specify Scenario with input from console
+    /*
     if (argn == 1)
         scenarioSpec = 1;
 
@@ -98,6 +112,7 @@ int main(int argn, char** args) {
             exit(EXIT_FAILURE);
 
     }
+     */
 
 
 
@@ -114,8 +129,8 @@ int main(int argn, char** args) {
     double* dt = new double;                /* time step */
     double* dx = new double;                /* length of a cell x-dir. */
     double* dy = new double;                /* length of a cell y-dir. */
-    int* imax = new int;                    /* number of cells x-direction*/
-    int* jmax = new int;                    /* number of cells y-direction*/
+    int* imax = new int(50);                    /* number of cells x-direction*/
+    int* jmax = new int(50);                    /* number of cells y-direction*/
     double* alpha = new double;             /* uppwind differencing factor*/
     double* omg = new double;               /* relaxation factor */
     double* tau = new double;               /* safety factor for time step*/
@@ -133,8 +148,30 @@ int main(int argn, char** args) {
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;           /* array of geometry */
-    int* iproc = new int;
-    int* jproc = new int;
+    int* iproc = new int(2);
+    int* jproc = new int(2);
+    int *il = new int;
+    int *ir = new int;
+    int *jb = new int;
+    int *jt = new int;
+    int *rank_l = new int;
+    int *rank_r = new int;
+    int *rank_b = new int;
+    int *rank_t = new int;
+    int *omg_i = new int;
+    int *omg_j = new int;
+    double* bufSend, *bufRecv;
+
+
+
+    init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
+
+    //for debugging
+    //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
+    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
+    //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
+
+
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -142,8 +179,8 @@ int main(int argn, char** args) {
     FILE *parameterFile;
     FILE *geometryFile;
 
-    const char *input_parameter_file_path = SCENARIO_DAT_FILE.c_str();
-    const char *input_geometry_file_path = SCENARIO_PGM_FILE.c_str();
+    const char *input_parameter_file_path = SCENARIO_DAT_FILE; //.c_str(); ---> used when we specify with input from console
+    const char *input_geometry_file_path = SCENARIO_PGM_FILE; //.c_str(); ---> used when we specify with input from console
 
     parameterFile = fopen(input_parameter_file_path, "r");
     geometryFile = fopen(input_parameter_file_path, "r");
@@ -176,10 +213,10 @@ int main(int argn, char** args) {
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
     if (*iproc == 1 and *jproc == 1) {
-        il = 0;
-        ir = grid.imaxb() - 1;
-        jb = 0;
-        jt= grid.jmaxb() - 1;
+        *il = 0;
+        *ir = grid.imaxb() - 1;
+        *jb = 0;
+        *jt= grid.jmaxb() - 1;
     }
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
@@ -188,7 +225,9 @@ int main(int argn, char** args) {
  
     //for output to vtk-file
     VTKHelper vtkOutput;
-    
+
+
+
     //TO DO: check wheather imax and jmax same as grid size in geometry file
     for (int j = grid.jmaxb() - 1; j >= 0; j--){
         for (int i = 0; i < grid.imaxb(); i++){
@@ -221,12 +260,12 @@ int main(int argn, char** args) {
 
     //initialize matrices U, V, P, T
     matrix<double> U, V, P, T;
-    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, il, ir, jb, jt);
+    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, *il, *ir, *jb, *jt);
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
 
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
-    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, il, ir, jb, jt);
+    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, *il, *ir, *jb, *jt);
 
 
     //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -240,10 +279,10 @@ int main(int argn, char** args) {
         //here we set time steps manually
         //calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
         //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
-        spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, il, ir, jb, jt);
+        spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
         //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
-        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, il, ir, jb, jt);
-        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, il, ir, jb, jt);
+        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
+        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, *il, *ir, *jb, *jt);
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;
@@ -252,7 +291,7 @@ int main(int argn, char** args) {
         *res = INFINITY;
 
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
-            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, il, ir, jb, jt,my_rank);
+            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, *il, *ir, *jb, *jt, myrank);
             
             current_timestep_iteration++;
         }
@@ -270,17 +309,17 @@ int main(int argn, char** args) {
             count_failed_SOR++;
         }
 
-        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, il, ir, jb, jt);
+        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
         visualization_time_accumulator += * dt;
         timesteps_total++;
         time += *dt;
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
-            grid.velocity(U, velocity_type::U, il, ir, jb, jt);
-            grid.velocity(V, velocity_type::V, il, ir, jb, jt);
-            grid.pressure(P, il, ir, jb, jt);
-            grid.temperature(T, il, ir, jb, jt);
+            grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+            grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+            grid.pressure(P, *il, *ir, *jb, *jt);
+            grid.temperature(T, *il, *ir, *jb, *jt);
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
             if(myrank==0)
@@ -289,10 +328,10 @@ int main(int argn, char** args) {
         }
     }
 
-    grid.velocity(U, velocity_type::U, il, ir, jb, jt);
-    grid.velocity(V, velocity_type::V, il, ir, jb, jt);
-    grid.pressure(P, il, ir, jb, jt);
-    grid.temperature(T, il, ir, jb, jt);
+    grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+    grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+    grid.pressure(P, *il, *ir, *jb, *jt);
+    grid.temperature(T, *il, *ir, *jb, *jt);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -302,6 +341,8 @@ int main(int argn, char** args) {
 
     //Print total number of timesteps and number of failed SOR iterations
     std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+
+
 
     //close input file
     fclose(parameterFile);
@@ -341,6 +382,18 @@ int main(int argn, char** args) {
     delete heat_flux;
     delete iproc;
     delete jproc;
+    delete il;
+    delete ir;
+    delete jb;
+    delete jt;
+    delete rank_l;
+    delete rank_r;
+    delete rank_b;
+    delete rank_t;
+    delete omg_i;
+    delete omg_j;
+
+    MPI_Finalize();
 
     return 0;
 }
