@@ -2,6 +2,15 @@
 #define __PARALLEL_HPP__
 #include <mpi.h>
 #include "datastructures.hpp"
+#include "enums.hpp"
+
+enum CommunicationType {
+    TO_RIGHT    = 0,
+    TO_LEFT     = 1,
+    TO_TOP      = 2,
+    TO_BOTTOM   = 3
+};
+
 
 void init_parallel(
     int iproc,
