@@ -213,7 +213,7 @@ void pressure_comm(
     // RIGHT wall 
     if(rank_r != MPI_PROC_NULL)
     {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
+        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
 
         for (int j = 0; j < chunk_size_Y; j++)
             P[chunk_size_X - 1][j] = bufRecv[j];
@@ -222,7 +222,7 @@ void pressure_comm(
     // LEFT wall
     if(rank_l != MPI_PROC_NULL)
     {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, chunk, CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
+        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
 
         for (int j = 0; j < chunk_size_Y; j++)
             P[0][j] = bufRecv[j];
@@ -231,7 +231,7 @@ void pressure_comm(
     // TOP wall
     if(rank_t != MPI_PROC_NULL)
     {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
+        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
 
         for (int i = 0; i < chunk_size_X; i++)
             P[i][chunk_size_Y - 1] = bufRecv[i];
@@ -240,7 +240,7 @@ void pressure_comm(
     // BOTTOM wall
     if(rank_b != MPI_PROC_NULL)
     {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, chunk, CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
+        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
 
         for (int i = 0; i < chunk_size_X; i++)
             P[i][0] = bufRecv[i];
