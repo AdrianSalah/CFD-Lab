@@ -30,7 +30,6 @@ void sor(
     // Getting pressure over the whole domain
     grid.pressure(P, il, ir, jb, jt);
 
-
     // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
     //boundary_val_sor(grid);
 
@@ -38,25 +37,24 @@ void sor(
     // Set boundary values for the outmost cells of the domain
     if (il == 0) {
         for (int j = 1; j < jt-jb+2; j++) {
-            P[1][j] = P[2][j];
+            P[1][j] = 0;
         }
     }
     if (ir == (grid.imaxb() - 1)) {
         for (int j = 1; j < (jt - jb + 2); j++) {
-            P[ir-il+1][j] = P[ir - il ][j];
+            P[ir-il+1][j] =0;
         }
     }
     if (jb == 0) {
         for (int i = 1; i < ir-il+2; i++) {
-            P[i][1] = P[i][2];
+            P[i][1] =0;
         }
     }
     if (jt == (grid.jmaxb() - 1)) {
         for (int i = 1; i < (ir - il + 2); i++) {
-            P[i][jt-jb+1] = P[i][jt-jb];
+            P[i][jt-jb+1] = 0;
         }
     }
-    
     
     /* SOR iteration for FLUID-cells only*/
     for(i = 1+(il==0); i < ir-il+2 -(ir==(grid.imaxb() - 1)); i++) {

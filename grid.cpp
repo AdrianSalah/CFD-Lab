@@ -78,7 +78,7 @@ void Grid::velocity(matrix<double>& vec, velocity_type type,int il,int ir,int jb
             for (int x = il; x <= ir; x++) {
                 for (int y = jb; y <= jt; y++) {
                     // Accessing velocity
-                    vec.at(x+2).at(y+1) = _cells.at(x).at(y).velocity(type);
+                    vec.at(x-il+2).at(y-jb+1) = _cells.at(x).at(y).velocity(type);
                 }
             }
         }
@@ -88,7 +88,7 @@ void Grid::velocity(matrix<double>& vec, velocity_type type,int il,int ir,int jb
             for (int x = il; x <= ir; x++) {
                 for (int y = jb; y <= jt; y++) {
                     // Accessing velocity
-                    vec.at(x + 1).at(y + 2) = _cells.at(x).at(y).velocity(type);
+                    vec.at(x-il + 1).at(y-jb + 2) = _cells.at(x).at(y).velocity(type);
                 }
             }
         }
@@ -104,7 +104,7 @@ void Grid::set_velocity(matrix<double>& vec, velocity_type type, int il, int ir,
             for (int x = il; x <= ir; x++) {
                 for (int y = jb; y <= jt; y++) {
                     // Setting velocity
-                    _cells.at(x).at(y).set_velocity(vec.at(x+2).at(y+1), type);
+                    _cells.at(x).at(y).set_velocity(vec.at(x-il+2).at(y-jb+1), type);
                 }
             }
         }
@@ -112,7 +112,7 @@ void Grid::set_velocity(matrix<double>& vec, velocity_type type, int il, int ir,
             for (int x = il; x <= ir; x++) {
                 for (int y = jb; y <= jt; y++) {
                     // Setting velocity
-                    _cells.at(x).at(y).set_velocity(vec.at(x + 1).at(y + 2), type);
+                    _cells.at(x).at(y).set_velocity(vec.at(x-il + 1).at(y-jb + 2), type);
                 }
             }
         }
@@ -132,7 +132,7 @@ void Grid::pressure(matrix<double>& vec, int il, int ir, int jb, int jt) {
     for (int x = il; x <= ir; x++) {
         for (int y = jb; y <= jt; y++) {
             // Accessing pressure
-            vec.at(x+1).at(y+1) = _cells.at(x).at(y).pressure();
+            vec.at(x-il+1).at(y-jb+1) = _cells.at(x).at(y).pressure();
         }
     }
     
@@ -145,7 +145,7 @@ void Grid::set_pressure(matrix<double>& vec, int il, int ir, int jb, int jt) {
     for (int x = il; x <= ir; x++) {
         for (int y = jb; y <= jt; y++) {
             // Setting pressure
-            _cells.at(x).at(y).set_pressure(vec.at(x+1).at(y+1));
+            _cells.at(x).at(y).set_pressure(vec.at(x-il+1).at(y-jb+1));
         }
     }
 }
@@ -168,7 +168,7 @@ void Grid::temperature(matrix<double>& vec, int il, int ir, int jb, int jt) {
     for (int x = il; x <= ir; x++) {
         for (int y = jb; y <= jt; y++) {
             // Accessing temperature
-            vec.at(x+1).at(y+1) = _cells.at(x).at(y).temperature();
+            vec.at(x-il+1).at(y-jb+1) = _cells.at(x).at(y).temperature();
         }
     }
 }
@@ -179,7 +179,7 @@ void Grid::set_temperature(matrix<double>& vec, int il, int ir, int jb, int jt) 
     for (int x = il; x <= ir; x++) {
         for (int y = jb; y <= jt; y++) {
             // Setting temperature
-            _cells.at(x).at(y).set_temperature(vec.at(x+1).at(y+1));
+            _cells.at(x).at(y).set_temperature(vec.at(x-il+1).at(y-jb+1));
         }
     }
 }

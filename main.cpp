@@ -256,14 +256,14 @@ int main(int argn, char** args) {
             
             current_timestep_iteration++;
         }
-        double summ = 0;
-        grid.pressure(P, il, ir, jb, jt);
-        for (int i = 0; i < 54; i++) {
-            for (int j = 0; j < 54; j++) {
-                summ += P[i][j];
-            }
-        }
-        std::cout << summ / ((double)54 * 54) << std:: endl;
+        //double summ = 0;
+        //grid.pressure(P, il, ir, jb, jt);
+        //for (int i = 0; i < 54; i++) {
+        //    for (int j = 0; j < 54; j++) {
+        //        summ += P[i][j];
+        //    }
+        //}
+        //std::cout << summ / ((double)54 * 54) << std:: endl;
         //count number of failed SOR iterations
         if(*res > *eps){
             //print warning message after failed SOR iteration
@@ -296,17 +296,6 @@ int main(int argn, char** args) {
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-
-
-    // print Temperature in final timestep
-    /*
-    std::cout << "T temperature" << std::endl;
-    for (int i = 0; i < grid.imaxb() / 2; ++i) {
-        for (int j = 0; j < grid.jmaxb() / 2; ++j)
-            std::cout << T[i][j] << " ";
-        std::cout << std::endl;
-    }
-     */
           
     // Print out the total time required for the solution
     runtime.printTimer();
