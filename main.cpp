@@ -129,8 +129,8 @@ int main(int argn, char** args) {
     double* dt = new double;                /* time step */
     double* dx = new double;                /* length of a cell x-dir. */
     double* dy = new double;                /* length of a cell y-dir. */
-    int* imax = new int(50);                    /* number of cells x-direction*/
-    int* jmax = new int(50);                    /* number of cells y-direction*/
+    int* imax = new int;                    /* number of cells x-direction*/
+    int* jmax = new int;                    /* number of cells y-direction*/
     double* alpha = new double;             /* uppwind differencing factor*/
     double* omg = new double;               /* relaxation factor */
     double* tau = new double;               /* safety factor for time step*/
@@ -148,8 +148,8 @@ int main(int argn, char** args) {
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
     int **cell_array = new int *;           /* array of geometry */
-    int* iproc = new int(2);
-    int* jproc = new int(2);
+    int* iproc = new int;
+    int* jproc = new int;
     int *il = new int;
     int *ir = new int;
     int *jb = new int;
@@ -160,16 +160,10 @@ int main(int argn, char** args) {
     int *rank_t = new int;
     int *omg_i = new int;
     int *omg_j = new int;
-    double* bufSend, *bufRecv;
+    double* bufSend = new double;
+    double* bufRecv = new double;
 
 
-
-    init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
-
-    //for debugging
-    //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
-    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
-    //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
 
 
 
@@ -201,34 +195,54 @@ int main(int argn, char** args) {
                         tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, iproc, jproc);
     }
     // asserting iproc and jproc values
+
     if ((*iproc) * (*jproc) > num_proc) {
         std::cout << "Too many subdomains. ";
         *jproc = std::floor(std::sqrt(num_proc *(*jmax)/(*imax)));
         *iproc = num_proc / (*jproc);
         std::cout << "new iproc = " << * iproc << "  new jproc = " << *jproc << std::endl;
     }
+
  
     cell_array = read_pgm(input_geometry_file_path);
 
+
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
+
     if (*iproc == 1 and *jproc == 1) {
         *il = 0;
         *ir = grid.imaxb() - 1;
         *jb = 0;
         *jt= grid.jmaxb() - 1;
     }
+
+    // NOT USED in ws3!
+    /*
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
+     */
+
+
+    init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
+    //std::cout << "myrank: " << myrank << std::endl;
+
+
+    //for debugging
+    //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
+    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
+    //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
+
  
     //for output to vtk-file
     VTKHelper vtkOutput;
 
 
-
+    // NOT USED in ws3!
     //TO DO: check wheather imax and jmax same as grid size in geometry file
+    /*
     for (int j = grid.jmaxb() - 1; j >= 0; j--){
         for (int i = 0; i < grid.imaxb(); i++){
             //assign cell type
@@ -249,6 +263,8 @@ int main(int argn, char** args) {
     }
 
     assign_ptr_nbcells(grid);
+    */
+
 
 
     // Initializing variables
@@ -271,9 +287,12 @@ int main(int argn, char** args) {
     //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
 
+
+
+
     // Initialize timer to measure performance
     Timer runtime;
-    *dt = 0.01;
+    *dt = 0.005;
     while (time < *t_end) {
    
         //here we set time steps manually
@@ -295,6 +314,9 @@ int main(int argn, char** args) {
             
             current_timestep_iteration++;
         }
+
+
+
         //double summ = 0;
         //grid.pressure(P, il, ir, jb, jt);
         //for (int i = 0; i < 54; i++) {
@@ -322,6 +344,9 @@ int main(int argn, char** args) {
             grid.temperature(T, *il, *ir, *jb, *jt);
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+
+
+
             if(myrank==0)
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
