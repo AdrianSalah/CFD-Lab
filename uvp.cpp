@@ -63,9 +63,9 @@ void calculate_fg(
     static double d_uv_dy;
 
     // ------ Discretisation of differential operators of F ----- //
-    for (int i = 2+(il == 0); i < ir-il+3-(ir == (grid.imaxb() - 1)); i++) {
+    for (int i = 2 + (il == 0); i < (ir - il + 3) - (ir == (grid.imaxb() - 1)); i++) {
 
-        for (int j = 1+(jb==0); j < ir - il + 2- (jt == (grid.jmaxb() - 1)); j++)
+        for (int j = 1 + (jb == 0); j < (jt - jb + 2) - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
             {
                 //second derivative with respect to x
@@ -111,7 +111,7 @@ void calculate_fg(
 
     for (int i = 1 + (il == 0); i < ir - il + 2 - (ir == (grid.imaxb() - 1)); i++) {
 
-        for (int j = 2 + (jb == 0); j < ir - il + 3 - (jt == (grid.jmaxb() - 1)); j++)
+        for (int j = 2 + (jb == 0); j < jt - jb + 3 - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
             {
             //second derivative of v with respect to x
@@ -225,11 +225,11 @@ void calculate_rs(
 {
     for (int i =  (il == 0); i < ir - il + 1 - (ir == (grid.imaxb() - 1)); i++) {
 
-        for (int j =  (jb == 0); j < ir - il + 1 - (jt == (grid.jmaxb() - 1)); j++)
+        for (int j =  (jb == 0); j < jt - jb + 1 - (jt == (grid.jmaxb() - 1)); j++)
         {
             RS.at(i).at(j) = 1 / dt * (
-                    (F.at(i+2).at(j+1) - F.at(i + 1).at(j+1)) / dx +
-                    (G.at(i+1).at(j+2) - G.at(i+1).at(j + 1)) / dy
+                (F.at(i + 2).at(j + 1) - F.at(i + 1).at(j + 1)) / dx +
+                (G.at(i + 1).at(j + 2) - G.at(i + 1).at(j + 1)) / dy
             );
         }
     }
@@ -255,10 +255,10 @@ double max_abs_velocity(
     int jt)
 {
     static matrix<double> current_velocity; //matrix of current velocity U or V on grid
-    grid.velocity(current_velocity, type,il,ir,jb,jt); //assigns velocity U or V to current_velocity
+    grid.velocity(current_velocity, type, il, ir, jb, jt); //assigns velocity U or V to current_velocity
 
     // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
-    static std::vector<double> max_abs_value_per_row(ir+1, 0);
+    static std::vector<double> max_abs_value_per_row(ir + 1, 0);
 
     // Resetting the values to zeros
     std::fill(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), 0);
@@ -334,12 +334,12 @@ void calculate_uv(
     grid.pressure(pressure, il, ir, jb, jt);
 
 
-    for (int i = 2+(il==0); i < ir-il+3-(ir==(grid.imaxb() - 1)); i++)
+    for (int i = 2 + (il == 0); i < ir - il + 3 - (ir == (grid.imaxb() - 1)); i++)
     {
         for (int j = 1 + (jb == 0); j < jt - jb + 2 - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
             {
-                u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i).at(j) - pressure.at(i-1).at(j));
+            u_velocity.at(i).at(j) = F.at(i).at(j) - dt / dx * (pressure.at(i).at(j) - pressure.at(i - 1).at(j));
             }
     }
 
@@ -348,7 +348,7 @@ void calculate_uv(
         for (int j = 2 + (jb == 0); j < jt - jb + 3 - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
             {
-                v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j) - pressure.at(i).at(j-1));
+            v_velocity.at(i).at(j) = G.at(i).at(j) - dt / dy * (pressure.at(i).at(j) - pressure.at(i).at(j - 1));
             }
     }
 
@@ -373,22 +373,18 @@ void init_fgrs(int imax,
             int jt)
 
 {
-    F.resize(ir-il+4);
-    G.resize(ir-il+3);
-    RS.resize(ir-il+1);
+    F.resize(ir - il + 4);
+    G.resize(ir - il + 3);
+    RS.resize(ir - il + 1);
 
     for (int i = 0; i < ir - il + 4; i++)
-    {
-        F.at(i).resize(jt-jb+3, FI);
-    }
+        F.at(i).resize(jt - jb + 3, FI);
+
     for (int i = 0; i < ir - il + 3; i++)
-    {
         G.at(i).resize(jt - jb + 4, GI);
-    }
+
     for (int i = 0; i < ir - il + 1; i++)
-    {
         RS.at(i).resize(jt - jb + 1, RSI);
-    }
 }
 
 
@@ -415,8 +411,8 @@ void init_uvpt(
     grid.pressure(P, il, ir, jb, jt);
     grid.temperature(T, il, ir, jb, jt);
 
-    for (int i = 0; i <= ir-il+2; i++) {
-        for (int j = 0; j <= jt-jb+2; j++) {
+    for (int i = 0; i <= ir - il + 2; i++) {
+        for (int j = 0; j <= jt - jb + 2; j++) {
             //if (grid.cell(i, j)._cellType == FLUID) {
                 U.at(i).at(j) = UI;
                 V.at(i).at(j) = VI;
