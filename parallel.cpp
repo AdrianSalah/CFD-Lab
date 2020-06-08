@@ -548,7 +548,7 @@ void v_velocity_comm(
 
 // --------- Communication of F-force (along x axis) --------- //
 
-void u_velocity_comm(
+void f_comm(
     double** F,
     int il,
     int ir,
@@ -660,7 +660,7 @@ void u_velocity_comm(
 
 // --------- Communication of G-force (along y axis) --------- //
 
-void v_velocity_comm(
+void g_comm(
     double** G,
     int il,
     int ir,

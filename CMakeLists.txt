@@ -38,7 +38,7 @@ endif()
 
 # Creating the executable of our project and the required dependencies
 # the executable is called sim
-add_executable(sim main.cpp sor.cpp helper.cpp init.cpp visual.cpp boundary_val.cpp uvp.cpp grid.cpp cell.cpp)
+add_executable(sim main.cpp sor.cpp helper.cpp init.cpp visual.cpp boundary_val.cpp uvp.cpp grid.cpp cell.cpp parallel.cpp)
 # if you use external libraries you have to link them like 
 # target_link_libraries(sim PRIVATE MPI::MPI_CXX Boost::filesystem)
 target_link_libraries(sim PRIVATE ${VTK_LIBRARIES})

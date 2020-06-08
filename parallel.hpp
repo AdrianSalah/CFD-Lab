@@ -36,5 +36,65 @@ void pressure_comm(
     MPI_Status* status,
     int chunk);
 
+void u_velocity_comm(
+        double** U,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int rank_l,
+        int rank_r,
+        int rank_b,
+        int rank_t,
+        double* bufSend,
+        double* bufRecv,
+        MPI_Status* status,
+        int chunk);
+
+void v_velocity_comm(
+        double** V,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int rank_l,
+        int rank_r,
+        int rank_b,
+        int rank_t,
+        double* bufSend,
+        double* bufRecv,
+        MPI_Status* status,
+        int chunk);
+
+void f_comm(
+        double** F,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int rank_l,
+        int rank_r,
+        int rank_b,
+        int rank_t,
+        double* bufSend,
+        double* bufRecv,
+        MPI_Status* status,
+        int chunk);
+
+void g_comm(
+        double** G,
+        int il,
+        int ir,
+        int jb,
+        int jt,
+        int rank_l,
+        int rank_r,
+        int rank_b,
+        int rank_t,
+        double* bufSend,
+        double* bufRecv,
+        MPI_Status* status,
+        int chunk);
+
 
 #endif // __PARALLEL_HPP__
