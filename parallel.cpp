@@ -273,9 +273,8 @@ void u_velocity_comm(
     MPI_Status* status,
     int chunk)
 {
-
     // Size of the chunk in y-direction (rows)
-    // inner cells + 2 cells of BOTTOM ghost layer + 1 cell of TOP ghost layer in y-direction
+    // inner cells + 2 cells of BOTTOM and TOP ghost layers in y-direction
     int chunk_size_Y = jt - jb + 3;
 
 
@@ -286,7 +285,7 @@ void u_velocity_comm(
     int left_ghost_layer_width = 2;
     int bottom_ghost_layer_width = 1;
 
-    // ---------- Send to the LEFT ---------- //
+    // ---------- Send to the LEFT and Receive from the RIGHT ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the LEFT wall, i.e. i=2,
     // which will become the ghost cells of the RIGHT wall of the receiving process.
@@ -294,11 +293,16 @@ void u_velocity_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = U[2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,
-        CommunicationType::TO_LEFT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_LEFT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_LEFT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        U[chunk_size_X - 1][j] = bufRecv[j];
 
 
-    // ---------- Send to the RIGHT ---------- //
+    // ---------- Send to the RIGHT and Receive from the LEFT (two columns) ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the RIGHT wall,
     // i.e. i=[chunk_size_X - 3, chunk_size_X - 2],
@@ -308,11 +312,17 @@ void u_velocity_comm(
         for (int j = 0; j < chunk_size_Y; j++)
             bufSend[i * chunk_size_Y + j] = U[i + chunk_size_X - 3][j];
 
-    MPI_Send(bufSend, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_r,
-        CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_r, CommunicationType::TO_RIGHT,
+        bufRecv, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_l, CommunicationType::TO_RIGHT,
+        MPI_COMM_WORLD, status);
+
+    for (int i = 0; i < left_ghost_layer_width; i++)
+        for (int j = 0; j < chunk_size_Y; j++)
+            U[i][j] = bufRecv[i * chunk_size_Y + j];
 
 
-    // ---------- Send to the BOTTOM ---------- //
+    // ---------- Send to the BOTTOM and Receive from the TOP ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the BOTTOM wall, i.e. j=1,
     // which will become the ghost cells of the TOP wall of the receiving process.
@@ -320,11 +330,15 @@ void u_velocity_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = U[i][1];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b,
-        CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_BOTTOM,
+        MPI_COMM_WORLD, status);
 
+    for (int i = 0; i < chunk_size_X; i++)
+        U[i][chunk_size_Y - 1] = bufRecv[i];
 
-    // ---------- Send to the TOP ---------- //
+    // ---------- Send to the TOP and Receive from the BOTTOM ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the TOP wall, i.e. j=chunk_size_Y - 2,
     // which will become the ghost cells of the BOTTOM wall of the receiving process.
@@ -332,54 +346,13 @@ void u_velocity_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = U[i][chunk_size_Y - 2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_t,
-        CommunicationType::TO_TOP, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_TOP,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_TOP,
+        MPI_COMM_WORLD, status);
 
-
-    // UPDATE the velocity values of the ghost cells in accordance with the received message:
-    
-    // ---------- Receive from the RIGHT ---------- //
-
-    if (rank_r != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
-            CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            U[chunk_size_X - 1][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the LEFT - two (!) columns ---------- //
-
-    if (rank_l != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_l,
-            CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < left_ghost_layer_width; i++)
-            for (int j = 0; j < chunk_size_Y; j++)
-                U[i][j] = bufRecv[i * chunk_size_Y + j];
-    }
-
-    // ---------- Receive from the TOP ---------- //
-    if (rank_t != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,
-            CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            U[i][chunk_size_Y - 1] = bufRecv[i];
-    }
-
-    // ---------- Receive from the BOTTOM ---------- //
-    if (rank_b != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_b,
-            CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            U[i][0] = bufRecv[i];
-    }
+    for (int i = 0; i < chunk_size_X; i++)
+        U[i][0] = bufRecv[i];
 }
 
 
@@ -399,21 +372,20 @@ void v_velocity_comm(matrix<double> V,
     MPI_Status* status,
     int chunk)
 {
-
     // Size of the chunk in y-direction (rows)
     // inner cells + 2 cells of BOTTOM ghost layer + 1 cell of TOP ghost layer in y-direction
     int chunk_size_Y = jt - jb + 4;
 
 
     // Size of the chunk in x-direction (columns)
-    // inner cells + 2 cells of LEFT ghost layer + 1 cell of RIGHT ghost layer in x-direction
+    // inner cells + 2 cells of LEFT and RIGHT ghost layers in x-direction
     int chunk_size_X = ir - il + 3;
 
     int left_ghost_layer_width = 1;
     int bottom_ghost_layer_width = 2;
 
 
-    // ---------- Send to the LEFT ---------- //
+    // ---------- Send to the LEFT and Receive from the RIGHT ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the LEFT wall, i.e. i=2,
     // which will become the ghost cells of the RIGHT wall of the receiving process.
@@ -421,11 +393,16 @@ void v_velocity_comm(matrix<double> V,
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = V[1][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,
-        CommunicationType::TO_LEFT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_LEFT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_LEFT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        V[chunk_size_X - 1][j] = bufRecv[j];
 
 
-    // ---------- Send to the RIGHT ---------- //
+    // ---------- Send to the RIGHT and Receive from the LEFT ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the RIGHT wall,
     // i.e. i=chunk_size_X - 2,
@@ -434,11 +411,16 @@ void v_velocity_comm(matrix<double> V,
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = V[chunk_size_X - 2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_r,
-        CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_RIGHT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_RIGHT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        V[0][j] = bufRecv[j];
 
 
-    // ---------- Send to the BOTTOM ---------- //
+    // ---------- Send to the BOTTOM and Receive from the TOP ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the BOTTOM wall, i.e. j=2,
     // which will become the ghost cells of the TOP wall of the receiving process.
@@ -446,11 +428,16 @@ void v_velocity_comm(matrix<double> V,
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = V[i][2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b,
-        CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_BOTTOM,
+        MPI_COMM_WORLD, status);
+
+    for (int i = 0; i < chunk_size_X; i++)
+        V[i][chunk_size_Y - 1] = bufRecv[i];
 
 
-    // ---------- Send to the TOP ---------- //
+    // ---------- Send to the TOP and Receive from the BOTTOM (two rows) ---------- //
 
     // Fill send buffer with velocities belonging to the chunk's internal cells of the TOP wall,
     // i.e. j=[chunk_size_Y - 3, chunk_size_Y - 2]
@@ -460,51 +447,14 @@ void v_velocity_comm(matrix<double> V,
         for (int i = 0; i < chunk_size_X; i++)
             bufSend[j * chunk_size_X + i] = V[i][j + chunk_size_Y - 3];
 
-    MPI_Send(bufSend, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_t,
-        CommunicationType::TO_TOP, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_t, CommunicationType::TO_TOP,
+        bufRecv, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_b, CommunicationType::TO_TOP,
+        MPI_COMM_WORLD, status);
 
-    // UPDATE the velocity values of ghost cells in accordance with the received message:
-
-    // ---------- Receive from the RIGHT ---------- //
-    if (rank_r != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
-            CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            V[chunk_size_X - 1][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the LEFT ---------- //
-    if (rank_l != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l,
-            CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            V[0][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the TOP ---------- //
-    if (rank_t != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,
-            CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
-
+    for (int j = 0; j < bottom_ghost_layer_width; j++)
         for (int i = 0; i < chunk_size_X; i++)
-            V[i][chunk_size_Y - 1] = bufRecv[i];
-    }
-
-    // ---------- Receive from the BOTTOM - two (!) rows ---------- //
-    if (rank_b != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_b,
-            CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < bottom_ghost_layer_width; j++)
-            for (int i = 0; i < chunk_size_X; i++)
-                V[i][j] = bufRecv[j * chunk_size_X + i];
-    }
+            V[i][j] = bufRecv[j * chunk_size_X + i];
 }
 
 
@@ -525,9 +475,8 @@ void f_force_comm(
     MPI_Status* status,
     int chunk)
 {
-
     // Size of the chunk in y-direction (rows)
-    // inner cells + 2 cells of BOTTOM ghost layer + 1 cell of TOP ghost layer in y-direction
+// inner cells + 2 cells of BOTTOM and TOP ghost layers in y-direction
     int chunk_size_Y = jt - jb + 3;
 
 
@@ -538,7 +487,7 @@ void f_force_comm(
     int left_ghost_layer_width = 2;
     int bottom_ghost_layer_width = 1;
 
-    // ---------- Send to the LEFT ---------- //
+    // ---------- Send to the LEFT and Receive from the RIGHT ---------- //
 
     // Fill send buffer with F-forces belonging to the chunk's internal cells of the LEFT wall, i.e. i=2,
     // which will become the ghost cells of the RIGHT wall of the receiving process.
@@ -546,11 +495,16 @@ void f_force_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = F[2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,
-        CommunicationType::TO_LEFT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_LEFT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_LEFT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        F[chunk_size_X - 1][j] = bufRecv[j];
 
 
-    // ---------- Send to the RIGHT ---------- //
+    // ---------- Send to the RIGHT and Receive from the LEFT (two columns) ---------- //
 
     // Fill send buffer with F-forces belonging to the chunk's internal cells of the RIGHT wall,
     // i.e. i=[chunk_size_X - 3, chunk_size_X - 2],
@@ -560,11 +514,17 @@ void f_force_comm(
         for (int j = 0; j < chunk_size_Y; j++)
             bufSend[i * chunk_size_Y + j] = F[i + chunk_size_X - 3][j];
 
-    MPI_Send(bufSend, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_r,
-        CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_r, CommunicationType::TO_RIGHT,
+        bufRecv, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_l, CommunicationType::TO_RIGHT,
+        MPI_COMM_WORLD, status);
+
+    for (int i = 0; i < left_ghost_layer_width; i++)
+        for (int j = 0; j < chunk_size_Y; j++)
+            F[i][j] = bufRecv[i * chunk_size_Y + j];
 
 
-    // ---------- Send to the BOTTOM ---------- //
+    // ---------- Send to the BOTTOM and Receive from the TOP ---------- //
 
     // Fill send buffer with F-forces belonging to the chunk's internal cells of the BOTTOM wall, i.e. j=1,
     // which will become the ghost cells of the TOP wall of the receiving process.
@@ -572,11 +532,15 @@ void f_force_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = F[i][1];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b,
-        CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_BOTTOM,
+        MPI_COMM_WORLD, status);
 
+    for (int i = 0; i < chunk_size_X; i++)
+        F[i][chunk_size_Y - 1] = bufRecv[i];
 
-    // ---------- Send to the TOP ---------- //
+    // ---------- Send to the TOP and Receive from the BOTTOM ---------- //
 
     // Fill send buffer with F-forces belonging to the chunk's internal cells of the TOP wall, i.e. j=chunk_size_Y - 2,
     // which will become the ghost cells of the BOTTOM wall of the receiving process.
@@ -584,54 +548,13 @@ void f_force_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = F[i][chunk_size_Y - 2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_t,
-        CommunicationType::TO_TOP, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_TOP,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_TOP,
+        MPI_COMM_WORLD, status);
 
-
-    // UPDATE the F-forces values of the ghost cells in accordance with the received message:
-
-    // ---------- Receive from the RIGHT ---------- //
-
-    if (rank_r != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
-            CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            F[chunk_size_X - 1][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the LEFT - two (!) columns ---------- //
-
-    if (rank_l != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y * left_ghost_layer_width, MPI_DOUBLE, rank_l,
-            CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < left_ghost_layer_width; i++)
-            for (int j = 0; j < chunk_size_Y; j++)
-                F[i][j] = bufRecv[i * chunk_size_Y + j];
-    }
-
-    // ---------- Receive from the TOP ---------- //
-    if (rank_t != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,
-            CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            F[i][chunk_size_Y - 1] = bufRecv[i];
-    }
-
-    // ---------- Receive from the BOTTOM ---------- //
-    if (rank_b != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_b,
-            CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            F[i][0] = bufRecv[i];
-    }
+    for (int i = 0; i < chunk_size_X; i++)
+        F[i][0] = bufRecv[i];
 }
 
 
@@ -652,21 +575,20 @@ void g_force_comm(
     MPI_Status* status,
     int chunk)
 {
-
     // Size of the chunk in y-direction (rows)
     // inner cells + 2 cells of BOTTOM ghost layer + 1 cell of TOP ghost layer in y-direction
     int chunk_size_Y = jt - jb + 4;
 
 
     // Size of the chunk in x-direction (columns)
-    // inner cells + 2 cells of LEFT ghost layer + 1 cell of RIGHT ghost layer in x-direction
+    // inner cells + 2 cells of LEFT and RIGHT ghost layers in x-direction
     int chunk_size_X = ir - il + 3;
 
     int left_ghost_layer_width = 1;
     int bottom_ghost_layer_width = 2;
 
 
-    // ---------- Send to the LEFT ---------- //
+    // ---------- Send to the LEFT and Receive from the RIGHT ---------- //
 
     // Fill send buffer with G-forces belonging to the chunk's internal cells of the LEFT wall, i.e. i=2,
     // which will become the ghost cells of the RIGHT wall of the receiving process.
@@ -674,11 +596,16 @@ void g_force_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = G[1][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,
-        CommunicationType::TO_LEFT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_LEFT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_LEFT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        G[chunk_size_X - 1][j] = bufRecv[j];
 
 
-    // ---------- Send to the RIGHT ---------- //
+    // ---------- Send to the RIGHT and Receive from the LEFT ---------- //
 
     // Fill send buffer with G-forces belonging to the chunk's internal cells of the RIGHT wall,
     // i.e. i=chunk_size_X - 2,
@@ -687,11 +614,16 @@ void g_force_comm(
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = G[chunk_size_X - 2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_r,
-        CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_Y, MPI_DOUBLE, rank_r, CommunicationType::TO_RIGHT,
+        bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l, CommunicationType::TO_RIGHT,
+        MPI_COMM_WORLD, status);
+
+    for (int j = 0; j < chunk_size_Y; j++)
+        G[0][j] = bufRecv[j];
 
 
-    // ---------- Send to the BOTTOM ---------- //
+    // ---------- Send to the BOTTOM and Receive from the TOP ---------- //
 
     // Fill send buffer with G-forces belonging to the chunk's internal cells of the BOTTOM wall, i.e. j=2,
     // which will become the ghost cells of the TOP wall of the receiving process.
@@ -699,11 +631,16 @@ void g_force_comm(
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = G[i][2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b,
-        CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM,
+        bufRecv, chunk_size_X, MPI_DOUBLE, rank_t, CommunicationType::TO_BOTTOM,
+        MPI_COMM_WORLD, status);
+
+    for (int i = 0; i < chunk_size_X; i++)
+        G[i][chunk_size_Y - 1] = bufRecv[i];
 
 
-    // ---------- Send to the TOP ---------- //
+    // ---------- Send to the TOP and Receive from the BOTTOM (two rows) ---------- //
 
     // Fill send buffer with G-forces belonging to the chunk's internal cells of the TOP wall,
     // i.e. j=[chunk_size_Y - 3, chunk_size_Y - 2]
@@ -713,49 +650,12 @@ void g_force_comm(
         for (int i = 0; i < chunk_size_X; i++)
             bufSend[j * chunk_size_X + i] = G[i][j + chunk_size_Y - 3];
 
-    MPI_Send(bufSend, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_t,
-        CommunicationType::TO_TOP, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+        bufSend, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_t, CommunicationType::TO_TOP,
+        bufRecv, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_b, CommunicationType::TO_TOP,
+        MPI_COMM_WORLD, status);
 
-    // UPDATE the velocity values of ghost cells in accordance with the received message:
-
-    // ---------- Receive from the RIGHT ---------- //
-    if (rank_r != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
-            CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            G[chunk_size_X - 1][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the LEFT ---------- //
-    if (rank_l != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l,
-            CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            G[0][j] = bufRecv[j];
-    }
-
-    // ---------- Receive from the TOP ---------- //
-    if (rank_t != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,
-            CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
-
+    for (int j = 0; j < bottom_ghost_layer_width; j++)
         for (int i = 0; i < chunk_size_X; i++)
-            G[i][chunk_size_Y - 1] = bufRecv[i];
-    }
-
-    // ---------- Receive from the BOTTOM - two (!) rows ---------- //
-    if (rank_b != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X * bottom_ghost_layer_width, MPI_DOUBLE, rank_b,
-            CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < bottom_ghost_layer_width; j++)
-            for (int i = 0; i < chunk_size_X; i++)
-                G[i][j] = bufRecv[j * chunk_size_X + i];
-    }
+            G[i][j] = bufRecv[j * chunk_size_X + i];
 }
