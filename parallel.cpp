@@ -163,16 +163,26 @@ void pressure_comm(
     int chunk_size_X = ir - il + 3;
 
 
+
     // ---------- Send to the LEFT - receive from the RIGHT ---------- //
 
     // Fill send buffer with pressure belonging to the chunk's internal cells of the LEFT wall, i.e. i=1,
     // which will become the ghost cells of the RIGHT wall of the receiving process.
-
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = P[1][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,
-        CommunicationType::TO_LEFT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+            bufSend, chunk_size_Y, MPI_DOUBLE, rank_l,CommunicationType::TO_LEFT,
+            bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
+            CommunicationType::TO_LEFT,
+            MPI_COMM_WORLD, status );
+
+    // UPDATE the pressure values of the RIGHT wall ghost cells in accordance with the received message:
+    for (int j = 0; j < chunk_size_Y; j++)
+        P[chunk_size_X - 1][j] = bufRecv[j];
+
+
+
 
 
     // ---------- Send to the RIGHT - receive from the LEFT ---------- //
@@ -180,79 +190,60 @@ void pressure_comm(
     // Fill send buffer with pressure belonging to the chunk's internal cells of the RIGHT wall,
     // i.e. i=chunk_size_X - 2,
     // which will become the ghost cells of the LEFT wall of the receiving process.
-
     for (int j = 0; j < chunk_size_Y; j++)
         bufSend[j] = P[chunk_size_X - 2][j];
 
-    MPI_Send(bufSend, chunk_size_Y, MPI_DOUBLE, rank_r,
-        CommunicationType::TO_RIGHT, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+            bufSend, chunk_size_Y, MPI_DOUBLE, rank_r,CommunicationType::TO_RIGHT,
+            bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l,CommunicationType::TO_RIGHT,
+            MPI_COMM_WORLD, status);
+
+    // UPDATE the pressure values of the LEFT wall ghost cells in accordance with the received message:
+    for (int j = 0; j < chunk_size_Y; j++)
+        P[0][j] = bufRecv[j];
+
+
+
 
 
     // ---------- Send to the BOTTOM - receive from the TOP ---------- //
 
     // Fill send buffer with pressure belonging to the chunk's internal cells of the BOTTOM wall, i.e. j=1,
     // which will become the ghost cells of the TOP wall of the receiving process.
-
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = P[i][1];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_b,
-        CommunicationType::TO_BOTTOM, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+            bufSend, chunk_size_X, MPI_DOUBLE, rank_b, CommunicationType::TO_BOTTOM,
+            bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,CommunicationType::TO_BOTTOM,
+            MPI_COMM_WORLD, status);
+
+    // UPDATE the pressure values of the TOP row ghost cells in accordance with the received message:
+    for (int i = 0; i < chunk_size_X; i++)
+        P[i][chunk_size_Y - 1] = bufRecv[i];
+
+
 
 
     // ---------- Send to the TOP - receive from the BOTTOM ---------- //
 
+
     // Fill send buffer with pressure belonging to the chunk's internal cells of the TOP wall, i.e. j=chunk_size_Y - 2,
     // which will become the ghost cells of the BOTTOM wall of the receiving process.
-
     for (int i = 0; i < chunk_size_X; i++)
         bufSend[i] = P[i][chunk_size_Y - 2];
 
-    MPI_Send(bufSend, chunk_size_X, MPI_DOUBLE, rank_t,
-        CommunicationType::TO_TOP, MPI_COMM_WORLD);
+    MPI_Sendrecv(
+            bufSend, chunk_size_X, MPI_DOUBLE, rank_t,CommunicationType::TO_TOP,
+            bufRecv, chunk_size_X, MPI_DOUBLE, rank_b,
+            CommunicationType::TO_TOP,
+            MPI_COMM_WORLD, status);
+
+    // UPDATE the pressure values of the BOTTOM row ghost cells in accordance with the received message:
+    for (int i = 0; i < chunk_size_X; i++)
+        P[i][0] = bufRecv[i];
 
 
-    // UPDATE the pressure values of the ghost cells in accordance with the received message:
-
-    // RIGHT wall 
-    if(rank_r != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_r,
-            CommunicationType::TO_LEFT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            P[chunk_size_X - 1][j] = bufRecv[j];
-    }
-
-    // LEFT wall
-    if(rank_l != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_Y, MPI_DOUBLE, rank_l,
-            CommunicationType::TO_RIGHT, MPI_COMM_WORLD, status);
-
-        for (int j = 0; j < chunk_size_Y; j++)
-            P[0][j] = bufRecv[j];
-    }
-
-    // TOP wall
-    if(rank_t != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_t,
-            CommunicationType::TO_BOTTOM, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            P[i][chunk_size_Y - 1] = bufRecv[i];
-    }
-
-    // BOTTOM wall
-    if(rank_b != MPI_PROC_NULL)
-    {
-        MPI_Recv(bufRecv, chunk_size_X, MPI_DOUBLE, rank_b,
-            CommunicationType::TO_TOP, MPI_COMM_WORLD, status);
-
-        for (int i = 0; i < chunk_size_X; i++)
-            P[i][0] = bufRecv[i];
-    }
 }
 
 
