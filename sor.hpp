@@ -33,6 +33,7 @@ void sor(
         Grid &grid,
         matrix<double> &RS,
         double *res,
+        double *res_temp,
         int il,
         int ir,
         int jb,

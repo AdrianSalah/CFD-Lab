@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cfloat>
 #include <algorithm>
+#include <mpi.h>
 
 
 // Determines the values of F and G
@@ -256,20 +257,39 @@ double max_abs_velocity(
 {
     static matrix<double> current_velocity; //matrix of current velocity U or V on grid
     grid.velocity(current_velocity, type, il, ir, jb, jt); //assigns velocity U or V to current_velocity
+    if (type == velocity_type::U) {
+        // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
+        static std::vector<double> max_abs_value_per_row(ir - il + 4, 0);
 
-    // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
-    static std::vector<double> max_abs_value_per_row(ir + 1, 0);
-
-    // Resetting the values to zeros
-    std::fill(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), 0);
+        // Resetting the values to zeros
+        std::fill(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), 0);
 
 
-    for (int i = 0; i <=ir; ++i) {
-        max_abs_value_per_row.at(i) = *std::max_element(current_velocity.at(i).begin(), current_velocity.at(i).end(),
-                                                        abs_compare);
+        for (int i = 0; i < ir - il + 4; ++i) {
+            max_abs_value_per_row.at(i) = *std::max_element(current_velocity.at(i).begin(), current_velocity.at(i).end(),
+                abs_compare);
+        }
+        //maximum velocity value in grid
+        return abs(*std::max_element(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), abs_compare));
     }
-    //maximum velocity value in grid
-    return abs(*std::max_element(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), abs_compare));
+    if (type == velocity_type::V) {
+        // Vector of maximum velocity values in every row (including boundaries, i.e. imaxb):
+        static std::vector<double> max_abs_value_per_row(ir - il + 3, 0);
+
+        // Resetting the values to zeros
+        std::fill(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), 0);
+
+
+        for (int i = 0; i < ir - il + 3; ++i) {
+            max_abs_value_per_row.at(i) = *std::max_element(current_velocity.at(i).begin(), current_velocity.at(i).end(),
+                abs_compare);
+        }
+        //maximum velocity value in grid
+        return abs(*std::max_element(max_abs_value_per_row.begin(), max_abs_value_per_row.end(), abs_compare));
+    }
+    else {
+        return 0;
+    }
 }
 
 
@@ -290,12 +310,13 @@ void calculate_dt(
     int jt)
 {
     // Maximum absolute values for U, V on grid for current time step
-    static double max_abs_U;
-    max_abs_U = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::U, il, ir, jb, jt);
+    static double max_abs_U,max_abs_U_temp;
+    max_abs_U_temp = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::U, il, ir, jb, jt);
 
-    static double max_abs_V;
-    max_abs_V = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V, il, ir, jb, jt);
-
+    static double max_abs_V,max_abs_V_temp;
+    max_abs_V_temp = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V, il, ir, jb, jt);
+    MPI_Allreduce(&max_abs_U_temp, &max_abs_U, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&max_abs_V_temp, &max_abs_V, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
     // Explicit time-stepping stability condition
     static double condition12;
     // Pr=nu/alpha so Re*Pr= 1/alpha
