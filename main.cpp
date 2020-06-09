@@ -161,20 +161,16 @@ int main(int argn, char** args) {
     int *rank_t = new int;
     int *omg_i = new int;
     int *omg_j = new int;
-    double* bufSend = new double[50];
-    double* bufRecv = new double[50];
-    double* bufSendU = new double[50];
-    double* bufRecvU = new double [50];
-    double* bufSendV = new double[50];
-    double* bufRecvV = new double [50];
-    double* bufSendF = new double[50];
-    double* bufRecvF = new double [50];
-    double* bufSendG = new double[50];
-    double* bufRecvG = new double [50];
-
-    //double* bufRecvRes = new double[];
-    std::vector<double> collectRes;
-
+    double* bufSend = new double[60];
+    double* bufRecv = new double[60];
+    double* bufSendU = new double[110];
+    double* bufRecvU = new double [110];
+    double* bufSendV = new double[110];
+    double* bufRecvV = new double [110];
+    double* bufSendF = new double[110];
+    double* bufRecvF = new double [110];
+    double* bufSendG = new double[110];
+    double* bufRecvG = new double [110];
 
 
 
@@ -339,35 +335,18 @@ int main(int argn, char** args) {
             MPI_Status status;
             pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
 
-            // send residual to master process
-            //MPI_Send(res, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-
-            /* TODO broadcast residualnorm to all processes */
-            /*
-            if (myrank == 0){
-
-                for(int p = 0; p < num_proc; p++ ){
-                    MPI_Recv(res, 1, MPI_DOUBLE, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                    collectRes.at(p) = *res;
-                }
-
-
-                MPI_Allreduce(bufSend, res, 1, MPI_DOUBLE, MPI_Op MPI_MAX, MPI_COMM_WORLD);
-            }
-            */
-
-
-            //MPI_Allreduce()
         }
-        // TODO check u_velocity_comm, v_velocity_comm for bug
-        //u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
-        //v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
-        // TODO compute maximum values of velocities and broadcast them to all processes
-        // TODO calculate dt
+
+        u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
+        v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
+
+        //f_comm(F, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendF, bufRecvF, MPI_STATUS_IGNORE, myrank);
+        //g_comm(G, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendG, bufRecvG, MPI_STATUS_IGNORE, myrank);
 
 
 
 
+        // for DEBUGGING
         //double summ = 0;
         //grid.pressure(P, il, ir, jb, jt);
         //for (int i = 0; i < 54; i++) {
@@ -377,6 +356,7 @@ int main(int argn, char** args) {
         //}
         //std::cout << summ / ((double)54 * 54) << std:: endl;
         //count number of failed SOR iterations
+
         if(*res > *eps){
             //print warning message after failed SOR iteration
             count_failed_SOR++;

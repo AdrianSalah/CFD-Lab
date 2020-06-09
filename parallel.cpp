@@ -451,8 +451,8 @@ void v_velocity_comm(matrix<double> V,
 
 // --------- Communication of F-forces (along x axis) --------- //
 
-void f_force_comm(
-    double** F,
+void f_comm(
+    matrix <double> F,
     int il,
     int ir,
     int jb,
@@ -551,8 +551,7 @@ void f_force_comm(
 
 // --------- Communication of G-forces (along y axis) --------- //
 
-void g_force_comm(
-    double** G,
+void g_comm(matrix <double> G,
     int il,
     int ir,
     int jb,

@@ -77,7 +77,7 @@ void v_velocity_comm(
         int chunk);
 
 void f_comm(
-        double** F,
+        matrix <double> F,
         int il,
         int ir,
         int jb,
@@ -92,7 +92,7 @@ void f_comm(
         int chunk);
 
 void g_comm(
-        double** G,
+        matrix <double> G,
         int il,
         int ir,
         int jb,
