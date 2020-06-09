@@ -162,6 +162,17 @@ int main(int argn, char** args) {
     int *omg_j = new int;
     double* bufSend = new double[50];
     double* bufRecv = new double[50];
+    double* bufSendU = new double[50];
+    double* bufRecvU = new double [50];
+    double* bufSendV = new double[50];
+    double* bufRecvV = new double [50];
+    double* bufSendF = new double[50];
+    double* bufRecvF = new double [50];
+    double* bufSendG = new double[50];
+    double* bufRecvG = new double [50];
+
+    //double* bufRecvRes = new double[];
+    std::vector<double> collectRes;
 
 
 
@@ -227,13 +238,26 @@ int main(int argn, char** args) {
 
 
     init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
+
     //std::cout << "myrank: " << myrank << std::endl;
 
     //std::cout << *rank_l << " " << *rank_r << " " << *rank_b << " " << *rank_t << std::endl;
     //for debugging
     //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
-    std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
+    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
     //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
+
+
+    //  define name of output-file depending on the rank
+    char* outputName;
+    if (myrank == 0)
+        outputName = "master";
+    else if (myrank == 1)
+        outputName = "proc1";
+    else if (myrank == 2)
+        outputName = "proc2";
+    else if (myrank == 3)
+        outputName = "proc3";
 
  
     //for output to vtk-file
@@ -310,10 +334,36 @@ int main(int argn, char** args) {
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
             sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, *il, *ir, *jb, *jt, myrank);
             current_timestep_iteration++;
-        }
 
-        //MPI_Status status;
-        //pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
+            MPI_Status status;
+            pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
+
+            // send residual to master process
+            //MPI_Send(res, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+
+            /* TODO broadcast residualnorm to all processes */
+            /*
+            if (myrank == 0){
+
+                for(int p = 0; p < num_proc; p++ ){
+                    MPI_Recv(res, 1, MPI_DOUBLE, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    collectRes.at(p) = *res;
+                }
+
+
+                MPI_Allreduce(bufSend, res, 1, MPI_DOUBLE, MPI_Op MPI_MAX, MPI_COMM_WORLD);
+            }
+            */
+
+
+            //MPI_Allreduce()
+        }
+        // TODO check u_velocity_comm, v_velocity_comm for bug
+        //u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
+        //v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
+        // TODO compute maximum values of velocities and broadcast them to all processes
+        // TODO calculate dt
+
 
 
 
@@ -343,8 +393,8 @@ int main(int argn, char** args) {
             grid.pressure(P, *il, *ir, *jb, *jt);
             grid.temperature(T, *il, *ir, *jb, *jt);
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-            vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-            //output_uvp_parallel(U,V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j,  )
+            //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+            output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
 
 
             if(myrank==0)
@@ -359,8 +409,10 @@ int main(int argn, char** args) {
     grid.temperature(T, *il, *ir, *jb, *jt);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-    vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-          
+    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+
+    output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
+
     // Print out the total time required for the solution
     runtime.printTimer();
 
@@ -418,6 +470,15 @@ int main(int argn, char** args) {
     delete omg_j;
     delete[] bufSend;
     delete[] bufRecv;
+    delete[] bufSendU;
+    delete[] bufRecvU;
+    delete[] bufSendV;
+    delete[] bufRecvV;
+    delete[] bufSendF;
+    delete[] bufRecvF;
+    delete[] bufSendG;
+    delete[] bufRecvG;
+
 
     MPI_Finalize();
 

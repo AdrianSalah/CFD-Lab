@@ -47,7 +47,7 @@ void pressure_comm(
     int chunk);
 
 void u_velocity_comm(
-        double** U,
+        matrix<double> U,
         int il,
         int ir,
         int jb,
@@ -62,7 +62,7 @@ void u_velocity_comm(
         int chunk);
 
 void v_velocity_comm(
-        double** V,
+        matrix<double> V,
         int il,
         int ir,
         int jb,

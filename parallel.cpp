@@ -259,7 +259,7 @@ void pressure_comm(
 // --------- Communication of U velocity (along x axis) --------- //
 
 void u_velocity_comm(
-    double** U,
+    matrix<double> U,
     int il,
     int ir,
     int jb,
@@ -385,8 +385,7 @@ void u_velocity_comm(
 
 // --------- Communication of V velocity (along y axis) --------- //
 
-void v_velocity_comm(
-    double** V,
+void v_velocity_comm(matrix<double> V,
     int il,
     int ir,
     int jb,

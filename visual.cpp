@@ -250,9 +250,9 @@ void VTKHelper::printVTKFile(
 }
 
 void output_uvp_parallel(
-        double **U,
-        double **V,
-        double **P,
+        matrix<double>& U,
+        matrix<double>& V,
+        matrix<double>& P,
         int il,
         int ir,
         int jb,
