@@ -1,6 +1,7 @@
 #include "sor.hpp"
 #include <cmath>
 #include <iostream>
+#include <mpi.h>
 
 void sor(
         double omg,
@@ -11,6 +12,7 @@ void sor(
         Grid& grid,
         matrix<double> &RS,
         double *res,
+        double *res_temp,
         int il,
         int ir,
         int jb,
@@ -94,11 +96,11 @@ void sor(
         
         
         // Residual is divided by the number of cells inside each chunk
-        rloc = rloc / ((ir - il + 1) * (jt - jb + 1));
+        rloc = rloc / ((imax) * (jmax));
         rloc = sqrt(rloc);
         /* set residual */
-        *res = rloc;
-
+        *res_temp = rloc;
+        MPI_Allreduce(res_temp, res, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     // Setting pressure for the entire domain after the SOR algorithm
     grid.set_pressure(P, il, ir, jb, jt);
 

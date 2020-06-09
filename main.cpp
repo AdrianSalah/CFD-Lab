@@ -142,6 +142,7 @@ int main(int argn, char** args) {
     double* T_c = new double;               /* Temperature of cold wall*/
     double* Pr = new double;                /* Prandlt Number*/
     double* res = new double;               /* residual for SOR*/
+    double* res_temp = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
     double* v_inflow = new double;          /* boundary value for inflow BC */
     double* u_inflow = new double;          /* boundary value for inflow BC */
@@ -318,7 +319,7 @@ int main(int argn, char** args) {
     while (time < *t_end) {
    
         //here we set time steps manually
-        //calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
+        calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, *il, *ir, *jb, *jt);
         //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
         //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
@@ -332,7 +333,7 @@ int main(int argn, char** args) {
         *res = INFINITY;
 
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
-            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, *il, *ir, *jb, *jt, myrank);
+            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res,res_temp, *il, *ir, *jb, *jt, myrank);
             current_timestep_iteration++;
 
             MPI_Status status;
@@ -451,6 +452,7 @@ int main(int argn, char** args) {
     delete T_c;
     delete Pr;
     delete res;
+    delete res_temp;
     delete beta;
     delete v_inflow;
     delete u_inflow;
