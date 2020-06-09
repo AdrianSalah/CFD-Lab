@@ -308,50 +308,50 @@ void spec_boundary_val(Grid& grid,
         grid.temperature(T, il, ir, jb, jt);
         // left boundary
         if (il == 0) {
-            for (int j = jb; j < jt+1; j++) {
-                U[2][j+1] = 0;
-                V[1][j+2] = -V[2][j+2];
-                F[2][j+1] = U[2][j + 1];
-                G[1][j+2] = V[1][j + 2];
-                P[1][j+1] = P[2][j+1];
-                T[1][j+1] = T[2][j+1];
+            for (int j = 0; j < jt - jb + 1; j++) {
+                U.at(2).at(j + 1) = 0;
+                V.at(1).at(j + 2) = -V[2][j + 2];
+                F.at(2).at(j + 1) = U[2][j + 1];
+                G.at(1).at(j + 2) = V[1][j + 2];
+                P.at(1).at(j + 1) = P.at(2).at(j + 1);
+                T[1][j + 1] = T[2][j + 1];
             }
         }
         //right boundary
-        if (ir == grid.imaxb()-1) {
-            for (int j = jb; j < jt+1; j++) {
-                U[ir+2][j+1] = 0;
-                U[ir+1][j+1] = 0;
-                V[ir+1][j+2] = -V[ir][j+2];
-                F[ir+2][j+1] = U[ir+2][j+1];
-                F[ir+1][j+1] = U[ir+1][j+1];
-                G[ir+1][j+2] = V[ir+1][j+2];
-                P[ir+1][j+1] = P[ir][j+1];
-                T[ir+1][j+1] = T[ir][j+1];
+        if (ir == grid.imaxb() - 1) {
+            for (int j = 0; j < jt - jb + 1; j++) {
+                U.at(ir - il + 2).at(j + 1) = 0;
+                U.at(ir - il + 1).at(j + 1) = 0;
+                V.at(ir - il + 1).at(j + 2) = -V.at(ir - il).at(j + 2);
+                F.at(ir - il + 2).at(j + 1) = U.at(ir - il + 2).at(j + 1);
+                F.at(ir - il + 1).at(j + 1) = U.at(ir - il + 1).at(j + 1);
+                G.at(ir - il + 1).at(j + 2) = V.at(ir - il + 1).at(j + 2);
+                P.at(ir - il + 1).at(j + 1) = P.at(ir - il).at(j + 1);
+                T[ir - il + 1][j + 1] = T[ir - il][j + 1];
             }
         }
         //bottom boundary
         if (jb == 0) {
-            for (int i = il; i < ir+1; i++) {
-                V[i+1][2] = 0;
-                U[i+2][1] = -U[i+2][2];
-                F[i+2][1] = U[i+2][1];
-                G[i+1][2] = V[i+1][2];
-                P[i+1][1] = P[i+1][2];
-                T[i+1][1] = T[i+1][2];
+            for (int i = 0; i < ir - il + 1; i++) {
+                V[i + 1][2] = 0;
+                U[i + 2][1] = -U[i + 2][2];
+                F[i + 2][1] = U[i + 2][1];
+                G[i + 1][2] = V[i + 1][2];
+                P[i + 1][1] = P[i + 1][2];
+                T[i + 1][1] = T[i + 1][2];
             }
         }
         //top boundary free slip
-        if (jt == grid.jmaxb()-1) {
-            for (int i = il; i < ir+1; i++) {
-                V[i+1][jt+2] = 0;
-                V[i+1][jt+1] = 0;
-                U[i+2][jt+1] = 2-U[i+2][jt];
-                F[i+2][jt+1] = U[i+2][jt+1];
-                G[i+1][jt+2] = V[i+1][jt+2];
-                G[i+1][jt+1] = V[i+1][jt+1];
-                P[i+1][jt+1] = P[i+1][jt];
-                T[i+1][jt+1] = T[i+1][jt];
+        if (jt == grid.jmaxb() - 1) {
+            for (int i = 0; i < ir - il + 1; i++) {
+                V[i + 1][jt - jb + 2] = 0;
+                V[i + 1][jt - jb + 1] = 0;
+                U[i + 2][jt - jb + 1] = 2 - U[i + 2][jt - jb];
+                F[i + 2][jt - jb + 1] = U[i + 2][jt - jb + 1];
+                G[i + 1][jt - jb + 2] = V[i + 1][jt - jb + 2];
+                G[i + 1][jt - jb + 1] = V[i + 1][jt - jb + 1];
+                P[i + 1][jt - jb + 1] = P[i + 1][jt - jb];
+                T[i + 1][jt - jb + 1] = T[i + 1][jt - jb];
             }
         }
         grid.set_velocity(U, velocity_type::U, il, ir, jb, jt);

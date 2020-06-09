@@ -426,14 +426,14 @@ void init_uvpt(
             //    // T.at(i).at(j) = 0;
             //}
         }
-        for (int i = 0; i <= ir - il + 2; i++) {
-            V.at(i).at(jt - jb + 3) = VI;
-        }
-        for (int j = 0; j <= jt - jb + 2; j++) {
-            U.at(ir - il + 3).at(j) = UI;
-        }
-    }
 
+    }
+    for (int i = 0; i <= ir - il + 2; i++) {
+        V.at(i).at(jt - jb + 3) = VI;
+    }
+    for (int j = 0; j <= jt - jb + 2; j++) {
+        U.at(ir - il + 3).at(j) = UI;
+    }
     grid.set_velocity(U, velocity_type::U, il, ir, jb, jt);
     grid.set_velocity(V, velocity_type::V, il, ir, jb, jt);
     grid.set_pressure(P, il, ir, jb, jt);
