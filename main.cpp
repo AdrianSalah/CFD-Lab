@@ -161,18 +161,19 @@ int main(int argn, char** args) {
     int *rank_t = new int;
     int *omg_i = new int;
     int *omg_j = new int;
-    double* bufSend = new double[60];
-    double* bufRecv = new double[60];
-    double* bufSendU = new double[110];
-    double* bufRecvU = new double [110];
-    double* bufSendV = new double[110];
-    double* bufRecvV = new double [110];
-    double* bufSendF = new double[110];
-    double* bufRecvF = new double [110];
-    double* bufSendG = new double[110];
-    double* bufRecvG = new double [110];
+    double* bufSend = new double[1000];
+    double* bufRecv = new double[1000];
+    double* bufSendU = new double[1000];
+    double* bufRecvU = new double [1000];
+    double* bufSendV = new double[1000];
+    double* bufRecvV = new double [1000];
+    double* bufSendF = new double[1000];
+    double* bufRecvF = new double [1000];
+    double* bufSendG = new double[1000];
+    double* bufRecvG = new double [1000];
 
 
+    //when a particle changes cells, we need to pop an entire particle object out of the list_cellsand append it to another which is way more demanding than just shifting integer indices.Moreover, indexing is not preserved when storing particle objects because there is no straightforward way to sort them(specific accessing of member variable is required).
 
 
     //check if directory "output" exists, if not creates directory "output"
@@ -189,10 +190,12 @@ int main(int argn, char** args) {
 
     //check whether plane_shear.dat exists or not
     if (parameterFile == NULL) {
+        if (myrank == 0)
         printf("Error opening parameter-file");
         exit(EXIT_FAILURE);
     } 
     else if (geometryFile == NULL) {
+        if (myrank == 0)
         printf("Error opening geometry-file");
         exit(EXIT_FAILURE);
     }
@@ -205,25 +208,21 @@ int main(int argn, char** args) {
     // asserting iproc and jproc values
 
     if ((*iproc) * (*jproc) > num_proc) {
-        std::cout << "Too many subdomains. ";
+
         *jproc = std::floor(std::sqrt(num_proc *(*jmax)/(*imax)));
         *iproc = num_proc / (*jproc);
-        std::cout << "new iproc = " << * iproc << "  new jproc = " << *jproc << std::endl;
+        if (myrank == 0) {
+            std::cout << "Too many subdomains. ";
+            std::cout << "new iproc = " << *iproc << "  new jproc = " << *jproc << std::endl;
+        }
     }
 
  
-    cell_array = read_pgm(input_geometry_file_path);
+    //cell_array = read_pgm(input_geometry_file_path);
 
 
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
-
-    if (*iproc == 1 and *jproc == 1) {
-        *il = 0;
-        *ir = grid.imaxb() - 1;
-        *jb = 0;
-        *jt= grid.jmaxb() - 1;
-    }
 
     // NOT USED in ws3!
     /*
@@ -235,172 +234,166 @@ int main(int argn, char** args) {
 
 
     init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
-
-    //std::cout << "myrank: " << myrank << std::endl;
-
-    //std::cout << *rank_l << " " << *rank_r << " " << *rank_b << " " << *rank_t << std::endl;
-    //for debugging
-    //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
-    //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
-    //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
-
-
-    //  define name of output-file depending on the rank
-    char* outputName;
-    if (myrank == 0)
-        outputName = "master";
-    else if (myrank == 1)
-        outputName = "proc1";
-    else if (myrank == 2)
-        outputName = "proc2";
-    else if (myrank == 3)
-        outputName = "proc3";
-
  
-    //for output to vtk-file
-    VTKHelper vtkOutput;
+        //std::cout << "myrank: " << myrank << std::endl;
+
+        //std::cout << *rank_l << " " << *rank_r << " " << *rank_b << " " << *rank_t << std::endl;
+        //for debugging
+        //std::cout << "myrank: " << myrank << ", omg_i: " << *omg_i << ", omg_j: " << *omg_j << std::endl;
+        //std::cout << "myrank: " << myrank << ", il: " << *il << ", ir: " << *ir << std::endl;
+        //std::cout << "myrank: " << myrank << ", jb: " << *jb << ", jt: " << *jt << std::endl;
 
 
-    // NOT USED in ws3!
-    //TO DO: check wheather imax and jmax same as grid size in geometry file
-    /*
-    for (int j = grid.jmaxb() - 1; j >= 0; j--){
-        for (int i = 0; i < grid.imaxb(); i++){
-            //assign cell type
-            if (cell_array[i][j] == 0){grid.cell(i,j)._cellType = NOSLIP;}
-            else if(cell_array[i][j] == 4){grid.cell(i,j)._cellType = FLUID;}
-            else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = OUTFLOW;}
-            else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = INFLOW;}
-            else if(cell_array[i][j] == 1){grid.cell(i,j)._cellType = FREESLIP;}
-            else{
-                printf("Error: wrong grey value in geometry-file ");
-                exit(EXIT_FAILURE);
+        //  define name of output-file depending on the rank
+        char* outputName;
+        if (myrank == 0)
+            outputName = "master";
+        else if (myrank == 1)
+            outputName = "proc1";
+        else if (myrank == 2)
+            outputName = "proc2";
+        else if (myrank == 3)
+            outputName = "proc3";
+
+
+        //for output to vtk-file
+        VTKHelper vtkOutput;
+
+
+        // NOT USED in ws3!
+        //TO DO: check wheather imax and jmax same as grid size in geometry file
+        /*
+        for (int j = grid.jmaxb() - 1; j >= 0; j--){
+            for (int i = 0; i < grid.imaxb(); i++){
+                //assign cell type
+                if (cell_array[i][j] == 0){grid.cell(i,j)._cellType = NOSLIP;}
+                else if(cell_array[i][j] == 4){grid.cell(i,j)._cellType = FLUID;}
+                else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = OUTFLOW;}
+                else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = INFLOW;}
+                else if(cell_array[i][j] == 1){grid.cell(i,j)._cellType = FREESLIP;}
+                else{
+                    printf("Error: wrong grey value in geometry-file ");
+                    exit(EXIT_FAILURE);
+                }
+                //for debugging
+                //std::cout << cell_array[i][j] << " ";
             }
             //for debugging
-            //std::cout << cell_array[i][j] << " ";
-        }
-        //for debugging
-        //std::cout << std::endl;
-    }
-
-    assign_ptr_nbcells(grid);
-    */
-
-
-
-    // Initializing variables
-    double time = 0;                        // time
-    int timesteps_total = 0;                // # of iterations for main loop
-    int current_timestep_iteration;         // # of iterations for SOR
-    double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
-    int count_failed_SOR = 0;               //# of failed SOR iterations
-
-    //initialize matrices U, V, P, T
-    matrix<double> U, V, P, T;
-    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, *il, *ir, *jb, *jt);
-    //initialize matrices F, G and RS
-    matrix<double> F, G, RS;
-
-    //assign initial values FI, GI and RSI on the hole domain for F, G and RS
-    init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, *il, *ir, *jb, *jt);
-
-
-    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-
-
-
-    // Initialize timer to measure performance
-    Timer runtime;
-    *dt = 0.005;
-    while (time < *t_end) {
-   
-        //here we set time steps manually
-        calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, *il, *ir, *jb, *jt);
-        //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
-        spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
-        //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
-        calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
-        calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, *il, *ir, *jb, *jt);
-
-        //reset current number of iterations for SOR
-        current_timestep_iteration = 0;
-
-        //reset residual before new SOR iteration
-        *res = INFINITY;
-
-        while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
-            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res,res_temp, *il, *ir, *jb, *jt, myrank);
-            current_timestep_iteration++;
-
-            MPI_Status status;
-            pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
-
+            //std::cout << std::endl;
         }
 
-        u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
-        v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
-
-        //f_comm(F, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendF, bufRecvF, MPI_STATUS_IGNORE, myrank);
-        //g_comm(G, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendG, bufRecvG, MPI_STATUS_IGNORE, myrank);
+        assign_ptr_nbcells(grid);
+        */
 
 
 
+        // Initializing variables
+        double time = 0;                        // time
+        int timesteps_total = 0;                // # of iterations for main loop
+        int current_timestep_iteration;         // # of iterations for SOR
+        double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
+        int count_failed_SOR = 0;               //# of failed SOR iterations
 
-        // for DEBUGGING
-        //double summ = 0;
-        //grid.pressure(P, il, ir, jb, jt);
-        //for (int i = 0; i < 54; i++) {
-        //    for (int j = 0; j < 54; j++) {
-        //        summ += P[i][j];
-        //    }
-        //}
-        //std::cout << summ / ((double)54 * 54) << std:: endl;
-        //count number of failed SOR iterations
+        //initialize matrices U, V, P, T
+        matrix<double> U, V, P, T;
+        init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, *il, *ir, *jb, *jt);
+        //initialize matrices F, G and RS
+        matrix<double> F, G, RS;
 
-        if(*res > *eps){
-            //print warning message after failed SOR iteration
-            count_failed_SOR++;
+        //assign initial values FI, GI and RSI on the hole domain for F, G and RS
+        init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, *il, *ir, *jb, *jt);
+
+
+        //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+        // Initialize timer to measure performance
+        Timer runtime;
+        while (time < *t_end) {
+
+            //here we set time steps manually
+            calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, *il, *ir, *jb, *jt);
+            //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
+            spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
+            //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
+            calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
+            calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, *il, *ir, *jb, *jt);
+
+            //reset current number of iterations for SOR
+            current_timestep_iteration = 0;
+
+            //reset residual before new SOR iteration
+            *res = INFINITY;
+
+            while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
+                sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, res_temp, *il, *ir, *jb, *jt, myrank);
+                current_timestep_iteration++;
+
+                MPI_Status status;
+                pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
+
+            }
+
+            u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
+            v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
+
+            //f_comm(F, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendF, bufRecvF, MPI_STATUS_IGNORE, myrank);
+            //g_comm(G, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendG, bufRecvG, MPI_STATUS_IGNORE, myrank);
+
+
+
+
+            // for DEBUGGING
+            //double summ = 0;
+            //grid.pressure(P, il, ir, jb, jt);
+            //for (int i = 0; i < 54; i++) {
+            //    for (int j = 0; j < 54; j++) {
+            //        summ += P[i][j];
+            //    }
+            //}
+            //std::cout << summ / ((double)54 * 54) << std:: endl;
+            //count number of failed SOR iterations
+
+            if (*res > * eps) {
+                //print warning message after failed SOR iteration
+                count_failed_SOR++;
+            }
+
+            calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
+            visualization_time_accumulator += *dt;
+            timesteps_total++;
+            time += *dt;
+
+            // Visualize u v p
+            if (visualization_time_accumulator >= *dt_value) {
+                grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+                grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+                grid.pressure(P, *il, *ir, *jb, *jt);
+                grid.temperature(T, *il, *ir, *jb, *jt);
+                //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+                //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+                output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
+
+
+                if (myrank == 0)
+                    solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
+                visualization_time_accumulator -= *dt_value;
+            }
         }
 
-        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
-        visualization_time_accumulator += * dt;
-        timesteps_total++;
-        time += *dt;
-        
-        // Visualize u v p
-        if (visualization_time_accumulator >= *dt_value) {
-            grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
-            grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
-            grid.pressure(P, *il, *ir, *jb, *jt);
-            grid.temperature(T, *il, *ir, *jb, *jt);
-            //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-            //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-            output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
+        grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+        grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+        grid.pressure(P, *il, *ir, *jb, *jt);
+        grid.temperature(T, *il, *ir, *jb, *jt);
 
+        //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+        //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
-            if(myrank==0)
-            solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
-            visualization_time_accumulator -= *dt_value;
-        }
-    }
+        output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
 
-    grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
-    grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
-    grid.pressure(P, *il, *ir, *jb, *jt);
-    grid.temperature(T, *il, *ir, *jb, *jt);
+        // Print out the total time required for the solution
+        runtime.printTimer();
 
-    //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-    //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-
-    output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
-
-    // Print out the total time required for the solution
-    runtime.printTimer();
-
-    //Print total number of timesteps and number of failed SOR iterations
-    std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
-
-
+        //Print total number of timesteps and number of failed SOR iterations
+        std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
     //close input file
     fclose(parameterFile);
     fclose(geometryFile);

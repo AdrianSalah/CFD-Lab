@@ -108,6 +108,18 @@ void init_parallel(
                 }
             }
         }
+        for (int i = iproc * jproc; i < num_proc; i++) {
+            int NEG = 0;
+            int rankk = MPI_PROC_NULL;
+            MPI_Send(&NEG, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&NEG, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&NEG, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&NEG, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&rankk, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&rankk, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&rankk, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(&rankk, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+        }
     }
     // receive indices from rank 0
     for (int j = 0; j < jproc; j++) {
@@ -128,6 +140,18 @@ void init_parallel(
                 MPI_Recv(rank_b, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 MPI_Recv(rank_t, 1, MPI_INT, 0, proc, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
+        }
+    }
+    for (int i = iproc * jproc; i < num_proc; i++) {
+        if (*myrank == i) {
+            MPI_Recv(il, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(ir, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(jb, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(jt, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(rank_l, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(rank_r, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(rank_b, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(rank_t, 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
     }
 }
