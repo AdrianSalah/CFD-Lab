@@ -102,10 +102,10 @@ void output_uvp_parallel(
         int jt,
         int omg_i,
         int omg_j,
-        char *output_file,
+        char* output_file,
         int timestep,
-        int dx,
-        int dy);
+        double dx,
+        double dy);
 
 /*
  *

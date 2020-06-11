@@ -177,6 +177,7 @@ int main(int argn, char** args) {
 
 
     //check if directory "output" exists, if not creates directory "output"
+    if(myrank==0)
     check_dir_exists(SCENARIO_NAME);
 
     FILE *parameterFile;
@@ -245,15 +246,11 @@ int main(int argn, char** args) {
 
 
         //  define name of output-file depending on the rank
-        char* outputName;
-        if (myrank == 0)
-            outputName = "proc0";
-        else if (myrank == 1)
-            outputName = "proc1";
-        else if (myrank == 2)
-            outputName = "proc2";
-        else if (myrank == 3)
-            outputName = "proc3";
+        std::string outputName2="proc"+std::to_string(myrank);
+        char outputName[10];
+        for (int i = 0; i < outputName2.length(); i++) {
+            outputName[i] = outputName2[i];
+        }
 
 
         //for output to vtk-file
@@ -366,6 +363,7 @@ int main(int argn, char** args) {
 
             // Visualize u v p
             if (visualization_time_accumulator >= *dt_value) {
+                if (myrank < (*iproc) * (*jproc)){
                 grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
                 grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
                 grid.set_pressure(P, *il, *ir, *jb, *jt);
@@ -373,28 +371,29 @@ int main(int argn, char** args) {
                 //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
                 //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
                 output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
-
+                }
 
                 if (myrank == 0)
                     solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
                 visualization_time_accumulator -= *dt_value;
             }
         }
+        if (myrank < (*iproc) * (*jproc)) {
+            grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+            grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+            grid.set_pressure(P, *il, *ir, *jb, *jt);
+            grid.set_temperature(T, *il, *ir, *jb, *jt);
+            //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
+            //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
-        grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
-        grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
-        grid.set_pressure(P, *il, *ir, *jb, *jt);
-        grid.set_temperature(T, *il, *ir, *jb, *jt);
-        //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
-        //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
+            output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
 
-        output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
+            // Print out the total time required for the solution
+            runtime.printTimer();
 
-        // Print out the total time required for the solution
-        runtime.printTimer();
-
-        //Print total number of timesteps and number of failed SOR iterations
-        std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+            //Print total number of timesteps and number of failed SOR iterations
+            std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+        }
     //close input file
     fclose(parameterFile);
     fclose(geometryFile);

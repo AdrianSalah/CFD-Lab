@@ -259,10 +259,10 @@ void output_uvp_parallel(
         int jt,
         int omg_i,
         int omg_j,
-        char *output_file,
+        char* output_file,
         int timestep,
-        int dx,
-        int dy) {
+        double dx,
+        double dy) {
 
 
     char szFileName[80];
@@ -289,9 +289,9 @@ void output_uvp_parallel(
     /* ----write u, v for subdomain to vtk-file ---- */
     fprintf(fp,"\n");
     fprintf(fp, "VECTORS velocity float\n");
-    for(int j = 1; j < j_delta; j++) {
-        for(int i = 1; i < i_delta; i++) {
-            fprintf(fp, "%f %f 0\n", (U[i][j] + U[i][j+1]) * 0.5, (V[i][j] + V[i+1][j]) * 0.5 );
+    for(int j = 1; j < j_delta +1; j++) {
+        for(int i = 1; i < i_delta +1; i++) {
+            fprintf(fp, "%f %f 0\n", (U[i+1][j] + U[i+1][j+1]) * 0.5, (V[i][j+1] + V[i+1][j+1]) * 0.5 );
         }
     }
 
@@ -300,8 +300,8 @@ void output_uvp_parallel(
     fprintf(fp,"CELL_DATA %i \n", ((i_delta)*(j_delta)) );
     fprintf(fp, "SCALARS pressure float 1 \n");
     fprintf(fp, "LOOKUP_TABLE default \n");
-    for(int j = 1; j <= j_delta; j++) {
-        for(int i = 1; i <= i_delta; i++) {
+    for(int j = 1; j < j_delta; j++) {
+        for(int i = 1; i < i_delta; i++) {
             fprintf(fp, "%f\n", P[i][j] );
         }
     }
@@ -319,8 +319,8 @@ void write_vtkPointCoordinates_parallel(
     double originX = il;
     double originY = jb;
 
-    for(int j = jb; j <= jt ; j++) {
-        for( int i = il; i <= ir; i++) {
+    for(int j = jb; j < jt ; j++) {
+        for( int i = il; i < ir; i++) {
             fprintf(fp, "%f %f 0\n", originX+(i*dx), originY+(j*dy) );
         }
     }
