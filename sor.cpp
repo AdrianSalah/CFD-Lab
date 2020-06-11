@@ -11,6 +11,7 @@ void sor(
         int    jmax,
         Grid& grid,
         matrix<double> &RS,
+        matrix<double> &P,
         double *res,
         double *res_temp,
         int il,
@@ -23,14 +24,13 @@ void sor(
     static double rloc;
     static double coeff;
     coeff = omg / (2.0 * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
-    static matrix<double> P;
 
     // MAY NOT BE NEEDED. TO REMOVE LATER.
     // Setting pressure for boundary cells inside the spatial domain before SOR algorithm
     // grid.set_pressure_for_internal_boundaries();
 
     // Getting pressure over the whole domain
-    grid.pressure(P, il, ir, jb, jt);
+    //grid.pressure(P, il, ir, jb, jt);
 
     // Setting pressure for boundary cells inside the spatial domain after the SOR algorithm
     //boundary_val_sor(grid);

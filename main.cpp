@@ -247,7 +247,7 @@ int main(int argn, char** args) {
         //  define name of output-file depending on the rank
         char* outputName;
         if (myrank == 0)
-            outputName = "master";
+            outputName = "proc0";
         else if (myrank == 1)
             outputName = "proc1";
         else if (myrank == 2)
@@ -302,19 +302,21 @@ int main(int argn, char** args) {
 
         //assign initial values FI, GI and RSI on the hole domain for F, G and RS
         init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid, *il, *ir, *jb, *jt);
-
+        grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+        grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+        grid.pressure(P, *il, *ir, *jb, *jt);
+        grid.temperature(T, *il, *ir, *jb, *jt);
 
         //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
         // Initialize timer to measure performance
         Timer runtime;
         while (time < *t_end) {
-
             //here we set time steps manually
             calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, *il, *ir, *jb, *jt);
             //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
             spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
             //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
-            calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
+            calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid,U,V, F, G, *il, *ir, *jb, *jt);
             calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, *il, *ir, *jb, *jt);
 
             //reset current number of iterations for SOR
@@ -324,7 +326,7 @@ int main(int argn, char** args) {
             *res = INFINITY;
 
             while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
-                sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res, res_temp, *il, *ir, *jb, *jt, myrank);
+                sor(*omg, *dx, *dy, *imax, *jmax, grid, RS,P, res, res_temp, *il, *ir, *jb, *jt, myrank);
                 current_timestep_iteration++;
 
                 MPI_Status status;
@@ -357,17 +359,17 @@ int main(int argn, char** args) {
                 count_failed_SOR++;
             }
 
-            calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, *il, *ir, *jb, *jt);
+            calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, U, V, P, F, G, *il, *ir, *jb, *jt);
             visualization_time_accumulator += *dt;
             timesteps_total++;
             time += *dt;
 
             // Visualize u v p
             if (visualization_time_accumulator >= *dt_value) {
-                grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
-                grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
-                grid.pressure(P, *il, *ir, *jb, *jt);
-                grid.temperature(T, *il, *ir, *jb, *jt);
+                grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+                grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+                grid.set_pressure(P, *il, *ir, *jb, *jt);
+                grid.set_temperature(T, *il, *ir, *jb, *jt);
                 //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
                 //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
                 output_uvp_parallel(U, V, P, *il, *ir, *jb, *jt, *omg_i, *omg_j, outputName, timesteps_total, *dx, *dy);
@@ -379,11 +381,10 @@ int main(int argn, char** args) {
             }
         }
 
-        grid.velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
-        grid.velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
-        grid.pressure(P, *il, *ir, *jb, *jt);
-        grid.temperature(T, *il, *ir, *jb, *jt);
-
+        grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
+        grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);
+        grid.set_pressure(P, *il, *ir, *jb, *jt);
+        grid.set_temperature(T, *il, *ir, *jb, *jt);
         //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
         //vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 

@@ -22,6 +22,8 @@ void calculate_fg(
         int imax,
         int jmax,
         Grid& grid,
+        matrix<double>& u,
+        matrix<double>& v,
         matrix<double> &F,
         matrix<double> &G, 
         int il,
@@ -29,13 +31,8 @@ void calculate_fg(
         int jb,
         int jt)
 {
-    static matrix<double> u;
-    static matrix<double> v;
     static matrix<double> T;
 
-
-    grid.velocity(u, velocity_type::U,il, ir, jb, jt);
-    grid.velocity(v, velocity_type::V, il, ir, jb, jt);
     grid.temperature(T, il, ir, jb, jt);
 
     // ----- Boundary values for F and G ----- //
@@ -339,6 +336,9 @@ void calculate_uv(
         int imax,
         int jmax,
         Grid& grid,
+        matrix<double>& u_velocity,
+        matrix<double>& v_velocity,
+        matrix<double>& pressure,
         matrix<double> &F,
         matrix<double> &G,
         int il,
@@ -346,13 +346,7 @@ void calculate_uv(
         int jb,
         int jt)
 {
-    static matrix<double> u_velocity;
-    static matrix<double> v_velocity;
-    static matrix<double> pressure;
 
-    grid.velocity(u_velocity, velocity_type::U, il, ir, jb, jt);
-    grid.velocity(v_velocity, velocity_type::V, il, ir, jb, jt);
-    grid.pressure(pressure, il, ir, jb, jt);
 
 
     for (int i = 2 + (il == 0); i < ir - il + 3 - (ir == (grid.imaxb() - 1)); i++)
@@ -372,9 +366,6 @@ void calculate_uv(
             v_velocity.at(i).at(j) = G.at(i).at(j) - dt / dy * (pressure.at(i).at(j) - pressure.at(i).at(j - 1));
             }
     }
-
-    grid.set_velocity(u_velocity, velocity_type::U, il, ir, jb, jt);
-    grid.set_velocity(v_velocity, velocity_type::V, il, ir, jb, jt);
 }
 
 

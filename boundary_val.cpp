@@ -303,13 +303,6 @@ void spec_boundary_val(Grid& grid,
         int jb,
         int jt)
 {
-        grid.velocity(U, velocity_type::U, il, ir, jb, jt);
-        grid.velocity(V, velocity_type::V, il, ir, jb, jt);
-        grid.pressure(P, il, ir, jb, jt);
-
-
-
-        //grid.temperature(T, il, ir, jb, jt);
         // left boundary
 
         if (il == 0) {
@@ -365,11 +358,6 @@ void spec_boundary_val(Grid& grid,
                 //T[i+1][jt - jb+1] = T[i+1][jt - jb];
             }
         }
-
-        grid.set_velocity(U, velocity_type::U, il, ir, jb, jt);
-        grid.set_velocity(V, velocity_type::V, il, ir, jb, jt);
-        grid.set_pressure(P, il, ir, jb, jt);
-        //grid.set_temperature(T, il, ir, jb, jt);
 }
 
 void assign_ptr_nbcells(Grid &grid){

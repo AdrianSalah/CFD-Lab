@@ -1,14 +1,14 @@
 #--------------------------------------------
 #            size of the domain
 #--------------------------------------------
-xlength      1
-ylength      1
+xlength      10
+ylength      10
 
 #--------------------------------------------
 #            number of cells
 #--------------------------------------------
-imax        50
-jmax        50
+imax        300
+jmax        300
 
 #--------------------------------------------
 #               time steps
@@ -17,14 +17,14 @@ jmax        50
 # tau: safety factor for time step size control
 #--------------------------------------------
 dt           0.05
-t_end        50.0
+t_end        1
 tau          0.5
 
 #--------------------------------------------
 #               output
 # dt_value: time interval for writing files
 #--------------------------------------------
-dt_value      0.5
+dt_value      0.01
 
 #--------------------------------------------
 #               pressure
@@ -33,7 +33,7 @@ dt_value      0.5
 # omg: relaxation factor for SOR
 # alpha: upwind differencing factor
 #--------------------------------------------
-itermax      100
+itermax      10
 eps          0.001
 omg          1.7
 alpha        0.9
@@ -42,7 +42,7 @@ beta         0.0004
 #--------------------------------------------
 #     Reynolds number (here: 1 / nu)
 #--------------------------------------------
-Re        2000
+Re        10
 
 #--------------------------------------------
 #        gravity / external forces
