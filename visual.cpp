@@ -297,7 +297,7 @@ void output_uvp_parallel(
 
     /* ---- write pressure for subdomain to vtk-file ---- */
     fprintf(fp,"\n");
-    fprintf(fp,"CELL_DATA %i \n", ((i_delta)*(j_delta)) );
+    fprintf(fp,"CELL_DATA %i \n", ((i_delta - 1)*(j_delta - 1)) );
     fprintf(fp, "SCALARS pressure float 1 \n");
     fprintf(fp, "LOOKUP_TABLE default \n");
     for(int j = 1; j < j_delta; j++) {
@@ -316,12 +316,16 @@ void write_vtkPointCoordinates_parallel(
         int jt,
         double dx,
         double dy) {
+
     double originX = il;
     double originY = jb;
 
-    for(int j = jb; j < jt ; j++) {
-        for( int i = il; i < ir; i++) {
-            fprintf(fp, "%f %f 0\n", originX+(i*dx), originY+(j*dy) );
+    int i_delta = ir - il;
+    int j_delta = jt - jb;
+
+    for(int j = 0; j < j_delta; j++) {
+        for( int i = 0; i < i_delta; i++) {
+            fprintf(fp, "%f %f 0\n", (originX + i) * dx, (originY + j) * dy);
         }
     }
 }
