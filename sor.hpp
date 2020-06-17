@@ -31,7 +31,8 @@ void sor(
         int    jmax,
         Grid &grid,
         matrix<double> &RS,
-        double *res
+        double *res,
+    matrix<double>& P
 );
 
 

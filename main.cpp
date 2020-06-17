@@ -84,21 +84,20 @@ int main(int argn, char** args) {
 
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
-
+    matrix<double> U, V, P;
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0);
+    init_uvpt(*imax, *jmax, U, V, P, *UI, *VI, *PI);
 
     //initialize matrices U, V, P
-    matrix<double> U, V, P;
-
     // Initialize timer to measure performance
     Timer runtime;
 
     while (time < *t_end) {
 
-        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid);
-        boundaryvalues (*imax, *jmax, grid);
-        calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_dt( *Re , *tau , dt , *dx ,  *dy , *imax , *jmax, grid,U,V);
+        boundaryvalues(*imax, *jmax, grid, U, V, P);
+        calculate_fg(*Re, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G,U, V);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS);
 
         //reset current number of iterations for SOR
@@ -108,7 +107,7 @@ int main(int argn, char** args) {
         *res = INFINITY;
 
         while ((*res > *eps) && (current_timestep_iteration <= *itermax)) {
-            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res);
+            sor(*omg, *dx, *dy, *imax, *jmax, grid, RS, res,P);
             current_timestep_iteration++;
         }
         //count number of failed SOR iterations
@@ -118,17 +117,15 @@ int main(int argn, char** args) {
             count_failed_SOR++;
         }
 
-        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G);
+        calculate_uv(*dt, *dx, *dy, *imax, *jmax, grid, F, G, U, V, P);
         visualization_time_accumulator += * dt;
         timesteps_total++;
         time += *dt;
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
-            grid.velocity(U, velocity_type::U);
-            grid.velocity(V, velocity_type::V);
-            grid.pressure(P);
-            write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+            output_uvp_parallel(U, V, P, 0, *imax+1, 0, *jmax+1, "cavityData", timesteps_total, *dx, *dy);
+            //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
             solutionProgress(time, *t_end); // Print out total progress with respect to the simulation timerange
             visualization_time_accumulator -= *dt_value;
         }
@@ -136,11 +133,8 @@ int main(int argn, char** args) {
        
         
     }
-
-    grid.velocity(U, velocity_type::U);
-    grid.velocity(V, velocity_type::V);
-    grid.pressure(P);
-    write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
+    output_uvp_parallel(U, V, P, 0, *imax + 1, 0, *jmax + 1, "cavityData", timesteps_total, *dx, *dy);
+    //write_vtkFile("cavityData", timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P);
 
     // Print out the total time required for the solution
     runtime.printTimer();

@@ -20,13 +20,10 @@ void calculate_fg(
         int jmax,
         Grid& grid,
         matrix<double> &F,
-        matrix<double> &G)
+        matrix<double> &G,
+        matrix<double> &u,
+        matrix<double> &v)
 {
-    static matrix<double> u;
-    static matrix<double> v;
-
-    grid.velocity(u, velocity_type::U);
-    grid.velocity(v, velocity_type::V);
 
     // ----- Boundary values for F and G ----- //
     // F[0, j] = u[0, j]        j = 1...jmax    LEFT
@@ -35,14 +32,14 @@ void calculate_fg(
     // G[i, 0] = v[i, 0]        i = 1...imax    BOTTOM
     // G[i, jmax] = v[i, jmax]  i = 1...imax    TOP
 
-    for (int j = 1; j <= jmax; j++) {
-        F[0][j] = u[0][j];
-        F[imax][j] = u[imax][j];
+    for (int j = 2; j <= jmax+1; j++) {
+        F[2][j] = u[2][j];
+        F[imax+1][j] = u[imax+1][j];
     }
 
-    for (int i = 1; i <= imax; i++) {
-        G[i][0] = v[i][0];
-        G[i][jmax] = v[i][jmax];
+    for (int i = 2; i <= imax+1; i++) {
+        G[i][2] = v[i][2];
+        G[i][jmax+2] = v[i][jmax+1];
     }
 
     // ----- F function initialisation ----- //
@@ -54,9 +51,9 @@ void calculate_fg(
 
     // ------ Discretisation of differential operators of G ----- //
 
-    for (int i = 1; i < imax; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
+    for (int i = 3; i < imax+2; i++) //shouldn't be the index from for (int i = 1; i < imax-1; i++)
     {
-        for (int j = 1; j <= jmax; j++)
+        for (int j = 2; j <= jmax+1; j++)
         {
             //second derivative with respect to x
             d2_u_dx2 = 1 / (dx * dx) * (u[i + 1][j] - 2 * u[i][j] + u[i - 1][j]);
@@ -74,13 +71,13 @@ void calculate_fg(
                       );
             //first derivative of (u*v) with respect to y
             d_uv_dy = 1 / (4 * dy) * (
-                    (v[i][j] + v[i + 1][j]) * (u[i][j] + u[i][j + 1]) -
-                    (v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] + u[i][j])
+                    (v[i-1][j+1] + v[i][j+1]) * (u[i][j] + u[i][j + 1]) -
+                    (v[i-1][j] + v[i][j]) * (u[i][j - 1] + u[i][j])
             ) +
 
                       alpha / (4 * dy) * (
-                              abs(v[i][j] + v[i + 1][j]) * (u[i][j] - u[i][j + 1]) -
-                              abs(v[i][j - 1] + v[i + 1][j - 1]) * (u[i][j - 1] - u[i][j])
+                              abs(v[i-1][j+1] + v[i][j+1]) * (u[i][j] - u[i][j + 1]) -
+                              abs(v[i-1][j] + v[i][j]) * (u[i][j - 1] - u[i][j])
                       );
 
             // To check whether GX should be divided by density
@@ -97,9 +94,9 @@ void calculate_fg(
 
     // ------ Discretisation of differential operators of F ----- //
 
-    for (int i = 1; i <= imax; i++)
+    for (int i = 2; i <= imax+1; i++)
     {
-        for (int j = 1; j < jmax; j++)
+        for (int j = 3; j < jmax+2; j++)
         {
             //second derivative of v with respect to x
             d2_v_dx2 = 1 / (dx * dx) * (v[i + 1][j] - 2 * v[i][j] + v[i - 1][j]);
@@ -117,13 +114,13 @@ void calculate_fg(
                       );
             //first derivative of (u*v) with respect to x
             d_uv_dx = 1 / (4 * dx) * (
-                    (u[i][j] + u[i][j + 1]) * (v[i][j] + v[i + 1][j]) -
-                    (u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] + v[i][j])
+                    (u[i+1][j-1] + u[i+1][j]) * (v[i][j] + v[i + 1][j]) -
+                    (u[i][j-1] + u[i][j]) * (v[i - 1][j] + v[i][j])
             ) +
 
                       alpha / (4 * dx) * (
-                              abs(u[i][j] + u[i][j + 1]) * (v[i][j] - v[i + 1][j]) -
-                              abs(u[i - 1][j] + u[i - 1][j + 1]) * (v[i - 1][j] - v[i][j])
+                              abs(u[i+1][j-1] + u[i+1][j]) * (v[i][j] - v[i + 1][j]) -
+                              abs(u[i ][j-1] + u[i][j]) * (v[i - 1][j] - v[i][j])
                       );
 
             // To check whether GY should be divided by density
@@ -150,8 +147,8 @@ void calculate_rs(
         for (int j = 1; j <= jmax; j++)
         {
             RS.at(i).at(j) = 1 / dt * (
-                    (F.at(i).at(j) - F.at(i - 1).at(j)) / dx +
-                    (G.at(i).at(j) - G.at(i).at(j - 1)) / dy
+                    (F.at(i+2).at(j+1) - F.at(i+1).at(j+1)) / dx +
+                    (G.at(i+1).at(j+2) - G.at(i+1).at(j+1)) / dy
             );
         }
     }
@@ -187,14 +184,22 @@ double max_abs_velocity(int imax, int jmax, Grid& grid, velocity_type type) {
 
 
 
-void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid) {
+void calculate_dt(double Re, double tau, double* dt, double dx, double dy, int imax, int jmax, Grid& grid, matrix<double> U, matrix<double> V ) {
 
     //maximum absolute values for U, V on grid for current time step
-    static double max_abs_U;
-    max_abs_U = max_abs_velocity(imax, jmax, grid, velocity_type::U);
+    static double max_abs_U=-1.0;
+    for (int i = 0; i < imax + 5; i++) {
+        for (int j = 0; j < jmax + 4; j++) {
+            max_abs_U = std::max(max_abs_U, U.at(i).at(j));
+        }
+    }
 
-    static double max_abs_V;
-    max_abs_V = max_abs_velocity(imax, jmax, grid, velocity_type::V);
+    static double max_abs_V = -1.0;
+    for (int i = 0; i < imax + 4; i++) {
+        for (int j = 0; j < jmax + 5; j++) {
+            max_abs_V = std::max(max_abs_V, V.at(i).at(j));
+        }
+    }
 
     //first stability conditon
     static double condition1;
@@ -217,31 +222,24 @@ void calculate_uv(
         int jmax,
         Grid& grid,
         matrix<double> &F,
-        matrix<double> &G)
+        matrix<double> &G,
+        matrix<double>& u_velocity,
+        matrix<double>& v_velocity,
+        matrix<double>& pressure)
 {
-    static matrix<double> u_velocity;
-    static matrix<double> v_velocity;
-    static matrix<double> pressure;
-
-    grid.velocity(u_velocity, velocity_type::U);
-    grid.velocity(v_velocity, velocity_type::V);
-    grid.pressure(pressure);
 
 
-    for(int i = 1; i <= imax - 1; i++){
-        for(int j = 1; j <= jmax; j++){
-            u_velocity.at(i).at(j) = F.at(i).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
+    for(int i = 2; i <= imax ; i++){
+        for(int j = 2; j <= jmax+1; j++){
+            u_velocity.at(i+1).at(j) = F.at(i+1).at(j) - dt/ dx * (pressure.at(i+1).at(j) - pressure.at(i).at(j));
         }
     }
 
-    for (int i = 1; i <= imax; i++){
-        for(int j = 1; j <= jmax - 1; j++){
-            v_velocity.at(i).at(j) = G.at(i).at(j) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
+    for (int i = 2; i <= imax+1; i++){
+        for(int j = 2; j <= jmax ; j++){
+            v_velocity.at(i).at(j+1) = G.at(i).at(j+1) - dt/ dy * (pressure.at(i).at(j+1) - pressure.at(i).at(j));
         }
     }
-
-    grid.set_velocity(u_velocity, velocity_type::U);
-    grid.set_velocity(v_velocity, velocity_type::V);
 
 }
 
@@ -254,14 +252,72 @@ void init_fgrs(int imax,
             double GI,
             double RSI
   ){
-    F.resize(imax + 2);
-    G.resize(imax + 2);
+    F.resize(imax + 5);
+    G.resize(imax + 4);
     RS.resize(imax + 2);
+
+    for (int i = 0; i < imax + 5; i++) {
+
+        F.at(i).resize(jmax + 4, FI);
+    }
+    for (int i = 0; i < imax + 4; i++) {
+
+        G.at(i).resize(jmax + 5, GI);
+    }
+    for (int i = 0; i < imax + 2; i++) {
+
+        RS.at(i).resize(jmax + 2, RSI);
+    }
+}
+void init_uvpt(int imax,
+    int jmax,
+    matrix<double>& U,
+    matrix<double>& V,
+    matrix<double>& P,
+    double UI,
+    double VI,
+    double PI
+) {
+    U.resize(imax + 5);
+    V.resize(imax + 4);
+    P.resize(imax + 4);
+
+    for (int i = 0; i < imax + 5; i++) {
+
+        U.at(i).resize(jmax + 4, UI);
+    }
+    for (int i = 0; i < imax + 4; i++) {
+
+        V.at(i).resize(jmax + 5, VI);
+    }
+    for (int i = 0; i < imax + 4; i++) {
+
+        P.at(i).resize(jmax + 4, PI);
+    }
+}
+void init_uvpd(int imax,
+    int jmax,
+    matrix<double>& Ud,
+    matrix<double>& Vd,
+    matrix<double>& Pd,
+    double UI,
+    double VI,
+    double PI
+) {
+    Ud.resize(imax + 2);
+    Vd.resize(imax + 2);
+    Pd.resize(imax + 2);
 
     for (int i = 0; i < imax + 2; i++) {
 
-        F.at(i).resize(jmax + 2, FI);
-        G.at(i).resize(jmax + 2, GI);
-        RS.at(i).resize(jmax + 2, RSI);
+        Ud.at(i).resize(jmax + 2, UI);
+    }
+    for (int i = 0; i < imax + 2; i++) {
+
+        Vd.at(i).resize(jmax + 2, VI);
+    }
+    for (int i = 0; i < imax + 2; i++) {
+
+        Pd.at(i).resize(jmax + 2, PI);
     }
 }

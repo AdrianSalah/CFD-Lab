@@ -28,19 +28,20 @@
  */
 
 void calculate_fg(
-        double Re,
-        double GX,
-        double GY,
-        double alpha,
-        double dt,
-        double dx,
-        double dy,
-        int imax,
-        int jmax,
-        Grid& grid,
-        matrix<double> &F,
-        matrix<double> &G
-);
+    double Re,
+    double GX,
+    double GY,
+    double alpha,
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid,
+    matrix<double>& F,
+    matrix<double>& G,
+    matrix<double>& u,
+    matrix<double>& v);
 
 
 
@@ -82,13 +83,15 @@ double max_abs_velocity(int imax, int jmax, Grid &grid, velocity_type type);
  *
  */
 void calculate_dt(double Re,
-        double tau,
-        double *dt,
-        double dx,
-        double dy,
-        int imax,
-        int jmax,
-        Grid &grid);
+    double tau,
+    double* dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid,
+    matrix<double> U,
+    matrix<double> V);
 
 
 /**
@@ -106,15 +109,17 @@ void calculate_dt(double Re,
  */
 
 void calculate_uv(
-        double dt,
-        double dx,
-        double dy,
-        int imax,
-        int jmax,
-        Grid &grid,
-        matrix<double> &F,
-        matrix<double> &G
-);
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid,
+    matrix<double>& F,
+    matrix<double>& G,
+    matrix<double>& u_velocity,
+    matrix<double>& v_velocity,
+    matrix<double>& pressure);
 
 /*
  * initializes matrices of F, G and R with constant values FI, GI and RSI on the hole domain
@@ -129,5 +134,22 @@ void init_fgrs(int imax,
                double GI,
                double RSI
 );
-
+void init_uvpt(int imax,
+    int jmax,
+    matrix<double>& U,
+    matrix<double>& V,
+    matrix<double>& P,
+    double UI,
+    double VI,
+    double PI
+);
+void init_uvpd(int imax,
+    int jmax,
+    matrix<double>& Ud,
+    matrix<double>& Vd,
+    matrix<double>& Pd,
+    double UI,
+    double VI,
+    double PI
+);
 #endif

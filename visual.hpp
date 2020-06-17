@@ -70,6 +70,46 @@ class VTKHelper {
     static void printVTKFile(Grid grid, double dx, double dy,
                                  std::string casename, std::string outputdir, int timestep);
 };
+void output_uvp_parallel(
+    matrix<double>& U,
+    matrix<double>& V,
+    matrix<double>& P,
+    int il,
+    int ir,
+    int jb,
+    int jt,
+    char* output_file,
+    int timestep,
+    double dx,
+    double dy);
+
+/*
+ *
+ *
+ */
+
+void write_vtkPointCoordinates_parallel(
+    FILE* fp,
+    int il,
+    int ir,
+    int jb,
+    int jt,
+    double dx,
+    double dy);
+
+/*
+ *
+ *
+ */
+
+void write_vtkHeader_parallel(
+    FILE* fp,
+    int il,
+    int ir,
+    int jb,
+    int jt,
+    double dx,
+    double dy);
 
 
 #endif
