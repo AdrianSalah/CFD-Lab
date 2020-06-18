@@ -218,8 +218,8 @@ void calculate_concentration(
 
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
-    grid.concentration(C_old);
-    grid.concentration(C_new);
+    grid.concentration(C_old, ID::A);
+    grid.concentration(C_new, ID::A);
 
     static double duC_dx;
     static double dvC_dy;
@@ -250,7 +250,7 @@ void calculate_concentration(
             }
         }
     }
-    grid.set_concentration(C_new);
+    grid.set_concentration(C_new, ID::A);
 }
 
 
@@ -447,7 +447,7 @@ void init_uvptc(
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
-    grid.concentration(C);
+    grid.concentration(C, ID::A);
 
     for (int i = 0; i < grid.imaxb(); i++) {
         for (int j = 0; j < grid.jmaxb(); j++) {
@@ -472,5 +472,5 @@ void init_uvptc(
     grid.set_velocity(V, velocity_type::V);
     grid.set_pressure(P);
     grid.set_temperature(T);
-    grid.set_concentration(C);
+    grid.set_concentration(C, ID::A);
 }

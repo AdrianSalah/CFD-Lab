@@ -40,7 +40,7 @@ void boundaryvalues(int imax,
 
     // Concentration - Declaration and Initialization
     static matrix<double> conc;
-    grid.concentration(conc);
+    grid.concentration(conc, ID::A);
 
     // ----- Boundary conditions NO SLIP inner cells ----- //
 
@@ -345,7 +345,7 @@ void boundaryvalues(int imax,
 
     grid.set_pressure(pres);
     grid.set_temperature(temp);
-    grid.set_concentration(conc);
+    grid.set_concentration(conc, ID::A);
 }
 
 

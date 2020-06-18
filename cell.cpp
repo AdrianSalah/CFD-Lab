@@ -2,7 +2,7 @@
 
 Cell::Cell() {};
 
-Cell::Cell(double& PI, double& UI, double& VI, double& TI, double& CI) :
+Cell::Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D) :
     _pressure(PI), _temperature(TI) {
     set_velocity(UI, velocity_type::U);
     set_velocity(VI, velocity_type::V);
@@ -18,12 +18,12 @@ void Cell::set_pressure(double& value) {
 }
 
 // Concentration Get and Set
-double& Cell::concentration() {
-    return _concentration;
+double& Cell::concentration(ID id) {
+    return _concentration[static_cast<int>(id)];
 }
 
-void Cell::set_concentration(double& value) {
-    _concentration = value;
+void Cell::set_concentration(double& value, ID id) {
+    _concentration[static_cast<int>(id)] = value;
 }
 // Temperature Get and Set
 double& Cell::temperature() {

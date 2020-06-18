@@ -1,39 +1,48 @@
 #include "init.hpp"
 #include <fstream>
 
-int read_parameters( std::string szFileName,       /* name of the file */
-                    double* Re,                /* reynolds number   */
-                    double* UI,                /* velocity x-direction */
-                    double* VI,                /* velocity y-direction */
-                    double* PI,                /* pressure */
-                    double* GX,                /* gravitation x-direction */
-                    double* GY,                /* gravitation y-direction */
-                    double* t_end,             /* end time */
-                    double* xlength,           /* length of the domain x-dir.*/
-                    double* ylength,           /* length of the domain y-dir.*/
-                    double* dt,                /* time step */
-                    double* dx,                /* length of a cell x-dir. */
-                    double* dy,                /* length of a cell y-dir. */
-                    int  *imax,                /* number of cells x-direction*/
-                    int  *jmax,                /* number of cells y-direction*/
-                    double *alpha,             /* uppwind differencing factor*/
-                    double *omg,               /* relaxation factor */
-                    double *tau,               /* safety factor for time step*/
-                    int  *itermax,             /* max. number of iterations  */
-                    double *eps,                 /* accuracy bound for pressure*/
-		            double *dt_value,            /* time for output */
-                    double *TI,                   /* Initial temperature */
-                    double *T_h,                  /* hot wall temperature */
-                    double *T_c,                  /* cold wall temperature */
-                    double *PR,                      /*Prandlt Number*/
-                    double *beta,
-                    double* v_inflow,          /* inflow y velocity */
-                    double* u_inflow,          /* inflow x velocity */
-                    double* kappa,				/* thermal conductivity */
-					double* heat_flux,		 /* heat flux */
-                    double* CI,             /* initial concentration */         
-                    double* C_inject,            /* source concentration*/         
-                    double* Pr_diffusion            /* Prandlt Number for chemical diffusion*/         
+int read_parameters(std::string szFileName,       /* name of the file */
+	double* Re,                /* reynolds number   */
+	double* UI,                /* velocity x-direction */
+	double* VI,                /* velocity y-direction */
+	double* PI,                /* pressure */
+	double* GX,                /* gravitation x-direction */
+	double* GY,                /* gravitation y-direction */
+	double* t_end,             /* end time */
+	double* xlength,           /* length of the domain x-dir.*/
+	double* ylength,           /* length of the domain y-dir.*/
+	double* dt,                /* time step */
+	double* dx,                /* length of a cell x-dir. */
+	double* dy,                /* length of a cell y-dir. */
+	int* imax,                /* number of cells x-direction*/
+	int* jmax,                /* number of cells y-direction*/
+	double* alpha,             /* uppwind differencing factor*/
+	double* omg,               /* relaxation factor */
+	double* tau,               /* safety factor for time step*/
+	int* itermax,             /* max. number of iterations  */
+	double* eps,                 /* accuracy bound for pressure*/
+	double* dt_value,            /* time for output */
+	double* TI,                   /* Initial temperature */
+	double* T_h,                  /* hot wall temperature */
+	double* T_c,                  /* cold wall temperature */
+	double* PR,                      /*Prandlt Number*/
+	double* beta,
+	double* v_inflow,          /* inflow y velocity */
+	double* u_inflow,          /* inflow x velocity */
+	double* kappa,				/* thermal conductivity */
+	double* heat_flux,		 /* heat flux */
+	double* CI_A,             /* initial concentration */
+	double* CI_B,             /* initial concentration */
+	double* CI_C,             /* initial concentration */
+	double* CI_D,             /* initial concentration */
+	double* C_inject_A,            /* source concentration*/
+	double* C_inject_B,            /* source concentration*/
+	double* C_inject_C,            /* source concentration*/
+	double* C_inject_D,            /* source concentration*/
+	double* Pr_diffusion_A,            /* Prandlt Number for chemical diffusion*/
+	double* Pr_diffusion_B,            /* Prandlt Number for chemical diffusion*/
+	double* Pr_diffusion_C,            /* Prandlt Number for chemical diffusion*/
+	double* Pr_diffusion_D           /* Prandlt Number for chemical diffusion*/
                      )                     
 {
     // Reading Parameters
@@ -73,9 +82,18 @@ int read_parameters( std::string szFileName,       /* name of the file */
 			if (var == "v_inflow") file >> *v_inflow;
 			if (var == "kappa")    file >> *kappa;
 			if (var == "heat_flux")file >> *heat_flux;
-			if (var == "CI")	   file >> *CI;
-			if (var == "C_inject")	   file >> *C_inject;
-			if (var == "Pr_diffusion")  file >> *Pr_diffusion;
+			if (var == "CI_A")	   file >> *CI_A;
+			if (var == "CI_B")	   file >> *CI_B;
+			if (var == "CI_C")	   file >> *CI_C;
+			if (var == "CI_D")	   file >> *CI_D;
+			if (var == "C_inject_A")	   file >> *C_inject_A;
+			if (var == "C_inject_B")	   file >> *C_inject_B;
+			if (var == "C_inject_C")	   file >> *C_inject_C;
+			if (var == "C_inject_D")	   file >> *C_inject_D;
+			if (var == "Pr_diffusion_A")  file >> *Pr_diffusion_A;
+			if (var == "Pr_diffusion_B")  file >> *Pr_diffusion_B;
+			if (var == "Pr_diffusion_C")  file >> *Pr_diffusion_C;
+			if (var == "Pr_diffusion_D")  file >> *Pr_diffusion_D;
 		}
 	}
 

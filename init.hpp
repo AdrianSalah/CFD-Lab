@@ -74,9 +74,18 @@ int read_parameters(std::string szFileName,       /* name of the file */
     double* u_inflow,          /* inflow x velocity */
     double* kappa,             /* thermal conductivity */
     double* heat_flux,		 /* heat flux */
-    double* CI,             /* initial concentration */
-    double* C_inject,            /* source concentration */ 
-    double* Pr_diffusion);          /* Prandlt Number for chemical diffusion*/
+    double* CI_A,             /* initial concentration */
+    double* CI_B,             /* initial concentration */
+    double* CI_C,             /* initial concentration */
+    double* CI_D,             /* initial concentration */
+    double* C_inject_A,            /* source concentration*/
+    double* C_inject_B,            /* source concentration*/
+    double* C_inject_C,            /* source concentration*/
+    double* C_inject_D,            /* source concentration*/
+    double* Pr_diffusion_A,            /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_B,            /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_C,            /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_D);
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on

@@ -11,7 +11,7 @@ class Cell {
 public:
     // Constructors
     Cell();
-    Cell(double& PI, double& UI, double& VI, double& TI, double& CI);
+    Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D);
 
     CellType _cellType;
 
@@ -26,8 +26,8 @@ public:
     void set_pressure(double& value);
 
     // Get + Set concentration
-    double& concentration();
-    void set_concentration(double& value);
+    double& concentration(ID id);
+    void set_concentration(double& value, ID id);
 
     // Get + Set temperature
     double& temperature();
@@ -46,7 +46,7 @@ private:
     double _pressure = 0;
 
     // one concentration value per call
-    double _concentration = 0;
+    std::array<double, 4> _concentration = { 0 };
 
     // one temperature value per call
     double _temperature = 0;

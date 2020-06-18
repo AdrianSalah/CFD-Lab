@@ -195,7 +195,7 @@ void VTKHelper::printVTKFile(
     
     // CONCENTRATION
     std::vector<std::vector<double>> concentration;
-    grid.concentration(concentration);
+    grid.concentration(concentration, ID::A);
 
     
     // Print pressure from bottom to top

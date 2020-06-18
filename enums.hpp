@@ -27,4 +27,11 @@ enum class read_type {
     DOUBLE
 };
 
+enum class ID {
+    A,
+    B,
+    C,
+    D
+};
+
 #endif //CFDLAB_ENUMS_H

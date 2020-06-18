@@ -70,7 +70,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // RUN Step Over
-    scenarioSpec = 3;
+    scenarioSpec = 2;
 
     switch(scenarioSpec)
     {
@@ -155,10 +155,19 @@ int main(int argn, char** args) {
     double* TI = new double;                /* Initial Temperature*/
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
-    double* CI = new double;                /* Initial Concentration */
-    double* C_inject = new double;          /* Concentration of the injected chemical */
+    double* CI_A = new double;                /* Initial Concentration */
+    double* CI_B = new double;                /* Initial Concentration */
+    double* CI_C = new double;                /* Initial Concentration */
+    double* CI_D = new double;                /* Initial Concentration */
+    double* C_inject_A = new double;          /* Concentration of the injected chemical */
+    double* C_inject_B = new double;          /* Concentration of the injected chemical */
+    double* C_inject_C = new double;          /* Concentration of the injected chemical */
+    double* C_inject_D = new double;          /* Concentration of the injected chemical */
     double* Pr = new double;                /* Prandlt Number*/
-    double* Pr_diffusion = new double;      /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_A = new double;      /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_B = new double;      /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_C = new double;      /* Prandlt Number for chemical diffusion*/
+    double* Pr_diffusion_D = new double;      /* Prandlt Number for chemical diffusion*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
     double* v_inflow = new double;          /* boundary value for inflow BC */
@@ -192,13 +201,14 @@ int main(int argn, char** args) {
         std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
-            tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI, C_inject, Pr_diffusion);
+            tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI_A, CI_B, CI_C, CI_D,
+            C_inject_A, C_inject_B, C_inject_C, C_inject_D, Pr_diffusion_A, Pr_diffusion_B, Pr_diffusion_C, Pr_diffusion_D);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
-    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, *CI);
+    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, *CI_A, *CI_B, *CI_C, *CI_D);
 
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
@@ -240,7 +250,7 @@ int main(int argn, char** args) {
 
     //initialize matrices U, V, P, T, C
     matrix<double> U, V, P, T, C;
-    init_uvptc(*imax, *jmax, U, V, P, T, C, *UI, *VI, *PI, *TI, *CI, grid);
+    init_uvptc(*imax, *jmax, U, V, P, T, C, *UI, *VI, *PI, *TI, *CI_A, grid);
 
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
@@ -257,10 +267,10 @@ int main(int argn, char** args) {
 
     while (time < *t_end) {
         //here we set time steps manually
-        calculate_dt(*Re, *Pr, *Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
+        calculate_dt(*Re, *Pr, *Pr_diffusion_A, *tau, dt, *dx, *dy, *imax, *jmax, grid);
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject_A, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
-        calculate_concentration(*Re, *Pr_diffusion, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+        calculate_concentration(*Re, *Pr_diffusion_A, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
         
@@ -293,7 +303,7 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             grid.temperature(T);
-            grid.concentration(C);
+            grid.concentration(C, ID::A);
 
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -306,7 +316,7 @@ int main(int argn, char** args) {
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
-    grid.concentration(C);
+    grid.concentration(C, ID::A);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -357,9 +367,19 @@ int main(int argn, char** args) {
     delete TI;
     delete T_h;
     delete T_c;
-    delete C_inject;
+    delete C_inject_A;
+    delete C_inject_B;
+    delete C_inject_C;
+    delete C_inject_D;
+    delete CI_A;
+    delete CI_B;
+    delete CI_C;
+    delete CI_D;
     delete Pr;
-    delete Pr_diffusion;
+    delete Pr_diffusion_A;
+    delete Pr_diffusion_B;
+    delete Pr_diffusion_C;
+    delete Pr_diffusion_D;
     delete res;
     delete beta;
     delete v_inflow;

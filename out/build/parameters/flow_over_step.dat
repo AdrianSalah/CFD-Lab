@@ -83,13 +83,15 @@ PR          7
 #--------------------------------------------
 #     Concentration Parameters
 #--------------------------------------------
-CI				0.0
-C_inject		1.0
-Pr_diffusion    100.0
-
-
-#--------------------------------------------
-#     Parallelization
-#--------------------------------------------
-iproc        2
-jproc        3
+CI_A				0.0
+CI_B				0.0
+CI_C				0.0
+CI_D				0.0
+C_inject_A			1.0
+C_inject_B			1.0
+C_inject_C			1.0
+C_inject_D			1.0
+Pr_diffusion_A      10.0
+Pr_diffusion_B      10.0
+Pr_diffusion_C      10.0
+Pr_diffusion_D      10.0
