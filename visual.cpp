@@ -166,7 +166,14 @@ void VTKHelper::printVTKFile(
     vtkDoubleArray* Temperature = vtkDoubleArray::New();
     Temperature->SetName("temperature");
     Temperature->SetNumberOfComponents(1);
-    
+
+
+    // CONCENTRATION
+    // Concentration Array
+    vtkDoubleArray* Concentration = vtkDoubleArray::New();
+    Concentration->SetName("concentration");
+    Concentration->SetNumberOfComponents(1);
+
 
     // Velocity Array
     vtkDoubleArray* Velocity = vtkDoubleArray::New();
@@ -186,7 +193,9 @@ void VTKHelper::printVTKFile(
     std::vector<std::vector<double>> temperature;
     grid.temperature(temperature);
     
-
+    // CONCENTRATION
+    std::vector<std::vector<double>> concentration;
+    grid.concentration(concentration);
 
     
     // Print pressure from bottom to top
@@ -204,6 +213,15 @@ void VTKHelper::printVTKFile(
             Temperature->InsertNextTuple(&temperature.at(i).at(j));
         }
     }
+
+    // CONCENTRATION
+    // Print concentration from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            Concentration->InsertNextTuple(&concentration.at(i).at(j));
+        }
+    }
+
     
 
     // Temp Velocity
@@ -234,7 +252,9 @@ void VTKHelper::printVTKFile(
     // Add Temperature to Structured Grid
     structuredGrid->GetCellData()->AddArray(Temperature);
     
-
+    // CONCENTRATION
+    // Add Concentration to Structured Grid
+    structuredGrid->GetCellData()->AddArray(Concentration);
 
     // Add Velocity to Structured Grid
     structuredGrid->GetPointData()->AddArray(Velocity);
