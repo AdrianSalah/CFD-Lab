@@ -32,8 +32,8 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double* kappa,				/* thermal conductivity */
 					double* heat_flux,		 /* heat flux */
                     double* CI,             /* initial concentration */         
-                    double* C_h,            /* source concentration*/         
-                    double* Pr_diff            /* Prandlt Number for chemical diffusion*/         
+                    double* C_inject,            /* source concentration*/         
+                    double* Pr_diffusion            /* Prandlt Number for chemical diffusion*/         
                      )                     
 {
     // Reading Parameters
@@ -74,8 +74,8 @@ int read_parameters( std::string szFileName,       /* name of the file */
 			if (var == "kappa")    file >> *kappa;
 			if (var == "heat_flux")file >> *heat_flux;
 			if (var == "CI")	   file >> *CI;
-			if (var == "C_h")	   file >> *C_h;
-			if (var == "Pr_diff")  file >> *Pr_diff;
+			if (var == "C_inject")	   file >> *C_inject;
+			if (var == "Pr_diffusion")  file >> *Pr_diffusion;
 		}
 	}
 
