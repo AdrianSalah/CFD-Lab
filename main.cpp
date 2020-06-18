@@ -150,6 +150,8 @@ int main(int argn, char** args) {
     double* TI = new double;                /* Initial Temperature*/
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
+    double* CI = new double;                /* Initial Concentration */
+    double* C_inject = new double;          /* Concentration of the injected chemical */
     double* Pr = new double;                /* Prandlt Number*/
     double* Pr_diffusion = new double;      /* Prandlt Number for chemical diffusion*/
     double* res = new double;               /* residual for SOR*/
@@ -231,9 +233,9 @@ int main(int argn, char** args) {
     double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
 
-    //initialize matrices U, V, P, T
-    matrix<double> U, V, P, T;
-    init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid);
+    //initialize matrices U, V, P, T, C
+    matrix<double> U, V, P, T, C;
+    init_uvptc(*imax, *jmax, U, V, P, T, C, *UI, *VI, *PI, *TI, *CI, grid);
 
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
@@ -251,7 +253,7 @@ int main(int argn, char** args) {
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, *Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
@@ -347,6 +349,7 @@ int main(int argn, char** args) {
     delete TI;
     delete T_h;
     delete T_c;
+    delete C_inject;
     delete Pr;
     delete Pr_diffusion;
     delete res;
