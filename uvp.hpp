@@ -161,16 +161,18 @@ void init_fgrs(
 );
 
 
-void init_uvpt(
+void init_uvptc(
     int imax,
     int jmax,
     matrix<double> U,
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
+    matrix<double> C,
     double UI,
     double VI,
     double PI,
     double TI,
+    double CI,
     Grid &grid);
 #endif
