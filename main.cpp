@@ -151,6 +151,7 @@ int main(int argn, char** args) {
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
     double* Pr = new double;                /* Prandlt Number*/
+    double* Pr_diffusion = new double;      /* Prandlt Number for chemical diffusion*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
     double* v_inflow = new double;          /* boundary value for inflow BC */
@@ -249,7 +250,7 @@ int main(int argn, char** args) {
 
     while (time < *t_end) {
         //here we set time steps manually
-        calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid);
+        calculate_dt(*Re, *Pr, *Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
@@ -347,6 +348,7 @@ int main(int argn, char** args) {
     delete T_h;
     delete T_c;
     delete Pr;
+    delete Pr_diffusion;
     delete res;
     delete beta;
     delete v_inflow;
