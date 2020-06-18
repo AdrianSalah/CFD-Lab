@@ -422,24 +422,27 @@ void init_fgrs(int imax,
 }
 
 
-// Initializes u, v, p and T if the cells belongs to FLUID-cells
-void init_uvpt(
+// Initializes u, v, p, T and c if the cells belongs to FLUID-cells
+void init_uvptc(
     int imax,
     int jmax,
     matrix<double> U,
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
+    matrix<double> C,
     double UI,
     double VI,
     double PI,
     double TI,
+    double CI,
     Grid& grid)
 {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
+    grid.concentration(C);
 
     for (int i = 0; i < grid.imaxb(); i++) {
         for (int j = 0; j < grid.jmaxb(); j++) {
@@ -448,12 +451,14 @@ void init_uvpt(
                 V.at(i).at(j) = VI;
                 P.at(i).at(j) = PI;
                 T.at(i).at(j) = TI;
+                C.at(i).at(j) = CI;
             }
             else if (grid.cell(i, j)._cellType == NOSLIP) {
                 U.at(i).at(j) = 0;
                 V.at(i).at(j) = 0;
                 P.at(i).at(j) = 0;
                 // T.at(i).at(j) = 0;
+                // C.at(i).at(j) = 0;
             }
         }
     }
@@ -462,4 +467,5 @@ void init_uvpt(
     grid.set_velocity(V, velocity_type::V);
     grid.set_pressure(P);
     grid.set_temperature(T);
+    grid.set_concentration(C);
 }
