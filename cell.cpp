@@ -17,6 +17,14 @@ void Cell::set_pressure(double& value) {
     _pressure = value;
 }
 
+// Concentration Get and Set
+double& Cell::concentration() {
+    return _concentration;
+}
+
+void Cell::set_concentration(double& value) {
+    _concentration = value;
+}
 // Temperature Get and Set
 double& Cell::temperature() {
     return _temperature;

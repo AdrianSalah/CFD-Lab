@@ -25,6 +25,10 @@ public:
     double& pressure();
     void set_pressure(double& value);
 
+    // Get + Set concentration
+    double& concentration();
+    void set_concentration(double& value);
+
     // Get + Set temperature
     double& temperature();
     void set_temperature(double& value);
@@ -40,6 +44,9 @@ public:
 private:
     // one pressure value per call
     double _pressure = 0;
+
+    // one concentration value per call
+    double _concentration = 0;
 
     // one temperature value per call
     double _temperature = 0;

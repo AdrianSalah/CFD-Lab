@@ -23,6 +23,8 @@ public:
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
 
+    void concentration(matrix<double>& vec);
+    void set_concentration(matrix<double>& vec);
     // Get and Set Temperature
     void temperature(matrix<double>& vec);
     void set_temperature(matrix<double>& vec);

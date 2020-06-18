@@ -29,8 +29,12 @@ int read_parameters( std::string szFileName,       /* name of the file */
                     double *beta,
                     double* v_inflow,          /* inflow y velocity */
                     double* u_inflow,          /* inflow x velocity */
-                    double* kappa,             /* thermal conductivity */
-                    double* heat_flux )             /* heat flux */         
+                    double* kappa,				/* thermal conductivity */
+					double* heat_flux,		 /* heat flux */
+                    double* CI,             /* initial concentration */         
+                    double* C_h,            /* source concentration*/         
+                    double* Pr_diff            /* Prandlt Number for chemical diffusion*/         
+                     )                     
 {
     // Reading Parameters
 	std::ifstream file(szFileName);
@@ -69,6 +73,9 @@ int read_parameters( std::string szFileName,       /* name of the file */
 			if (var == "v_inflow") file >> *v_inflow;
 			if (var == "kappa")    file >> *kappa;
 			if (var == "heat_flux")file >> *heat_flux;
+			if (var == "CI")	   file >> *CI;
+			if (var == "C_h")	   file >> *C_h;
+			if (var == "Pr_diff")  file >> *Pr_diff;
 		}
 	}
 

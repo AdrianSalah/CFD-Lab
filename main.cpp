@@ -151,13 +151,15 @@ int main(int argn, char** args) {
     double* T_h = new double;               /* Temperature of hot wall*/
     double* T_c = new double;               /* Temperature of cold wall*/
     double* Pr = new double;                /* Prandlt Number*/
-    double* Pr_diffusion = new double;      /* Prandlt Number for chemical diffusion*/
+    double* Pr_diff = new double;      /* Prandlt Number for chemical diffusion*/
     double* res = new double;               /* residual for SOR*/
     double* beta= new double;               /* beta for fg calculation*/
     double* v_inflow = new double;          /* boundary value for inflow BC */
     double* u_inflow = new double;          /* boundary value for inflow BC */
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
+    double* CI = new double;                /* Initial Concentration*/
+    double* C_h = new double;               /* Source Concentration*/
     int **cell_array = new int *;           /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
@@ -185,7 +187,7 @@ int main(int argn, char** args) {
         std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
-                        tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux);
+            tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI, C_h, Pr_diff);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
@@ -247,10 +249,9 @@ int main(int argn, char** args) {
 
     // Initialize timer to measure performance
     Timer runtime;
-
     while (time < *t_end) {
         //here we set time steps manually
-        calculate_dt(*Re, *Pr, *Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
+        calculate_dt(*Re, *Pr, *Pr_diff, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
@@ -348,13 +349,15 @@ int main(int argn, char** args) {
     delete T_h;
     delete T_c;
     delete Pr;
-    delete Pr_diffusion;
+    delete Pr_diff;
     delete res;
     delete beta;
     delete v_inflow;
     delete u_inflow;
     delete kappa;
     delete heat_flux;
+    delete CI;
+    delete C_h;
 
     return 0;
 }

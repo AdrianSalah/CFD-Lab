@@ -128,6 +128,36 @@ void Grid::set_pressure(matrix<double>& vec) {
     }
 }
 
+void Grid::concentration(matrix<double>& vec) {
+
+    // We don't need to do it every time, only once at first iteration. Some performance improvement.
+    // static bool first_call_of_this_funtion = true; 
+
+    // Resize vector and set all values to 0
+    // if (first_call_of_this_funtion)
+    vec.resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), 0));
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Accessing pressure
+            vec.at(x).at(y) = _cells.at(x).at(y).concentration();
+        }
+    }
+
+    // first_call_of_this_funtion = false;
+}
+
+void Grid::set_concentration(matrix<double>& vec) {
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Setting pressure
+            _cells.at(x).at(y).set_concentration(vec.at(x).at(y));
+        }
+    }
+}
 // Increment quantity of fluid cells by 1
 void Grid::increment_fluid_cells() {
     _fluid_cells_quantity += 1;
