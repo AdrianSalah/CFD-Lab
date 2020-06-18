@@ -57,6 +57,19 @@ void calculate_temp(
 );
 
 
+void calculate_concentration(
+    double Re,
+    double Pr_diffusion,
+    double alpha,
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid
+);
+
+
 /**
  * This operation computes the right hand side of the pressure poisson equation.
  * The right hand side is computed according to the formula
@@ -93,15 +106,17 @@ double max_abs_velocity(int imax, int jmax, Grid &grid, velocity_type type);
  * @f$ {\delta t} := \tau \, \min\left( \frac{Re}{2}\left(\frac{1}{{\delta x}^2} + \frac{1}{{\delta y}^2}\right)^{-1},  \frac{{\delta x}}{|u_{max}|},\frac{{\delta y}}{|v_{max}|} \right) @f$
  *
  */
-void calculate_dt(double Re,
-        double PR,
-        double tau,
-        double *dt,
-        double dx,
-        double dy,
-        int imax,
-        int jmax,
-        Grid &grid);
+void calculate_dt(
+    double Re,
+    double Pr,
+    double Pr_diffusion,
+    double tau,
+    double *dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid &grid);
 
 
 /**

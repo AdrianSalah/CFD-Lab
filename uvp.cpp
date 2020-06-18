@@ -189,12 +189,68 @@ void calculate_temp(
                 d2_T_dy2 = (T_old[i][j + 1] - 2 * T_old[i][j] + T_old[i][j - 1]) / (dy * dy);
 
                 // Explicit euler to solve the temperature equation
+                // TODO: add source/sink component Q_temp
 
                 T_new[i][j] = T_old[i][j] + dt * ((1 / (Pr * Re)) * (d2_T_dx2 + d2_T_dy2) - duT_dx - dvT_dy);
             }
         }
     }
     grid.set_temperature(T_new);
+}
+
+
+// Calculates concentration
+void calculate_concentration(
+    double Re,
+    double Pr_diffusion,
+    double alpha,
+    double dt,
+    double dx,
+    double dy,
+    int imax,
+    int jmax,
+    Grid& grid)
+{
+    static matrix<double> u;
+    static matrix<double> v;
+    static matrix<double> C_old;
+    static matrix<double> C_new;
+
+    grid.velocity(u, velocity_type::U);
+    grid.velocity(v, velocity_type::V);
+    grid.concentration(C_old);
+    grid.concentration(C_new);
+
+    static double duC_dx;
+    static double dvC_dy;
+    static double d2_C_dx2;
+    static double d2_C_dy2;
+
+    for (int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+            if (grid.cell(i, j)._cellType > 1) {
+                duC_dx = (u[i][j] * (C_old[i][j] + C_old[i + 1][j]) - u[i - 1][j] * (C_old[i - 1][j] + C_old[i][j]))
+                    + (alpha * std::abs(u[i][j]) * (C_old[i][j] - C_old[i + 1][j])) - (alpha * std::abs(u[i - 1][j]) * (C_old[i - 1][j] - C_old[i][j]));
+                duC_dx *= 0.5 / dx;
+
+                dvC_dy = (v[i][j] * (C_old[i][j] + C_old[i][j + 1]) - v[i][j - 1] * (C_old[i][j - 1] + C_old[i][j]))
+                    + (alpha * std::abs(v[i][j]) * (C_old[i][j] - C_old[i][j + 1])) - (alpha * std::abs(v[i][j - 1]) * (C_old[i][j - 1] - C_old[i][j]));
+                dvC_dy *= 0.5 / dy;
+
+                d2_C_dx2 = (C_old[i + 1][j] - 2 * C_old[i][j] + C_old[i - 1][j]) / (dx * dx);
+
+                d2_C_dy2 = (C_old[i][j + 1] - 2 * C_old[i][j] + C_old[i][j - 1]) / (dy * dy);
+
+                // Explicit euler to solve the concentration equation
+                // TODO: add source/sink component Q_concentration
+
+                C_new[i][j] = C_old[i][j] + dt * ((1 / (Pr_diffusion * Re)) * (d2_C_dx2 + d2_C_dy2) - duC_dx - dvC_dy);
+            }
+        }
+    }
+    grid.set_concentration(C_new);
 }
 
 
@@ -230,7 +286,7 @@ static bool abs_compare(int a, int b)
 }
 
 
-// Calculates maximum absolute velocity across full domain
+// Calculates maximum absolute velocity across entire domain
 double max_abs_velocity(
     int imax,
     int jmax,
@@ -260,6 +316,7 @@ double max_abs_velocity(
 void calculate_dt(
     double Re,
     double Pr,
+    double Pr_diffusion,
     double tau,
     double* dt,
     double dx,
@@ -275,11 +332,20 @@ void calculate_dt(
     static double max_abs_V;
     max_abs_V = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V);
 
-    // Explicit time-stepping stability condition
-    static double condition12;
-    // Pr=nu/alpha so Re*Pr= 1/alpha
-    condition12 = 0.5 * std::min(Pr, 1.0) * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+    // Explicit time-stepping stability conditions:
+    static double condition_temperature;        // Temperature equation
+    static double condition_concentration;      // Concentration equation
+    static double condition12;                  // Minimum condition
 
+    // Pr=nu/alpha so Re*Pr= 1/alpha
+    condition_temperature = 0.5 * Pr * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+
+    // Pr_diffusion=nu/diffusion_coefficient, so Re*Pr= 1/diffusion_coefficient
+    condition_concentration = 0.5 * Pr_diffusion * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+
+    // Take minimum of two conditions
+    condition12 = std::min(1.0,
+                           std::min(condition_temperature, condition_concentration));
 
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06) // error tolerance used 1e-06
         *dt = tau * condition12;
