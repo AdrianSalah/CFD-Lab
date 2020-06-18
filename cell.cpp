@@ -2,7 +2,7 @@
 
 Cell::Cell() {};
 
-Cell::Cell(double& PI, double& UI, double& VI, double& TI) :
+Cell::Cell(double& PI, double& UI, double& VI, double& TI, double& CI) :
     _pressure(PI), _temperature(TI) {
     set_velocity(UI, velocity_type::U);
     set_velocity(VI, velocity_type::V);

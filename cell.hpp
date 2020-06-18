@@ -11,7 +11,7 @@ class Cell {
 public:
     // Constructors
     Cell();
-    Cell(double& PI, double& UI, double& VI, double& TI);
+    Cell(double& PI, double& UI, double& VI, double& TI, double& CI);
 
     CellType _cellType;
 

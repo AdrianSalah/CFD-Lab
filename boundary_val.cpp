@@ -252,11 +252,19 @@ void boundaryvalues(int imax,
         }
     }
 
-    // Plane shear
-    if (scenarioSpec == 2)      
+    // Plane shear OR Step over OR Karmann Vortex
+    if (scenarioSpec == 2 || scenarioSpec == 4 || scenarioSpec == 3)
     {
         // ----  Dirichlet BC Concentration ---- //
+        // We set boundary values for all cells equal zero
         for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+            // C_injection left wall
+            conc.at(0).at(j) = 2 * 0 - conc.at(1).at(j);
+        }
+
+        // Only these cells are non-zero
+        for (int j = 15; j < 18; j++)
         {
             // C_injection left wall
             conc.at(0).at(j) = 2 * C_inject - conc.at(1).at(j);
@@ -321,15 +329,16 @@ void boundaryvalues(int imax,
         }
     }
 
-    // ---- Freeslip BC for lid driven cavity ---- //
-    for (int i = 1; i < grid.imaxb() - 1; i++)
-    {
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP)
-        {
-            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
-            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
-        }
-    }
+    // STRANGE PIECE OF THE CODE IN THE MIDDLE
+    //// ---- Freeslip BC for lid driven cavity ---- //
+    //for (int i = 1; i < grid.imaxb() - 1; i++)
+    //{
+    //    if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP)
+    //    {
+    //        v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
+    //        u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
+    //    }
+    //}
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
@@ -340,18 +349,19 @@ void boundaryvalues(int imax,
 }
 
 
-void spec_boundary_val(double &u_inflow,
-        double &v_inflow,
-        double& T_c,
-        double& T_h,
-        double &kappa,
-        double &heat_flux,
-        double val_u_inflow,
-        double val_v_inflow,
-        double val_T_c,
-        double val_T_h,
-        double val_kappa,
-        double val_heat_flux)
+void spec_boundary_val(
+    double& u_inflow,
+    double& v_inflow,
+    double& T_c,
+    double& T_h,
+    double& kappa,
+    double& heat_flux,
+    double val_u_inflow,
+    double val_v_inflow,
+    double val_T_c,
+    double val_T_h,
+    double val_kappa,
+    double val_heat_flux)
 {
     u_inflow = val_u_inflow;
     v_inflow = val_v_inflow;

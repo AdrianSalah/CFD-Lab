@@ -65,8 +65,13 @@ int main(int argn, char** args) {
 
         scenarioSpec = atoi(args[1]);
     }
+
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
+
+    // RUN Step Over
+    scenarioSpec = 3;
+
     switch(scenarioSpec)
     {
         case 1:
@@ -193,7 +198,7 @@ int main(int argn, char** args) {
     cell_array = read_pgm(input_geometry_file_path);
 
     // Set up grid
-    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI);
+    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, *CI);
 
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
@@ -255,6 +260,7 @@ int main(int argn, char** args) {
         calculate_dt(*Re, *Pr, *Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+        calculate_concentration(*Re, *Pr_diffusion, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
         
@@ -287,6 +293,7 @@ int main(int argn, char** args) {
             grid.velocity(V, velocity_type::V);
             grid.pressure(P);
             grid.temperature(T);
+            grid.concentration(C);
 
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -299,6 +306,7 @@ int main(int argn, char** args) {
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
+    grid.concentration(C);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);

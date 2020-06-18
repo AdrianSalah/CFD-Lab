@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, double& UI, double& VI, double& TI):
+Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, double& UI, double& VI, double& TI, double& CI):
     _boundary_size(boundary_size_init),
     _imax_b(imax_init+2*boundary_size_init), // +2 for the total size of the vector / matrix
     _jmax_b(jmax_init+2*boundary_size_init),
@@ -14,7 +14,7 @@ Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, dou
     
     // Resizing the grid cells
     // the boundary size is given as a single value for all borders
-    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI, TI)));
+    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI, TI, CI)));
 
     // Resize Velocity Matrices
     _velocities[static_cast<int>(velocity_type::U)].resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), UI));

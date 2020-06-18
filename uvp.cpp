@@ -335,7 +335,11 @@ void calculate_dt(
     // Explicit time-stepping stability conditions:
     static double condition_temperature;        // Temperature equation
     static double condition_concentration;      // Concentration equation
-    static double condition12;                  // Minimum condition
+    static double condition_viscousity;         // 
+    static double condition_CFL;                //
+    static double condition_common;             //
+
+    condition_viscousity = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
     // Pr=nu/alpha so Re*Pr= 1/alpha
     condition_temperature = 0.5 * Pr * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
@@ -343,15 +347,16 @@ void calculate_dt(
     // Pr_diffusion=nu/diffusion_coefficient, so Re*Pr= 1/diffusion_coefficient
     condition_concentration = 0.5 * Pr_diffusion * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
-    // Take minimum of two conditions
-    condition12 = std::min(1.0,
-                           std::min(condition_temperature, condition_concentration));
-
+    // Set CFL stability parameter to high number, if the value of u and v velocities are velow the tolerance
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06) // error tolerance used 1e-06
-        *dt = tau * condition12;
+        condition_CFL = INFINITY;
     else
-        *dt = tau * std::min(condition12,
-                             std::min((dx / max_abs_U), (dy / max_abs_V)));
+        condition_CFL = std::min((dx / max_abs_U), (dy / max_abs_V));
+
+    condition_common = std::min(std::min(condition_viscousity, condition_CFL),
+        std::min(condition_concentration, condition_temperature));
+
+    *dt = tau * condition_common;
 }
 
 

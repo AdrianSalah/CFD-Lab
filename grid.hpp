@@ -13,7 +13,7 @@
 
 class Grid {
 public:
-    Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI, double& TI);
+    Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI, double& TI, double& CI);
     
     // Get and Set Velocity
     void velocity(matrix<double>& vec, velocity_type type);
@@ -23,8 +23,10 @@ public:
     void pressure(matrix<double>& vec);
     void set_pressure(matrix<double>& vec);
 
+    // Get and Set Concentration
     void concentration(matrix<double>& vec);
     void set_concentration(matrix<double>& vec);
+
     // Get and Set Temperature
     void temperature(matrix<double>& vec);
     void set_temperature(matrix<double>& vec);
