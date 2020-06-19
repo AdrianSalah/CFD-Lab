@@ -168,11 +168,29 @@ void VTKHelper::printVTKFile(
     Temperature->SetNumberOfComponents(1);
 
 
-    // CONCENTRATION
-    // Concentration Array
-    vtkDoubleArray* Concentration = vtkDoubleArray::New();
-    Concentration->SetName("concentration");
-    Concentration->SetNumberOfComponents(1);
+    // CONCENTRATION OF COMPONENT A
+    // Concentration A Array
+    vtkDoubleArray* ConcentrationA = vtkDoubleArray::New();
+    ConcentrationA->SetName("concentrationA");
+    ConcentrationA->SetNumberOfComponents(1);
+
+    // CONCENTRATION OF COMPONENT B
+    // Concentration B Array
+    vtkDoubleArray* ConcentrationB = vtkDoubleArray::New();
+    ConcentrationB->SetName("concentrationB");
+    ConcentrationB->SetNumberOfComponents(1);
+
+    // CONCENTRATION OF COMPONENT C
+    // Concentration C Array
+    vtkDoubleArray* ConcentrationC = vtkDoubleArray::New();
+    ConcentrationC->SetName("concentrationC");
+    ConcentrationC->SetNumberOfComponents(1);
+
+    // CONCENTRATION OF COMPONENT D
+    // Concentration D Array
+    vtkDoubleArray* ConcentrationD = vtkDoubleArray::New();
+    ConcentrationD->SetName("concentrationD");
+    ConcentrationD->SetNumberOfComponents(1);
 
 
     // Velocity Array
@@ -193,9 +211,21 @@ void VTKHelper::printVTKFile(
     std::vector<std::vector<double>> temperature;
     grid.temperature(temperature);
     
-    // CONCENTRATION
-    std::vector<std::vector<double>> concentration;
-    grid.concentration(concentration, ID::A);
+    // CONCENTRATION of Component A
+    std::vector<std::vector<double>> concentrationA;
+    grid.concentration(concentrationA, ID::A);
+
+    // CONCENTRATION of Component B
+    std::vector<std::vector<double>> concentrationB;
+    grid.concentration(concentrationB, ID::B);
+
+    // CONCENTRATION of Component C
+    std::vector<std::vector<double>> concentrationC;
+    grid.concentration(concentrationC, ID::C);
+
+    // CONCENTRATION of Component D
+    std::vector<std::vector<double>> concentrationD;
+    grid.concentration(concentrationD, ID::D);
 
     
     // Print pressure from bottom to top
@@ -214,15 +244,40 @@ void VTKHelper::printVTKFile(
         }
     }
 
-    // CONCENTRATION
+    // CONCENTRATION of Component A
     // Print concentration from bottom to top
     for (int j = 1; j < grid.jmaxb() - 1; j++) {
         for (int i = 1; i < grid.imaxb() - 1; i++) {
-            Concentration->InsertNextTuple(&concentration.at(i).at(j));
+            ConcentrationA->InsertNextTuple(&concentrationA.at(i).at(j));
         }
     }
 
-    
+    // CONCENTRATION of Component B
+    // Print concentration from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            ConcentrationB->InsertNextTuple(&concentrationB.at(i).at(j));
+        }
+    }
+
+    // CONCENTRATION of Component C
+    // Print concentration from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            ConcentrationC->InsertNextTuple(&concentrationC.at(i).at(j));
+        }
+    }
+
+    // CONCENTRATION of Component D
+    // Print concentration from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            ConcentrationD->InsertNextTuple(&concentrationD.at(i).at(j));
+        }
+    }
+
+
+
 
     // Temp Velocity
     float vel[3];
@@ -252,9 +307,21 @@ void VTKHelper::printVTKFile(
     // Add Temperature to Structured Grid
     structuredGrid->GetCellData()->AddArray(Temperature);
     
-    // CONCENTRATION
+    // CONCENTRATION OF COMPONENT A
     // Add Concentration to Structured Grid
-    structuredGrid->GetCellData()->AddArray(Concentration);
+    structuredGrid->GetCellData()->AddArray(ConcentrationA);
+
+    // CONCENTRATION OF COMPONENT B
+    // Add Concentration to Structured Grid
+    structuredGrid->GetCellData()->AddArray(ConcentrationB);
+
+    // CONCENTRATION OF COMPONENT C
+    // Add Concentration to Structured Grid
+    structuredGrid->GetCellData()->AddArray(ConcentrationC);
+
+    // CONCENTRATION OF COMPONENT D
+    // Add Concentration to Structured Grid
+    structuredGrid->GetCellData()->AddArray(ConcentrationD);
 
     // Add Velocity to Structured Grid
     structuredGrid->GetPointData()->AddArray(Velocity);
