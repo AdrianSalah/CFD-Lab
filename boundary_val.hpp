@@ -32,18 +32,25 @@ void boundaryvalues(
 
 // The values of boundary conditions are specified
 void spec_boundary_val(
-    double& u_inflow,
+    int imax,
+    int jmax,
+    Grid& grid,
     double& v_inflow,
-    double& T_c,
+    double& u_inflow,
     double& T_h,
+    double& T_c,
+    double& C_inject,
+    double& dx,
+    double& dy,
     double& kappa,
     double& heat_flux,
-    double val_u_inflow,
-    double val_v_inflow,
-    double val_T_c,
-    double val_T_h,
-    double val_kappa,
-    double val_heat_flux);
+    double& beta,
+    double& delta_t,
+    double& GX,
+    double& GY,
+    int scenarioSpec,
+    double& time,
+    double& t_end);
 
 // Store pointers to neighbour cells for grid
 void assign_ptr_nbcells(Grid &grid);

@@ -70,7 +70,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // RUN Step Over
-    scenarioSpec = 2;
+    scenarioSpec = 4;
 
     switch(scenarioSpec)
     {
@@ -269,6 +269,7 @@ int main(int argn, char** args) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, *Pr_diffusion_A, *tau, dt, *dx, *dy, *imax, *jmax, grid);
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject_A, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
+        spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, *C_inject_A, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_concentration(*Re, *Pr_diffusion_A, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
