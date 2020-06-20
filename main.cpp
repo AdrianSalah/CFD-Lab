@@ -22,39 +22,6 @@ std::string SCENARIO_PGM_FILE;
 //#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
 
 
-/**
- * The main operation reads the configuration file, initializes the scenario and
- * contains the main loop. So here are the individual steps of the algorithm:
- *
- * - read the program configuration file using read_parameters()
- * - set up the matrices (arrays) needed. Use the predefined matrix<typename> type and give initial values in the constructor.
- * - perform the main loop
- * - at the end: destroy any memory allocated and print some useful statistics
- *
- * The layout of the grid is decribed by the first figure below, the enumeration
- * of the whole grid is given by the second figure. All the unknowns corresond
- * to a two-dimensional degree of freedom layout, so they are not stored in
- * arrays, but in a matrix.
- *
- * @image html grid.jpg
- *
- * @image html whole-grid.jpg
- *
- * Within the main loop, the following steps are required (for some of the 
- * operations, a definition is defined already within uvp.h):
- *
- * - calculate_dt() Determine the maximal time step size.
- * - boundaryvalues() Set the boundary values for the next time step.
- * - calculate_fg() Determine the values of F and G (diffusion and confection).
- *   This is the right hand side of the pressure equation and used later on for
- *   the time step transition.
- * - calculate_rs()
- * - Iterate the pressure poisson equation until the residual becomes smaller
- *   than eps or the maximal number of iterations is performed. Within the
- *   iteration loop the operation sor() is used.
- * - calculate_uv() Calculate the velocity at the next time step.
- */
-
 int main(int argn, char** args) {
 
     //select scenario
@@ -70,7 +37,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     //set scenario manually
-    scenarioSpec = 4;
+    scenarioSpec = 5;
 
     switch(scenarioSpec)
     {
@@ -271,8 +238,10 @@ int main(int argn, char** args) {
             *C_inject_C, *C_inject_D, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
-
-        calculate_concentration(*Re, *Pr_diffusion_A, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+        
+        for (int it = 0; it < 4; it++)
+            calculate_concentration(*Re, *Pr_diffusion_A, *Pr_diffusion_B, *Pr_diffusion_C, *Pr_diffusion_D,
+                *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
 
@@ -303,11 +272,10 @@ int main(int argn, char** args) {
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
-            grid.velocity(U, velocity_type::U);
-            grid.velocity(V, velocity_type::V);
-            grid.pressure(P);
-            grid.temperature(T);
-            grid.concentration(C, ID::A);
+            //grid.velocity(U, velocity_type::U);
+            //grid.velocity(V, velocity_type::V);
+            //grid.pressure(P);
+            //grid.temperature(T);
 
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -316,11 +284,10 @@ int main(int argn, char** args) {
         }
     }
 
-    grid.velocity(U, velocity_type::U);
-    grid.velocity(V, velocity_type::V);
-    grid.pressure(P);
-    grid.temperature(T);
-    grid.concentration(C, ID::A);
+    //grid.velocity(U, velocity_type::U);
+    //grid.velocity(V, velocity_type::V);
+    //grid.pressure(P);
+    //grid.temperature(T);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);

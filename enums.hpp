@@ -34,4 +34,12 @@ enum class ID {
     D
 };
 
+enum CellType {
+    NOSLIP = 0,
+    FLUID = 4,
+    INFLOW = 3,
+    OUTFLOW = 2,
+    FREESLIP = 1
+};
+
 #endif //CFDLAB_ENUMS_H

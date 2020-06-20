@@ -59,14 +59,18 @@ void calculate_temp(
 
 void calculate_concentration(
     double Re,
-    double Pr_diffusion,
+    double Pr_diffusion_A,
+    double Pr_diffusion_B,
+    double Pr_diffusion_C,
+    double Pr_diffusion_D,
     double alpha,
     double dt,
     double dx,
     double dy,
     int imax,
     int jmax,
-    Grid& grid
+    Grid& grid,
+    ID  id
 );
 
 

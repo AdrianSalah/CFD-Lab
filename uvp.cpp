@@ -202,24 +202,31 @@ void calculate_temp(
 // Calculates concentration
 void calculate_concentration(
     double Re,
-    double Pr_diffusion,
+    double Pr_diffusion_A,
+    double Pr_diffusion_B,
+    double Pr_diffusion_C,
+    double Pr_diffusion_D,
     double alpha,
     double dt,
     double dx,
     double dy,
     int imax,
     int jmax,
-    Grid& grid)
+    Grid& grid,
+    ID  id)
 {
     static matrix<double> u;
     static matrix<double> v;
     static matrix<double> C_old;
     static matrix<double> C_new;
 
+    static double Pr_diffusion = (id == ID::A) * Pr_diffusion_A + (id == ID::B) * Pr_diffusion_B +
+        (id == ID::C) * Pr_diffusion_C + (id == ID::D) * Pr_diffusion_D;
+    
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
-    grid.concentration(C_old, ID::A);
-    grid.concentration(C_new, ID::A);
+    grid.concentration(C_old, id);
+    grid.concentration(C_new, id);
 
     static double duC_dx;
     static double dvC_dy;
@@ -250,7 +257,7 @@ void calculate_concentration(
             }
         }
     }
-    grid.set_concentration(C_new, ID::A);
+    grid.set_concentration(C_new, id);
 }
 
 

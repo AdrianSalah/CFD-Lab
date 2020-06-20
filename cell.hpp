@@ -3,9 +3,6 @@
 #include <array>
 #include "enums.hpp"
 
-enum CellType{
-    NOSLIP = 0, FLUID = 4, INFLOW = 3, OUTFLOW = 2, FREESLIP = 1 
-};
 
 class Cell {
 public:
