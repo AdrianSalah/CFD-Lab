@@ -16,18 +16,12 @@ void boundaryvalues(
     double& u_inflow,
     matrix<double>& F,
     matrix<double>& G,
-    double& T_h,
-    double& T_c,
-    double& C_inject,
     double& dx,
     double& dy,
-    double& kappa,
-    double& heat_flux,
     double& beta,
     double& delta_t,
     double& GX,
-    double& GY,
-    int scenarioSpec);
+    double& GY);
 
 
 // The values of boundary conditions are specified
@@ -39,7 +33,10 @@ void spec_boundary_val(
     double& u_inflow,
     double& T_h,
     double& T_c,
-    double& C_inject,
+    double& C_inject_A,
+    double& C_inject_B,
+    double& C_inject_C,
+    double& C_inject_D,
     double& dx,
     double& dy,
     double& kappa,

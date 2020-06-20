@@ -69,7 +69,7 @@ int main(int argn, char** args) {
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
 
-    // RUN Step Over
+    //set scenario manually
     scenarioSpec = 4;
 
     switch(scenarioSpec)
@@ -231,11 +231,7 @@ int main(int argn, char** args) {
                 printf("Error: wrong grey value in geometry-file ");
                 exit(EXIT_FAILURE);
             }
-            //for debugging
-            //std::cout << cell_array[i][j] << " ";
         }
-        //for debugging
-        //std::cout << std::endl;
     }
 
     assign_ptr_nbcells(grid);
@@ -268,11 +264,18 @@ int main(int argn, char** args) {
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, *Pr_diffusion_A, *tau, dt, *dx, *dy, *imax, *jmax, grid);
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *C_inject_A, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
-        spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, *C_inject_A, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
+
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *dx, *dy, *beta, *dt, *GX, *GY);
+
+        spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, *C_inject_A, *C_inject_B,
+            *C_inject_C, *C_inject_D, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
+
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+
         calculate_concentration(*Re, *Pr_diffusion_A, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
+
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
+
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
         
 

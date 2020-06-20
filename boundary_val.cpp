@@ -9,18 +9,12 @@ void boundaryvalues(int imax,
     double& u_inflow,
     matrix<double>& F,
     matrix<double>& G,
-    double& T_h,
-    double& T_c,
-    double& C_inject,
     double& dx,
     double& dy,
-    double& kappa,
-    double& heat_flux,
     double& beta,
     double& delta_t,
     double& GX,
-    double& GY,
-    int scenarioSpec) {
+    double& GY) {
     
     // VELOCITY - Declaration and Initialisation
 
@@ -42,10 +36,10 @@ void boundaryvalues(int imax,
     static matrix<double> conc_A;
     grid.concentration(conc_A, ID::A);
 
-    //static matrix<double> conc_B, conc_C, conc_D;
-    //grid.concentration(conc_B, ID::B);
-    //grid.concentration(conc_C, ID::C);
-    //grid.concentration(conc_D, ID::D);
+    static matrix<double> conc_B, conc_C, conc_D;
+    grid.concentration(conc_B, ID::B);
+    grid.concentration(conc_C, ID::C);
+    grid.concentration(conc_D, ID::D);
 
     // ----- Boundary conditions of NOSLIP inner cells ----- //
 
@@ -57,14 +51,14 @@ void boundaryvalues(int imax,
                 if (grid.cell(i, j)._nbNorth->_cellType > 1  && grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
                     v_velocity.at(i).at(j) = 0;
-                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1); // Was commented by Issa, but is actually reasonable
-                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1); 
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i+1).at(j - 1); 
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i + 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i + 1).at(j)) / 2;
                     conc_A.at(i).at(j) = (conc_A.at(i).at(j + 1) + conc_A.at(i + 1).at(j)) / 2;
-                    //conc_B.at(i).at(j) = (conc_B.at(i).at(j + 1) + conc_B.at(i + 1).at(j)) / 2;
-                    //conc_C.at(i).at(j) = (conc_C.at(i).at(j + 1) + conc_C.at(i + 1).at(j)) / 2;
-                    //conc_D.at(i).at(j) = (conc_D.at(i).at(j + 1) + conc_D.at(i + 1).at(j)) / 2;
+                    conc_B.at(i).at(j) = (conc_B.at(i).at(j + 1) + conc_B.at(i + 1).at(j)) / 2;
+                    conc_C.at(i).at(j) = (conc_C.at(i).at(j + 1) + conc_C.at(i + 1).at(j)) / 2;
+                    conc_D.at(i).at(j) = (conc_D.at(i).at(j + 1) + conc_D.at(i + 1).at(j)) / 2;
                     //F[i][j] = u_velocity.at(i).at(j);
                     //G[i][j] = v_velocity.at(i).at(j);
                     F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
@@ -72,99 +66,99 @@ void boundaryvalues(int imax,
                 }
                 //B_NW
                 else if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
-                    u_velocity.at(i - 1).at(j) = 0; // Was commented by Issa, but is actually reasonable
+                    u_velocity.at(i - 1).at(j) = 0; 
                     v_velocity.at(i).at(j) = 0;
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j + 1);
-                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); 
                     pres.at(i).at(j) = (pres.at(i).at(j + 1) + pres.at(i - 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i - 1).at(j)) / 2;
                     conc_A.at(i).at(j) = (conc_A.at(i).at(j + 1) + conc_A.at(i - 1).at(j)) / 2;
-                    //conc_B.at(i).at(j) = (conc_B.at(i).at(j + 1) + conc_B.at(i - 1).at(j)) / 2;
-                    //conc_C.at(i).at(j) = (conc_C.at(i).at(j + 1) + conc_C.at(i - 1).at(j)) / 2;
-                    //conc_D.at(i).at(j) = (conc_D.at(i).at(j + 1) + conc_D.at(i - 1).at(j)) / 2;
+                    conc_B.at(i).at(j) = (conc_B.at(i).at(j + 1) + conc_B.at(i - 1).at(j)) / 2;
+                    conc_C.at(i).at(j) = (conc_C.at(i).at(j + 1) + conc_C.at(i - 1).at(j)) / 2;
+                    conc_D.at(i).at(j) = (conc_D.at(i).at(j + 1) + conc_D.at(i - 1).at(j)) / 2;
                     F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
                     G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
                 //B_SW
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
-                    u_velocity.at(i - 1).at(j) = 0; // Was commented by Issa, but is actually reasonable
-                    v_velocity.at(i).at(j - 1) = 0; // Was commented by Issa, but is actually reasonable
-                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1); // Here was a BIG ISSUE potentially
+                    u_velocity.at(i - 1).at(j) = 0; 
+                    v_velocity.at(i).at(j - 1) = 0; 
+                    u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1); 
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i - 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i - 1).at(j)) / 2;
                     conc_A.at(i).at(j) = (conc_A.at(i).at(j - 1) + conc_A.at(i - 1).at(j)) / 2;
-                    //conc_B.at(i).at(j) = (conc_B.at(i).at(j - 1) + conc_B.at(i - 1).at(j)) / 2;
-                    //conc_C.at(i).at(j) = (conc_C.at(i).at(j - 1) + conc_C.at(i - 1).at(j)) / 2;
-                    //conc_D.at(i).at(j) = (conc_D.at(i).at(j - 1) + conc_D.at(i - 1).at(j)) / 2;
+                    conc_B.at(i).at(j) = (conc_B.at(i).at(j - 1) + conc_B.at(i - 1).at(j)) / 2;
+                    conc_C.at(i).at(j) = (conc_C.at(i).at(j - 1) + conc_C.at(i - 1).at(j)) / 2;
+                    conc_D.at(i).at(j) = (conc_D.at(i).at(j - 1) + conc_D.at(i - 1).at(j)) / 2;
                     F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
                     G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_SE
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
-                    v_velocity.at(i).at(j - 1) = 0; // Was commented by Issa, but is actually reasonable
-                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    v_velocity.at(i).at(j - 1) = 0; 
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1);
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
                     pres.at(i).at(j) = (pres.at(i).at(j - 1) + pres.at(i + 1).at(j)) / 2;
                     temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i + 1).at(j)) / 2;
                     conc_A.at(i).at(j) = (conc_A.at(i).at(j - 1) + conc_A.at(i + 1).at(j)) / 2;
-                    //conc_B.at(i).at(j) = (conc_B.at(i).at(j - 1) + conc_B.at(i + 1).at(j)) / 2;
-                    //conc_C.at(i).at(j) = (conc_C.at(i).at(j - 1) + conc_C.at(i + 1).at(j)) / 2;
-					//conc_D.at(i).at(j) = (conc_D.at(i).at(j - 1) + conc_D.at(i + 1).at(j)) / 2;
+                    conc_B.at(i).at(j) = (conc_B.at(i).at(j - 1) + conc_B.at(i + 1).at(j)) / 2;
+                    conc_C.at(i).at(j) = (conc_C.at(i).at(j - 1) + conc_C.at(i + 1).at(j)) / 2;
+					conc_D.at(i).at(j) = (conc_D.at(i).at(j - 1) + conc_D.at(i + 1).at(j)) / 2;
                     F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
                     G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_N
                 else if (grid.cell(i, j)._nbNorth->_cellType > 1 ) {
                     v_velocity.at(i).at(j) = 0;
-                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1); // Was commented by Issa, but is actually reasonable
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j + 1); 
                     u_velocity.at(i).at(j) = - u_velocity.at(i).at(j + 1);
                     pres.at(i).at(j) = pres.at(i).at(j + 1);
                     temp.at(i).at(j) = temp.at(i).at(j + 1);
                     conc_A.at(i).at(j) = conc_A.at(i).at(j + 1);
-                    //conc_B.at(i).at(j) = conc_B.at(i).at(j + 1);
-                    //conc_C.at(i).at(j) = conc_C.at(i).at(j + 1);
-                    //conc_D.at(i).at(j) = conc_D.at(i).at(j + 1);
+                    conc_B.at(i).at(j) = conc_B.at(i).at(j + 1);
+                    conc_C.at(i).at(j) = conc_C.at(i).at(j + 1);
+                    conc_D.at(i).at(j) = conc_D.at(i).at(j + 1);
                     G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
                 //B_E
                 else if (grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
                     v_velocity.at(i).at(j) = -v_velocity.at(i + 1).at(j);
-                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i + 1).at(j - 1); 
                     pres.at(i).at(j) = pres.at(i + 1).at(j);
                     temp.at(i).at(j) = temp.at(i + 1).at(j);
                     conc_A.at(i).at(j) = conc_A.at(i + 1).at(j);
-                    //conc_B.at(i).at(j) = conc_B.at(i + 1).at(j);
-                    //conc_C.at(i).at(j) = conc_C.at(i + 1).at(j);
-                    //conc_D.at(i).at(j) = conc_D.at(i + 1).at(j);
+                    conc_B.at(i).at(j) = conc_B.at(i + 1).at(j);
+                    conc_C.at(i).at(j) = conc_C.at(i + 1).at(j);
+                    conc_D.at(i).at(j) = conc_D.at(i + 1).at(j);
                     F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
                 }
                 //B_S
                 else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
                     v_velocity.at(i).at(j - 1) = 0;
-                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    u_velocity.at(i - 1).at(j) = -u_velocity.at(i - 1).at(j - 1); 
                     u_velocity.at(i).at(j) = -u_velocity.at(i).at(j - 1);
                     pres.at(i).at(j) = pres.at(i).at(j - 1);
                     temp.at(i).at(j) = temp.at(i).at(j - 1);
                     conc_A.at(i).at(j) = conc_A.at(i).at(j - 1);
-                    //conc_B.at(i).at(j) = conc_B.at(i).at(j - 1);
-                    //conc_C.at(i).at(j) = conc_C.at(i).at(j - 1);
-                    //conc_D.at(i).at(j) = conc_D.at(i).at(j - 1);
+                    conc_B.at(i).at(j) = conc_B.at(i).at(j - 1);
+                    conc_C.at(i).at(j) = conc_C.at(i).at(j - 1);
+                    conc_D.at(i).at(j) = conc_D.at(i).at(j - 1);
                     G[i][j - 1] = v_velocity.at(i).at(j - 1) - beta * delta_t / 2 * (temp.at(i).at(j - 1) + temp.at(i).at(j)) * GY;
                 }
                 //B_W
                 else if (grid.cell(i, j)._nbWest->_cellType > 1) {
                     u_velocity.at(i - 1).at(j) = 0;
                     v_velocity.at(i).at(j) = -v_velocity.at(i - 1).at(j);
-                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); // Was commented by Issa, but is actually reasonable
+                    v_velocity.at(i).at(j - 1) = -v_velocity.at(i - 1).at(j - 1); 
                     pres.at(i).at(j) = pres.at(i - 1).at(j);
                     temp.at(i).at(j) = temp.at(i - 1).at(j);
                     conc_A.at(i).at(j) = conc_A.at(i - 1).at(j);
-                    //conc_B.at(i).at(j) = conc_B.at(i - 1).at(j);
-                    //conc_C.at(i).at(j) = conc_C.at(i - 1).at(j);
-                    //conc_D.at(i).at(j) = conc_D.at(i - 1).at(j);
+                    conc_B.at(i).at(j) = conc_B.at(i - 1).at(j);
+                    conc_C.at(i).at(j) = conc_C.at(i - 1).at(j);
+                    conc_D.at(i).at(j) = conc_D.at(i - 1).at(j);
                     F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
                 }
                 else if(
@@ -179,9 +173,9 @@ void boundaryvalues(int imax,
                     pres.at(i).at(j)=0;
                     temp.at(i).at(j)=0;
                     conc_A.at(i).at(j) = 0;
-                    //conc_B.at(i).at(j) = 0;
-                    //conc_C.at(i).at(j) = 0;
-                    //conc_D.at(i).at(j) = 0;
+                    conc_B.at(i).at(j) = 0;
+                    conc_C.at(i).at(j) = 0;
+                    conc_D.at(i).at(j) = 0;
                     F[i][j] = u_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i + 1).at(j)) * GX;
                     G[i][j] = v_velocity.at(i).at(j) - beta * delta_t / 2 * (temp.at(i).at(j) + temp.at(i).at(j + 1)) * GY;
                 }
@@ -205,9 +199,9 @@ void boundaryvalues(int imax,
             pres.at(i).at(0) = pres.at(i).at(1);
             temp.at(i).at(0) = temp.at(i).at(1);
             conc_A.at(i).at(0) = conc_A.at(i).at(1);
-            //conc_B.at(i).at(0) = conc_B.at(i).at(1);
-            //conc_C.at(i).at(0) = conc_C.at(i).at(1);
-            //conc_D.at(i).at(0) = conc_D.at(i).at(1);
+            conc_B.at(i).at(0) = conc_B.at(i).at(1);
+            conc_C.at(i).at(0) = conc_C.at(i).at(1);
+            conc_D.at(i).at(0) = conc_D.at(i).at(1);
         }
         //noslip top: checked and added pres and temp [Adrian]
         if(grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
@@ -227,9 +221,9 @@ void boundaryvalues(int imax,
             pres.at(i).at(grid.jmaxb() - 1) = pres.at(i).at(grid.jmaxb() - 2);
             temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
             conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
-            //conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
-            //conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
-            //conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
         }
     }
 
@@ -248,9 +242,9 @@ void boundaryvalues(int imax,
             pres.at(0).at(j) = pres.at(1).at(j);
             temp.at(0).at(j) = temp.at(1).at(j);
             conc_A.at(0).at(j) = conc_A.at(1).at(j);
-            //conc_B.at(0).at(j) = conc_B.at(1).at(j);
-            //conc_C.at(0).at(j) = conc_C.at(1).at(j);
-            //conc_D.at(0).at(j) = conc_D.at(1).at(j);
+            conc_B.at(0).at(j) = conc_B.at(1).at(j);
+            conc_C.at(0).at(j) = conc_C.at(1).at(j);
+            conc_D.at(0).at(j) = conc_D.at(1).at(j);
         }
 
         // noslip right: checked and added pres and temp [Adrian]
@@ -270,9 +264,9 @@ void boundaryvalues(int imax,
             pres.at(grid.imaxb() - 1).at(j) = pres.at(grid.imaxb() - 2).at(j);
             temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
             conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
-            //conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
-            //conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
-            //conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
+            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
+            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
+            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
         }
 
         // inflow left
@@ -296,17 +290,15 @@ void boundaryvalues(int imax,
         }
     }
 
-
-    // STRANGE PIECE OF THE CODE IN THE MIDDLE
-    //// ---- Freeslip BC for lid driven cavity ---- //
-    //for (int i = 1; i < grid.imaxb() - 1; i++)
-    //{
-    //    if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP)
-    //    {
-    //        v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
-    //        u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
-    //    }
-    //}
+    // ---- Freeslip BC for lid driven cavity ---- //
+    for (int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP)
+        {
+            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
+            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
+        }
+    }
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
@@ -314,9 +306,9 @@ void boundaryvalues(int imax,
     grid.set_pressure(pres);
     grid.set_temperature(temp);
     grid.set_concentration(conc_A, ID::A);
-    //grid.set_concentration(conc_B, ID::B);
-    //grid.set_concentration(conc_C, ID::C);
-    //grid.set_concentration(conc_D, ID::D);
+    grid.set_concentration(conc_B, ID::B);
+    grid.set_concentration(conc_C, ID::C);
+    grid.set_concentration(conc_D, ID::D);
 }
 
 
@@ -328,7 +320,10 @@ void spec_boundary_val(
     double& u_inflow,
     double& T_h,
     double& T_c,
-    double& C_inject,
+    double& C_inject_A,
+    double& C_inject_B,
+    double& C_inject_C,
+    double& C_inject_D,
     double& dx,
     double& dy,
     double& kappa,
@@ -348,11 +343,11 @@ void spec_boundary_val(
 
     // CONCENTRATION - Declaration and Initialization
     static matrix<double> conc_A;
-    //static matrix<double> conc_B, conc_C, conc_D;
+    static matrix<double> conc_B, conc_C, conc_D;
     grid.concentration(conc_A, ID::A);
-    //grid.concentration(conc_B, ID::B);
-    //grid.concentration(conc_C, ID::C);
-    //grid.concentration(conc_D, ID::D);
+    grid.concentration(conc_B, ID::B);
+    grid.concentration(conc_C, ID::C);
+    grid.concentration(conc_D, ID::D);
 
 
     // Plane shear, Step over flow, Karmann Vortex (with chemical injection)
@@ -384,7 +379,7 @@ void spec_boundary_val(
         if (time < t_end * 0.5)
         {
             for (int j = 12; j < 13; j++)
-                conc_A.at(0).at(j) = 2 * C_inject - conc_A.at(1).at(j);
+                conc_A.at(0).at(j) = 2 * C_inject_A - conc_A.at(1).at(j);
         }
     }
 
@@ -438,9 +433,9 @@ void spec_boundary_val(
 
     grid.set_temperature(temp);
     grid.set_concentration(conc_A, ID::A);
-    //grid.set_concentration(conc_A, ID::B);
-    //grid.set_concentration(conc_A, ID::C);
-    //grid.set_concentration(conc_A, ID::D);
+    grid.set_concentration(conc_B, ID::B);
+    grid.set_concentration(conc_C, ID::C);
+    grid.set_concentration(conc_D, ID::D);
 }
 
 
