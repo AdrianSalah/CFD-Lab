@@ -410,6 +410,9 @@ bool assert_problem_solvability(int** PGM_cell, Grid &grid) {
 
     int num_Fluid_Cells;
     int num_non_Fluid_Cells;
+    for (int i = 0; i < grid.imaxb() ; i++) 
+        for (int j = 0; j < grid.jmaxb() ; j++) 
+            if (PGM_cell[i][j] > 4)PGM_cell[i][j] = 0;
 
     for (int i = 0; i < grid.imaxb(); i++) {
         if (PGM_cell[i][0] == 4 || PGM_cell[i][grid.jmaxb() -1] == 4)

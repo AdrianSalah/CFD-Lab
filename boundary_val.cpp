@@ -42,11 +42,12 @@ void boundaryvalues(int imax,
     grid.concentration(conc_D, ID::D);
 
     // ----- Boundary conditions of NOSLIP inner cells ----- //
+    // (< 1) Condition means that the cell is solid//
 
     for (int i = 1; i < grid.imaxb() - 1; i++) {
         for (int j = 1; j < grid.jmaxb() - 1; j++) {
             // NO slip boundary confitions
-            if (grid.cell(i, j)._cellType == NOSLIP) {
+            if (grid.cell(i, j)._cellType < 1) {
                 //B_NE
                 if (grid.cell(i, j)._nbNorth->_cellType > 1  && grid.cell(i, j)._nbEast->_cellType > 1) {
                     u_velocity.at(i).at(j) = 0;
@@ -162,8 +163,8 @@ void boundaryvalues(int imax,
                     F[i - 1][j] = u_velocity.at(i - 1).at(j) - beta * delta_t / 2 * (temp.at(i - 1).at(j) + temp.at(i).at(j)) * GX;
                 }
                 else if(
-                    grid.cell(i, j)._nbEast->_cellType == NOSLIP && grid.cell(i, j)._nbWest->_cellType == NOSLIP&&
-                    grid.cell(i, j)._nbNorth->_cellType == NOSLIP && grid.cell(i, j)._nbSouth->_cellType == NOSLIP)
+                    grid.cell(i, j)._nbEast->_cellType < 1 && grid.cell(i, j)._nbWest->_cellType < 1 &&
+                    grid.cell(i, j)._nbNorth->_cellType < 1 && grid.cell(i, j)._nbSouth->_cellType < 1)
                 {
                     u_velocity.at(i).at(j) = 0;     // EAST
                     u_velocity.at(i - 1).at(j) = 0; // WEST
@@ -189,7 +190,7 @@ void boundaryvalues(int imax,
     for(int i = 0; i < grid.imaxb(); i++)
     {
         //noslip bottom: checked and added pres and temp [Adrian]
-        if(grid.cell(i,0)._cellType == NOSLIP and grid.cell(i,0)._nbNorth->_cellType == FLUID)
+        if(grid.cell(i,0)._cellType < 1 and grid.cell(i,0)._nbNorth->_cellType == FLUID)
         {
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
@@ -204,7 +205,7 @@ void boundaryvalues(int imax,
             conc_D.at(i).at(0) = conc_D.at(i).at(1);
         }
         //noslip top: checked and added pres and temp [Adrian]
-        if(grid.cell(i, grid.jmaxb() - 1)._cellType == NOSLIP and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        if(grid.cell(i, grid.jmaxb() - 1)._cellType < 1 and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
         {
             u_velocity.at(i).at(grid.jmaxb() - 1) = -u_velocity.at(i).at(grid.jmaxb() - 2);
             v_velocity.at(i).at(grid.jmaxb() - 1) = 0; // Solid cell
@@ -231,7 +232,7 @@ void boundaryvalues(int imax,
     for(int j = 0; j < grid.jmaxb(); j++)
     {
         // noslip left: checked and added pres and temp [Adrian]
-        if(grid.cell(0,j)._cellType == NOSLIP and grid.cell(0,j)._nbEast->_cellType == FLUID)
+        if(grid.cell(0,j)._cellType < 1 and grid.cell(0,j)._nbEast->_cellType == FLUID)
         {
             u_velocity.at(0).at(j) = 0;
             v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
@@ -248,7 +249,7 @@ void boundaryvalues(int imax,
         }
 
         // noslip right: checked and added pres and temp [Adrian]
-        if(grid.cell(grid.imaxb() - 1,j)._cellType == NOSLIP and grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
+        if(grid.cell(grid.imaxb() - 1,j)._cellType < 1 and grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
         {
             u_velocity.at(grid.imaxb() - 1).at(j) = 0; // Solid cell
             u_velocity.at(grid.imaxb() - 2).at(j) = 0; // Fluid cell
@@ -499,7 +500,7 @@ void boundary_val_sor(Grid& grid) {
     for (int i = 1; i < grid.imax() - 1; ++i) {
         for (int j = 1; j < grid.jmax() - 1; ++j) {
             // Setting pressure for all boundary (NOSLIP) cells
-            if (grid.cell(i, j)._cellType == NOSLIP) {
+            if (grid.cell(i, j)._cellType < 1) {
 
                 // Checking whether the neighbor cells belongs to FLUID, and taking its pressure
 

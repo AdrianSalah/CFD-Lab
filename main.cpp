@@ -37,7 +37,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     //set scenario manually
-    scenarioSpec = 5;
+    scenarioSpec = 3;
 
     switch(scenarioSpec)
     {
@@ -194,6 +194,7 @@ int main(int argn, char** args) {
             else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = OUTFLOW;}
             else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = INFLOW;}
             else if(cell_array[i][j] == 1){grid.cell(i,j)._cellType = FREESLIP;}
+            else if(cell_array[i][j] == 5){grid.cell(i,j)._cellType = CATALYST;}
             else{
                 printf("Error: wrong grey value in geometry-file ");
                 exit(EXIT_FAILURE);

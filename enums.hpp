@@ -39,7 +39,8 @@ enum CellType {
     FLUID = 4,
     INFLOW = 3,
     OUTFLOW = 2,
-    FREESLIP = 1
+    FREESLIP = 1,
+    CATALYST = -1
 };
 
 #endif //CFDLAB_ENUMS_H
