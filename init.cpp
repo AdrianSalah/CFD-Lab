@@ -42,7 +42,8 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	double* Pr_diffusion_A,            /* Prandlt Number for chemical diffusion*/
 	double* Pr_diffusion_B,            /* Prandlt Number for chemical diffusion*/
 	double* Pr_diffusion_C,            /* Prandlt Number for chemical diffusion*/
-	double* Pr_diffusion_D           /* Prandlt Number for chemical diffusion*/
+	double* Pr_diffusion_D,           /* Prandlt Number for chemical diffusion*/
+	double* SD_coeff                  /* surface development coefficient */
                      )                     
 {
     // Reading Parameters
@@ -94,6 +95,7 @@ int read_parameters(std::string szFileName,       /* name of the file */
 			if (var == "Pr_diffusion_B")  file >> *Pr_diffusion_B;
 			if (var == "Pr_diffusion_C")  file >> *Pr_diffusion_C;
 			if (var == "Pr_diffusion_D")  file >> *Pr_diffusion_D;
+			if (var == "SD_coeff")		  file >> *SD_coeff;
 		}
 	}
 

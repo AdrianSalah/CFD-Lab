@@ -85,7 +85,8 @@ int read_parameters(std::string szFileName,       /* name of the file */
     double* Pr_diffusion_A,            /* Prandlt Number for chemical diffusion*/
     double* Pr_diffusion_B,            /* Prandlt Number for chemical diffusion*/
     double* Pr_diffusion_C,            /* Prandlt Number for chemical diffusion*/
-    double* Pr_diffusion_D);
+    double* Pr_diffusion_D,             /* Prandlt Number for chemical diffusion*/
+    double* SD_coeff);                  /* surface development coefficient */
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on

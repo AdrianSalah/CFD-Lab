@@ -37,7 +37,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     //set scenario manually
-    scenarioSpec = 3;
+    scenarioSpec = 4;
 
     switch(scenarioSpec)
     {
@@ -141,6 +141,7 @@ int main(int argn, char** args) {
     double* u_inflow = new double;          /* boundary value for inflow BC */
     double* kappa = new double;             /* thermal conductivity */
     double* heat_flux = new double;         /* heat flux */
+    double* SD_coeff = new double;         /* surface development coefficient */
     int **cell_array = new int *;           /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
@@ -169,7 +170,7 @@ int main(int argn, char** args) {
         //ready parameters from plane_shear.dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
             tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI_A, CI_B, CI_C, CI_D,
-            C_inject_A, C_inject_B, C_inject_C, C_inject_D, Pr_diffusion_A, Pr_diffusion_B, Pr_diffusion_C, Pr_diffusion_D);
+            C_inject_A, C_inject_B, C_inject_C, C_inject_D, Pr_diffusion_A, Pr_diffusion_B, Pr_diffusion_C, Pr_diffusion_D, SD_coeff);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
@@ -203,7 +204,6 @@ int main(int argn, char** args) {
     }
 
     assign_ptr_nbcells(grid);
-
 
     // Initializing variables
     double time = 0;                        // time
@@ -358,6 +358,6 @@ int main(int argn, char** args) {
     delete u_inflow;
     delete kappa;
     delete heat_flux;
-
+    delete SD_coeff;
     return 0;
 }
