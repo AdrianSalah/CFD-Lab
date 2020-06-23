@@ -306,56 +306,96 @@ void spec_boundary_val(Grid& grid,
         // left boundary
 
         if (il == 0) {
-            for (int j = 0; j < (jt-jb+1); j++) {
-                U[2][j+1] = 0;
-                V[1][j+2] = -V[2][j+2];
-                F[2][j+1] = U[2][j + 1];
-                G[1][j+2] = V[1][j + 2];
-                P[1][j+1] = P[2][j+1];
-                //T[1][j+1] = T[2][j+1];
+            for (int j = 1; j < jt - jb + 2; j++) {
+                U[2][j] = 0;
+                F[2][j] = 0;
+            }
+            for (int j = 2; j < jt - jb + 3; j++) {
+                V[1][j] = -V[2][j];
+                G[1][j] = V[1][j];
+            }
+            if (jt == grid.jmaxb() - 1) {
+                V[1][jt - jb + 2] = 0;
+                G[1][jt - jb + 2] = 0;
+                V[1][jt - jb + 1] = 0;
+                G[1][jt - jb + 1] = 0;
+            }
+            if (jb == 0) {
+                V[1][2] = 0;
+                G[1][2] = 0;
             }
         }
 
         //right boundary
 
         if (ir == grid.imaxb()-1) {
-            for (int j = 0; j < (jt-jb+1); j++) {
-                U[ir-il+2][j+1] = 0;
-                U[ir-il+1][j+1] = 0;
-                V[ir-il+1][j+2] = -V[ir-il][j+2];
-                F[ir-il+2][j+1] = U[ir-il+2][j+1];
-                F[ir-il+1][j+1] = U[ir-il+1][j+1];
-                G[ir-il+1][j+2] = V[ir-il+1][j+2];
-                P[ir-il+1][j+1] = P[ir-il][j+1];
-                //T[ir - il+1][j+1] = T[ir - il][j+1];
+            for (int j = 1; j < jt - jb + 2; j++) {
+                U[ir-il+2][j] = 0;
+                F[ir-il+2][j] = 0;
+                U[ir-il+1][j] = 0;
+                F[ir-il+1][j] = 0;
+            }
+            for (int j = 2; j < jt - jb + 3; j++) {
+                V[ir-il+1][j] = -V[ir-il][j];
+                G[ir - il + 1][j] = V[ir - il + 1][j];
+            }
+            if (jt == grid.jmaxb() - 1) {
+                V[ir - il + 1][jt - jb + 2] = 0;
+                G[ir - il + 1][jt - jb + 2] = 0;
+                V[ir - il + 1][jt - jb + 1] = 0;
+                G[ir - il + 1][jt - jb + 1] = 0;
+            }
+            if (jb == 0) {
+                V[ir - il + 1][2] = 0;
+                G[ir - il + 1][2] = 0;
             }
         }
 
         //bottom boundary
 
         if (jb == 0) {
-            for (int i = 0; i < (ir-il+1); i++) {
-                V[i+1][2] = 0;
-                U[i+2][1] = -U[i+2][2];
-                F[i+2][1] = U[i+2][1];
-                G[i+1][2] = V[i+1][2];
-                P[i+1][1] = P[i+1][2];
-                //T[i+1][1] = T[i+1][2];
+            for (int i = 1; i < ir - il + 2; i++) {
+                V[i][2] = 0;
+                G[i][2] = 0;
+            }
+            for (int i = 2; i < ir - il + 3; i++) {
+                U[i][1] = - U[i][2];
+                F[i][1] = U[i][1];
+            }
+            if (ir == grid.imaxb() - 1) {
+                U[ir - il + 2][1] = 0;
+                F[ir - il + 2][1] = 0;
+                U[ir - il + 1][1] = 0;
+                F[ir - il + 1][1] = 0;
+            }
+            if (il == 0) {
+                U[2][1] = 0;
+                F[2][1] = 0;
             }
         }
 
         //top boundary free slip
 
         if (jt == grid.jmaxb()-1) {
-            for (int i = 0; i < (ir-il+1); i++) {
-                V[i+1][jt-jb+2] = 0;
-                V[i+1][jt-jb+1] = 0;
-                U[i+2][jt-jb+1] = 2-U[i+2][jt-jb];
-                F[i+2][jt-jb+1] = U[i+2][jt-jb+1];
-                G[i+1][jt-jb+2] = V[i+1][jt-jb+2];
-                G[i+1][jt-jb+1] = V[i+1][jt-jb+1];
-                P[i+1][jt-jb+1] = P[i+1][jt-jb];
-                //T[i+1][jt - jb+1] = T[i+1][jt - jb];
+            for (int i = 1; i < ir - il + 2; i++) {
+                V[i][jt - jb + 2] = 0;
+                G[i][jt - jb + 2] = 0;
+                V[i][jt - jb + 1] = 0;
+                G[i][jt - jb + 1] = 0;
+            }
+            for (int i = 2; i < ir - il + 3; i++) {
+                U[i][jt - jb + 1] = 2 - U[i][jt - jb];
+                F[i][jt - jb + 1] = U[i][jt - jb + 1];
+            }
+            if (ir == grid.imaxb() - 1) {
+                U[ir - il + 2][jt - jb + 1] = 0;
+                F[ir - il + 2][jt - jb + 1] = 0;
+                U[ir - il + 1][jt - jb + 1] = 0;
+                F[ir - il + 1][jt - jb + 1] = 0;
+            }
+            if (il == 0) {
+                U[2][jt - jb + 1] = 0;
+                F[2][jt - jb + 1] = 0;
             }
         }
 }

@@ -39,25 +39,25 @@ void sor(
     // Set boundary values for the outmost cells of the domain
     // LEFT Wall
     if (il == 0) {
-        for (int j = 1; j < (jt - jb + 2); j++) {
+        for (int j = 1+ (jb == 0); j < (jt - jb + 2)- (jt == grid.jmaxb() - 1); j++) {
             P[1][j] = P[2][j];
         }
     }
     // RIGHT Wall
     if (ir == (grid.imaxb() - 1)) {
-        for (int j = 1; j < (jt - jb + 2); j++) {
+        for (int j = 1 + (jb == 0); j < (jt - jb + 2) - (jt == grid.jmaxb() - 1); j++) {
             P[ir - il + 1][j] = P[ir - il][j];
         }
     }
     // BOTTOM Wall
     if (jb == 0) {
-        for (int i = 1; i < (ir - il + 2); i++) {
+        for (int i = 1 + (il==0); i < (ir - il + 2) - (ir == grid.imaxb() - 1); i++) {
             P[i][1] = P[i][2];
         }
     }
     // TOP Wall
     if (jt == (grid.jmaxb() - 1)) {
-        for (int i = 1; i < (ir - il + 2); i++) {
+        for (int i = 1 + (il == 0); i < (ir - il + 2) - (ir == grid.imaxb() - 1); i++) {
             P[i][jt - jb + 1] = P[i][jt - jb];
         }
     }
@@ -101,6 +101,29 @@ void sor(
         /* set residual */
         *res_temp = rloc;
         MPI_Allreduce(res_temp, res, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        if (il == 0) {
+            for (int j = 1 + (jb == 0); j < (jt - jb + 2) - (jt == grid.jmaxb() - 1); j++) {
+                P[1][j] = P[2][j];
+            }
+        }
+        // RIGHT Wall
+        if (ir == (grid.imaxb() - 1)) {
+            for (int j = 1 + (jb == 0); j < (jt - jb + 2) - (jt == grid.jmaxb() - 1); j++) {
+                P[ir - il + 1][j] = P[ir - il][j];
+            }
+        }
+        // BOTTOM Wall
+        if (jb == 0) {
+            for (int i = 1 + (il == 0); i < (ir - il + 2) - (ir == grid.imaxb() - 1); i++) {
+                P[i][1] = P[i][2];
+            }
+        }
+        // TOP Wall
+        if (jt == (grid.jmaxb() - 1)) {
+            for (int i = 1 + (il == 0); i < (ir - il + 2) - (ir == grid.imaxb() - 1); i++) {
+                P[i][jt - jb + 1] = P[i][jt - jb];
+            }
+        }
     // Setting pressure for the entire domain after the SOR algorithm
     grid.set_pressure(P, il, ir, jb, jt);
 

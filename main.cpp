@@ -283,14 +283,13 @@ int main(int argn, char** args) {
         */
 
 
-
+        /** itermax = 10000000;*/
         // Initializing variables
         double time = 0;                        // time
         int timesteps_total = 0;                // # of iterations for main loop
         int current_timestep_iteration;         // # of iterations for SOR
         double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
         int count_failed_SOR = 0;               //# of failed SOR iterations
-
         //initialize matrices U, V, P, T
         matrix<double> U, V, P, T;
         init_uvpt(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, grid, *il, *ir, *jb, *jt);
@@ -325,12 +324,11 @@ int main(int argn, char** args) {
             while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
                 sor(*omg, *dx, *dy, *imax, *jmax, grid, RS,P, res, res_temp, *il, *ir, *jb, *jt, myrank);
                 current_timestep_iteration++;
-
+                /*std::cout << *res << std::endl;*/
                 MPI_Status status;
                 pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
-
             }
-
+            
             u_velocity_comm(U, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendU, bufRecvU, MPI_STATUS_IGNORE, myrank);
             v_velocity_comm(V, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendV, bufRecvV, MPI_STATUS_IGNORE, myrank);
 
