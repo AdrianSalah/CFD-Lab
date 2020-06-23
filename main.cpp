@@ -16,6 +16,7 @@ std::string SCENARIO_NAME;
 std::string SCENARIO_DAT_FILE;
 std::string SCENARIO_PGM_FILE;
 
+
 //define scenarios using macros
 //#define SCENARIO_NAME "lid_driven_cavity"
 //#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
@@ -37,7 +38,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     //set scenario manually
-    scenarioSpec = 4;
+    scenarioSpec = 5;
 
     switch(scenarioSpec)
     {
@@ -217,7 +218,7 @@ int main(int argn, char** args) {
 
     //initialize matrices U, V, P, T, C
     matrix<double> U, V, P, T, C;
-    init_uvptc(*imax, *jmax, U, V, P, T, C, *UI, *VI, *PI, *TI, CI[A], grid);
+    init_uvptc(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, CI, grid);
 
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
@@ -239,12 +240,41 @@ int main(int argn, char** args) {
         boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *dx, *dy, *beta, *dt, *GX, *GY);
 
         spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
-
-        calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
         
         for (int it = 0; it < LAST; it++)
             calculate_concentration(*Re, Pr_diffusion,
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
+
+        calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
+            false,
+            false,
+            true,
+            true,
+            stoichiometric_coeff[0],
+            stoichiometric_coeff[1],
+            stoichiometric_coeff[2],
+            stoichiometric_coeff[3],
+            homogeneous_reaction_coef[0],
+            homogeneous_reaction_coef[1],
+            homogeneous_reaction_coef[2],
+            homogeneous_reaction_coef[3],
+            absorption_coeff[0],
+            absorption_coeff[1],
+            absorption_coeff[2],
+            absorption_coeff[3],
+            heat_capacity[0],
+            heat_capacity[1],
+            heat_capacity[2],
+            heat_capacity[3],
+            *reaction_rate_constant_factor,
+            *activation_energy_forward,
+            *activation_energy_reverse,
+            *activation_energy_catalyst,
+            *SD_coeff,
+            *vacant_centers_defficiency_coeff,
+            *reaction_heat_effect_Q);
+
+        calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
 

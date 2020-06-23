@@ -347,7 +347,7 @@ void spec_boundary_val(
     grid.concentration(conc_C, ID::C);
     grid.concentration(conc_D, ID::D);
 
-
+    // CASE FOR ALL FOUR COMPONENTS
     // Plane shear, Step over flow, Karmann Vortex (with chemical injection)
     if (scenarioSpec == 2 || scenarioSpec == 3 || scenarioSpec == 4)
     {
@@ -356,20 +356,36 @@ void spec_boundary_val(
         // (no chemical components present in the feed flow)
         // LEFT Wall
         for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
             conc_A.at(0).at(j) = 2 * 0 - conc_A.at(1).at(j);
+            conc_B.at(0).at(j) = 2 * 0 - conc_B.at(1).at(j);
+            conc_C.at(0).at(j) = 2 * 0 - conc_C.at(1).at(j);
+            conc_D.at(0).at(j) = 2 * 0 - conc_D.at(1).at(j);
+        }
 
         // ---- Neumann BC Concentration ---- //
         // RIGHT Wall
         for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
             conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
+            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
+            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
+            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
+        }
 
         for (int i = 1; i < grid.imaxb() - 1; i++)
         {
             // BOTTOM Wall
             conc_A.at(i).at(0) = conc_A.at(i).at(1);
-            
+            conc_B.at(i).at(0) = conc_B.at(i).at(1);
+            conc_C.at(i).at(0) = conc_C.at(i).at(1);
+            conc_D.at(i).at(0) = conc_D.at(i).at(1);
+
             // TOP Wall
-            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);  
+            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
         }
 
         // Only these cells are non-zero: C_injection point at left wall (INFLOW)
@@ -377,22 +393,63 @@ void spec_boundary_val(
         if (time < t_end * 0.5)
         {
             for (int j = 12; j < 13; j++)
-                conc_A.at(0).at(j) = 2 * C_inject[static_cast<int>(ID::A)] - conc_A.at(1).at(j);
+            {
+                conc_A.at(0).at(j) = 2 * C_inject[ID::A] - conc_A.at(1).at(j);
+                conc_B.at(0).at(j + 2) = 2 * C_inject[ID::B] - conc_B.at(1).at(j + 2);
+                conc_C.at(0).at(j + 4) = 2 * C_inject[ID::C] - conc_C.at(1).at(j + 4);
+                conc_D.at(0).at(j + 6) = 2 * C_inject[ID::D] - conc_D.at(1).at(j + 6);
+            }
         }
     }
 
 
+    // CASE FOR ONE COMPONENT ONLY
+    //// Plane shear, Step over flow, Karmann Vortex (with chemical injection)
+    //if (scenarioSpec == 2 || scenarioSpec == 3 || scenarioSpec == 4)
+    //{
+    //    // ----  Dirichlet BC Concentration ---- //
+    //    // We set boundary values for all boundary cells equal zero
+    //    // (no chemical components present in the feed flow)
+    //    // LEFT Wall
+    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
+    //        conc_A.at(0).at(j) = 2 * 0 - conc_A.at(1).at(j);
+
+    //    // ---- Neumann BC Concentration ---- //
+    //    // RIGHT Wall
+    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
+    //        conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
+
+    //    for (int i = 1; i < grid.imaxb() - 1; i++)
+    //    {
+    //        // BOTTOM Wall
+    //        conc_A.at(i).at(0) = conc_A.at(i).at(1);
+    //        
+    //        // TOP Wall
+    //        conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);  
+    //    }
+
+    //    // Only these cells are non-zero: C_injection point at left wall (INFLOW)
+    //    // and if current time is <50% of t_end
+    //    if (time < t_end * 0.5)
+    //    {
+    //        for (int j = 12; j < 13; j++)
+    //            conc_A.at(0).at(j) = 2 * C_inject[static_cast<int>(ID::A)] - conc_A.at(1).at(j);
+    //    }
+    //}
+
+
     // Natural Convection and Fluid Trap
-    if(scenarioSpec == 5 or scenarioSpec == 6)
+    // CONCENTRATION AND TEMPERATURE
+    if (scenarioSpec == 5 or scenarioSpec == 6)
     {
         // ----  Dirichlet BC Temperature ---- //
         for (int j = 1; j < grid.jmaxb() - 1; j++)
-        { 
+        {
             // T_h LEFT Wall
             temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
 
             // T_c RIGHT Wall
-            temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);    
+            temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);
         }
 
         // ---- Neumann BC Temperature ---- //
@@ -404,7 +461,84 @@ void spec_boundary_val(
             // TOP Wall
             temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
         }
+
+
+        // ---- Neumann BC Concentration ---- //
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+            // RIGHT Wall
+            conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
+            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
+            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
+            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
+
+            // LEFT Wall
+            conc_A.at(0).at(j) = conc_A.at(1).at(j);
+            conc_B.at(0).at(j) = conc_B.at(1).at(j);
+            conc_C.at(0).at(j) = conc_C.at(1).at(j);
+            conc_D.at(0).at(j) = conc_D.at(1).at(j);
+        }
+
+        for (int i = 1; i < grid.imaxb() - 1; i++)
+        {
+            // BOTTOM Wall
+            conc_A.at(i).at(0) = conc_A.at(i).at(1);
+            conc_B.at(i).at(0) = conc_B.at(i).at(1);
+            conc_C.at(i).at(0) = conc_C.at(i).at(1);
+            conc_D.at(i).at(0) = conc_D.at(i).at(1);
+
+            // TOP Wall
+            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
+        }
+
+        // Only these cells are non-zero: C_injection point at left wall (INFLOW)
+        // and if current time is <50% of t_end
+        // "SINKS/SOURCES" ARE TURNED OFF
+        /*
+        // LEFT
+        conc_A.at(0).at(grid.jmaxb()/2) = 2 * C_inject[ID::A] - conc_A.at(1).at(grid.jmaxb() / 2);
+            
+        // RIGHT
+        conc_B.at(grid.imaxb() - 1).at(grid.jmaxb() / 2) = 2 * C_inject[ID::B] - conc_B.at(grid.imaxb() - 2).at(grid.jmaxb() / 2);
+            
+        // BOTTOM
+        conc_C.at(grid.imaxb() / 2).at(0) = 2 * C_inject[ID::C] - conc_C.at(grid.imaxb() / 2).at(1);
+            
+        // TOP
+        conc_D.at(grid.imaxb() / 2).at(grid.jmaxb() - 1) = 2 * C_inject[ID::D] - conc_D.at(grid.imaxb() / 2).at(grid.jmaxb() - 2);
+        */
+        /*if (time < t_end * 0.5)
+        { }*/
     }
+
+
+    // Natural Convection and Fluid Trap
+    // TEMPERATURE ONLY
+    //if(scenarioSpec == 5 or scenarioSpec == 6)
+    //{
+    //    // ----  Dirichlet BC Temperature ---- //
+    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
+    //    { 
+    //        // T_h LEFT Wall
+    //        temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
+
+    //        // T_c RIGHT Wall
+    //        temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);    
+    //    }
+
+    //    // ---- Neumann BC Temperature ---- //
+    //    for (int i = 1; i < grid.imaxb() - 1; i++)
+    //    {
+    //        // BOTTOM Wall
+    //        temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
+
+    //        // TOP Wall
+    //        temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
+    //    }
+    //}
     
     // Rayleigh-Benard Convection
     else if (scenarioSpec == 7)

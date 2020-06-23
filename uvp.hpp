@@ -206,11 +206,10 @@ void init_uvptc(
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
-    matrix<double> C,
     double UI,
     double VI,
     double PI,
     double TI,
-    double CI,
+    double *CI,
     Grid &grid);
 #endif

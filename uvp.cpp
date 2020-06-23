@@ -410,22 +410,23 @@ void calculate_chem_kinetics(
             // If cell is a FLUID cell
             if (grid.cell(i, j)._cellType > 1)
             {
-                // Compute molar fractions of each component
+                //// Compute molar fractions of each component
                 moles_total = C_A[i][j] + C_B[i][j] + C_C[i][j] + C_D[i][j];
-                molar_fraction_A = C_A[i][j] / moles_total;
-                molar_fraction_B = C_B[i][j] / moles_total;
-                molar_fraction_C = C_C[i][j] / moles_total;
-                molar_fraction_D = C_D[i][j] / moles_total;
+                //molar_fraction_A = C_A[i][j] / moles_total;
+                //molar_fraction_B = C_B[i][j] / moles_total;
+                //molar_fraction_C = C_C[i][j] / moles_total;
+                //molar_fraction_D = C_D[i][j] / moles_total;
 
                 // Compute reduced heat capacity (of the gas mix)
                 reduced_heat_capacity = (Cp_mol_A * C_A[i][j] + Cp_mol_B * C_B[i][j]
                                        + Cp_mol_C * C_C[i][j] + Cp_mol_D * C_D[i][j]) / moles_total;
 
-                // Compute partial pressure of each component
-                partial_pressure_A = molar_fraction_A * P[i][j];
-                partial_pressure_B = molar_fraction_B * P[i][j];
-                partial_pressure_C = molar_fraction_C * P[i][j];
-                partial_pressure_D = molar_fraction_D * P[i][j];
+                // REPLACED WITH MOLAR CONCENTRATIONS
+                //// Compute partial pressure of each component
+                //partial_pressure_A = molar_fraction_A * P[i][j];
+                //partial_pressure_B = molar_fraction_B * P[i][j];
+                //partial_pressure_C = molar_fraction_C * P[i][j];
+                //partial_pressure_D = molar_fraction_D * P[i][j];
 
                 // HETEROGENEOUS CATALYST REACTION
                 // reaction occurs along the surface of the catalyst
@@ -448,10 +449,16 @@ void calculate_chem_kinetics(
                         + adsorption_coeff_D * partial_pressure_D;
 
                     // Compute adsorbed surface fraction of each component
-                    surface_fraction_A = adsorption_coeff_A * partial_pressure_A / surface_fraction_denominator;
-                    surface_fraction_B = adsorption_coeff_B * partial_pressure_B / surface_fraction_denominator;
-                    surface_fraction_C = adsorption_coeff_C * partial_pressure_C / surface_fraction_denominator;
-                    surface_fraction_D = adsorption_coeff_D * partial_pressure_D / surface_fraction_denominator;
+                    //surface_fraction_A = adsorption_coeff_A * partial_pressure_A / surface_fraction_denominator;
+                    //surface_fraction_B = adsorption_coeff_B * partial_pressure_B / surface_fraction_denominator;
+                    //surface_fraction_C = adsorption_coeff_C * partial_pressure_C / surface_fraction_denominator;
+                    //surface_fraction_D = adsorption_coeff_D * partial_pressure_D / surface_fraction_denominator;
+
+                    // REPLACED WITH MOLAR CONCENTRATIONS
+                    surface_fraction_A = adsorption_coeff_A * C_A[i][j] / surface_fraction_denominator;
+                    surface_fraction_B = adsorption_coeff_B * C_B[i][j] / surface_fraction_denominator;
+                    surface_fraction_C = adsorption_coeff_C * C_C[i][j] / surface_fraction_denominator;
+                    surface_fraction_D = adsorption_coeff_D * C_D[i][j] / surface_fraction_denominator;
 
                     surface_fraction_vacant_centers =
                         1 - (surface_fraction_A + surface_fraction_B + surface_fraction_C + surface_fraction_D);
@@ -487,7 +494,7 @@ void calculate_chem_kinetics(
 
                     // Constant of the REVERSE reaction
                     reaction_rate_const_reverse = reaction_rate_constant_factor *
-                        exp(-activation_energy_reverse / (R_gas_const * T[i][j]));
+                        exp(-(activation_energy_catalyst-reaction_heat_effect_Q) / (R_gas_const * T[i][j]));
 
                     reaction_rate_reverse = reaction_rate_const_reverse
                         * std::pow(reverse_fraction_A, stoichiometric_coeff_a)
@@ -522,10 +529,16 @@ void calculate_chem_kinetics(
                     // taking into consideration the type of component:
                     // only INITIAL COMPONENTS will be taken into account for computation
                     // i.e. the products will NOT be included into equation (multiplied by x1)
-                    forward_partial_pressure_A = component_A_is_the_product ? 1 : partial_pressure_A;
-                    forward_partial_pressure_B = component_B_is_the_product ? 1 : partial_pressure_B;
-                    forward_partial_pressure_C = component_C_is_the_product ? 1 : partial_pressure_C;
-                    forward_partial_pressure_D = component_D_is_the_product ? 1 : partial_pressure_D;
+                    //forward_partial_pressure_A = component_A_is_the_product ? 1 : partial_pressure_A;
+                    //forward_partial_pressure_B = component_B_is_the_product ? 1 : partial_pressure_B;
+                    //forward_partial_pressure_C = component_C_is_the_product ? 1 : partial_pressure_C;
+                    //forward_partial_pressure_D = component_D_is_the_product ? 1 : partial_pressure_D;
+
+                    // REPLACED WITH MOLAR CONCENTRATIONS
+                    forward_partial_pressure_A = component_A_is_the_product ? 1 : C_A[i][j];
+                    forward_partial_pressure_B = component_B_is_the_product ? 1 : C_B[i][j];
+                    forward_partial_pressure_C = component_C_is_the_product ? 1 : C_C[i][j];
+                    forward_partial_pressure_D = component_D_is_the_product ? 1 : C_D[i][j];
 
                     // Constant of FORWARD reaction
                     reaction_rate_const_forward = reaction_rate_constant_factor *
@@ -541,10 +554,16 @@ void calculate_chem_kinetics(
                     // taking into consideration the type of component:
                     // only PRODUCTS will be taken into account for computation
                     // i.e. the initial components will NOT be included into equation (multiplied by x1)
-                    reverse_partial_pressure_A = component_A_is_the_product ? partial_pressure_A : 1;
-                    reverse_partial_pressure_B = component_B_is_the_product ? partial_pressure_B : 1;
-                    reverse_partial_pressure_C = component_C_is_the_product ? partial_pressure_C : 1;
-                    reverse_partial_pressure_D = component_D_is_the_product ? partial_pressure_D : 1;
+                    //reverse_partial_pressure_A = component_A_is_the_product ? partial_pressure_A : 1;
+                    //reverse_partial_pressure_B = component_B_is_the_product ? partial_pressure_B : 1;
+                    //reverse_partial_pressure_C = component_C_is_the_product ? partial_pressure_C : 1;
+                    //reverse_partial_pressure_D = component_D_is_the_product ? partial_pressure_D : 1;
+
+                    // REPLACED WITH MOLAR CONCENTRATIONS
+                    reverse_partial_pressure_A = component_A_is_the_product ? C_A[i][j] : 1;
+                    reverse_partial_pressure_B = component_B_is_the_product ? C_B[i][j] : 1;
+                    reverse_partial_pressure_C = component_C_is_the_product ? C_C[i][j] : 1;
+                    reverse_partial_pressure_D = component_D_is_the_product ? C_D[i][j] : 1;
 
                     // Constant of the REVERSE reaction
                     reaction_rate_const_reverse = reaction_rate_constant_factor *
@@ -775,19 +794,24 @@ void init_uvptc(
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
-    matrix<double> C,
     double UI,
     double VI,
     double PI,
     double TI,
-    double CI,
+    double *CI,
     Grid& grid)
 {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
-    grid.concentration(C, ID::A);
+
+    matrix<double> C_A, C_B, C_C, C_D;
+    grid.concentration(C_A, ID::A);
+    grid.concentration(C_B, ID::B);
+    grid.concentration(C_C, ID::C);
+    grid.concentration(C_D, ID::D);
+
 
     for (int i = 0; i < grid.imaxb(); i++) {
         for (int j = 0; j < grid.jmaxb(); j++) {
@@ -796,7 +820,11 @@ void init_uvptc(
                 V.at(i).at(j) = VI;
                 P.at(i).at(j) = PI;
                 T.at(i).at(j) = TI;
-                C.at(i).at(j) = CI;
+                C_A.at(i).at(j) = CI[ID::A];
+                C_B.at(i).at(j) = CI[ID::B];
+                C_C.at(i).at(j) = CI[ID::C];
+                C_D.at(i).at(j) = CI[ID::D];
+
             }
             else if (grid.cell(i, j)._cellType == NOSLIP) {
                 U.at(i).at(j) = 0;
@@ -812,5 +840,8 @@ void init_uvptc(
     grid.set_velocity(V, velocity_type::V);
     grid.set_pressure(P);
     grid.set_temperature(T);
-    grid.set_concentration(C, ID::A);
+    grid.set_concentration(C_A, ID::A);
+    grid.set_concentration(C_B, ID::B);
+    grid.set_concentration(C_C, ID::C);
+    grid.set_concentration(C_D, ID::D);
 }
