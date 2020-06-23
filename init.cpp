@@ -31,19 +31,20 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	double* u_inflow,          /* inflow x velocity */
 	double* kappa,				/* thermal conductivity */
 	double* heat_flux,		 /* heat flux */
-	double* CI_A,             /* initial concentration */
-	double* CI_B,             /* initial concentration */
-	double* CI_C,             /* initial concentration */
-	double* CI_D,             /* initial concentration */
-	double* C_inject_A,            /* source concentration*/
-	double* C_inject_B,            /* source concentration*/
-	double* C_inject_C,            /* source concentration*/
-	double* C_inject_D,            /* source concentration*/
-	double* Pr_diffusion_A,            /* Prandlt Number for chemical diffusion*/
-	double* Pr_diffusion_B,            /* Prandlt Number for chemical diffusion*/
-	double* Pr_diffusion_C,            /* Prandlt Number for chemical diffusion*/
-	double* Pr_diffusion_D,           /* Prandlt Number for chemical diffusion*/
-	double* SD_coeff                  /* surface development coefficient */
+	double* CI,             /* initial concentration */
+	double* C_inject,
+	double* Pr_diffusion,            /* Prandlt Number for chemical diffusion*/
+	double* SD_coeff,                  /* surface development coefficient */
+	double* stoichiometric_coeff,
+	double* homogeneous_reaction_coef,
+	double* absorption_coeff,
+	double* heat_capacity,
+	double* reaction_rate_constant_factor,
+	double* activation_energy_forward,
+	double* activation_energy_reverse,
+	double* activation_energy_catalyst,
+    double* vacant_centers_defficiency_coeff,
+    double* reaction_heat_effect_Q
                      )                     
 {
     // Reading Parameters
@@ -83,22 +84,60 @@ int read_parameters(std::string szFileName,       /* name of the file */
 			if (var == "v_inflow") file >> *v_inflow;
 			if (var == "kappa")    file >> *kappa;
 			if (var == "heat_flux")file >> *heat_flux;
-			if (var == "CI_A")	   file >> *CI_A;
-			if (var == "CI_B")	   file >> *CI_B;
-			if (var == "CI_C")	   file >> *CI_C;
-			if (var == "CI_D")	   file >> *CI_D;
-			if (var == "C_inject_A")	   file >> *C_inject_A;
-			if (var == "C_inject_B")	   file >> *C_inject_B;
-			if (var == "C_inject_C")	   file >> *C_inject_C;
-			if (var == "C_inject_D")	   file >> *C_inject_D;
-			if (var == "Pr_diffusion_A")  file >> *Pr_diffusion_A;
-			if (var == "Pr_diffusion_B")  file >> *Pr_diffusion_B;
-			if (var == "Pr_diffusion_C")  file >> *Pr_diffusion_C;
-			if (var == "Pr_diffusion_D")  file >> *Pr_diffusion_D;
 			if (var == "SD_coeff")		  file >> *SD_coeff;
+
+			if (var == "CI") {
+				file >> CI[0];
+				file >> CI[1];
+				file >> CI[2];
+				file >> CI[3];
+			}
+			if (var == "C_inject") {
+				file >> C_inject[0];
+				file >> C_inject[1];
+				file >> C_inject[2];
+				file >> C_inject[3];
+			}
+			if (var == "Pr_diffusion") {
+				file >> Pr_diffusion[0];
+				file >> Pr_diffusion[1];
+				file >> Pr_diffusion[2];
+				file >> Pr_diffusion[3];
+			}
+
+			if (var == "stoichiometric_coeff") { 
+				file >> stoichiometric_coeff[0];
+				file >> stoichiometric_coeff[1];
+				file >> stoichiometric_coeff[2];
+				file >> stoichiometric_coeff[3];
+			}
+			if (var == "homogeneous_reaction_coef") {
+				file >> homogeneous_reaction_coef[0];
+				file >> homogeneous_reaction_coef[1];
+				file >> homogeneous_reaction_coef[2];
+				file >> homogeneous_reaction_coef[3];
+			}
+			if (var == "absorption_coeff") {
+				file >> absorption_coeff[0];
+				file >> absorption_coeff[1];
+				file >> absorption_coeff[2];
+				file >> absorption_coeff[3];
+			}
+			if (var == "heat_capacity") {
+				file >> heat_capacity[0];
+				file >> heat_capacity[1];
+				file >> heat_capacity[2];
+				file >> heat_capacity[3];
+			}
+			if (var == "activation_energy_forward")				file >> *activation_energy_forward;
+			if (var == "reaction_rate_constant_factor")		    file >> *reaction_rate_constant_factor;
+			if (var == "activation_energy_reverse")				file >> *activation_energy_reverse;
+			if (var == "activation_energy_catalyst")		    file >> *activation_energy_catalyst;
+			if (var == "vacant_centers_defficiency_coeff")		file >> *vacant_centers_defficiency_coeff;
+			if (var == "reaction_heat_effect_Q")				file >> *reaction_heat_effect_Q;
+
 		}
 	}
-
 	*dx = *xlength / (double)(*imax);
 	*dy = *ylength / (double)(*jmax);
 

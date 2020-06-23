@@ -205,10 +205,7 @@ void calculate_temp(
 // Calculates concentration
 void calculate_concentration(
     double Re,
-    double Pr_diffusion_A,
-    double Pr_diffusion_B,
-    double Pr_diffusion_C,
-    double Pr_diffusion_D,
+    double* Pr_diffusion,
     double alpha,
     double dt,
     double dx,
@@ -223,9 +220,6 @@ void calculate_concentration(
     static matrix<double> C_old;
     static matrix<double> C_new;
 
-    static double Pr_diffusion = (id == ID::A) * Pr_diffusion_A + (id == ID::B) * Pr_diffusion_B +
-        (id == ID::C) * Pr_diffusion_C + (id == ID::D) * Pr_diffusion_D;
-    
     grid.velocity(u, velocity_type::U);
     grid.velocity(v, velocity_type::V);
     grid.concentration(C_old, id);
@@ -256,7 +250,7 @@ void calculate_concentration(
                 // Explicit euler to solve the concentration equation
                 // TODO: add source/sink component Q_concentration
 
-                C_new[i][j] = C_old[i][j] + dt * ((1 / (Pr_diffusion * Re)) * (d2_C_dx2 + d2_C_dy2) - duC_dx - dvC_dy);
+                C_new[i][j] = C_old[i][j] + dt * ((1 / (Pr_diffusion[id] * Re)) * (d2_C_dx2 + d2_C_dy2) - duC_dx - dvC_dy);
             }
         }
     }
@@ -655,7 +649,7 @@ double max_abs_velocity(
 void calculate_dt(
     double Re,
     double Pr,
-    double Pr_diffusion,
+    double* Pr_diffusion,
     double tau,
     double* dt,
     double dx,
@@ -671,12 +665,19 @@ void calculate_dt(
     static double max_abs_V;
     max_abs_V = max_abs_velocity(grid.imaxb(), grid.jmaxb(), grid, velocity_type::V);
 
+
+
     // Explicit time-stepping stability conditions:
     static double condition_temperature;        // Temperature equation
     static double condition_concentration;      // Concentration equation
     static double condition_viscousity;         // 
     static double condition_CFL;                //
     static double condition_common;             //
+    static double Pr_diffusion_max=INFINITY;             //
+
+    for (int i = 0; i < LAST; i++) {
+        Pr_diffusion_max = std::min(Pr_diffusion_max, Pr_diffusion[i]);
+    }
 
     condition_viscousity = 0.5 * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
@@ -684,7 +685,7 @@ void calculate_dt(
     condition_temperature = 0.5 * Pr * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
     // Pr_diffusion=nu/diffusion_coefficient, so Re*Pr= 1/diffusion_coefficient
-    condition_concentration = 0.5 * Pr_diffusion * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
+    condition_concentration = 0.5 * Pr_diffusion_max * Re * (dx * dx) * (dy * dy) / ((dx * dx) + (dy * dy));
 
     // Set CFL stability parameter to high number, if the value of u and v velocities are velow the tolerance
     if (max_abs_V < 1e-06 && max_abs_U < 1e-06) // error tolerance used 1e-06

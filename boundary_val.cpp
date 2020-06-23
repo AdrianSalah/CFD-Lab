@@ -321,10 +321,7 @@ void spec_boundary_val(
     double& u_inflow,
     double& T_h,
     double& T_c,
-    double& C_inject_A,
-    double& C_inject_B,
-    double& C_inject_C,
-    double& C_inject_D,
+    double* C_inject,
     double& dx,
     double& dy,
     double& kappa,
@@ -380,7 +377,7 @@ void spec_boundary_val(
         if (time < t_end * 0.5)
         {
             for (int j = 12; j < 13; j++)
-                conc_A.at(0).at(j) = 2 * C_inject_A - conc_A.at(1).at(j);
+                conc_A.at(0).at(j) = 2 * C_inject[static_cast<int>(ID::A)] - conc_A.at(1).at(j);
         }
     }
 

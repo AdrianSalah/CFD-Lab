@@ -83,16 +83,16 @@ PR          12500
 #--------------------------------------------
 #     Concentration Parameters
 #--------------------------------------------
-CI_A				0.0
-CI_B				0.0
-CI_C				0.0
-CI_D				0.0
-C_inject_A			1.0
-C_inject_B			1.0
-C_inject_C			1.0
-C_inject_D			1.0
-Pr_diffusion_A      10.0
-Pr_diffusion_B      10.0
-Pr_diffusion_C      10.0
-Pr_diffusion_D      10.0
-SD_coeff            3.14159
+SD_coeff							3.14159
+CI									0.0    0.0     0.0    0.0
+stoichiometric_coeff				1.3    0.01    22.4   4.5
+C_inject							1.0    1.0     1.0    1.0
+Pr_diffusion						10.0   11.2    10.4   9.8
+homogeneous_reaction_coef			2.4   5.3637   0.0425   66
+absorption_coeff					2.3   5.6637   0.0225   65
+reaction_rate_constant_factor		4.6849
+activation_energy_forward			4
+activation_energy_reverse			1.12104
+activation_energy_catalyst			0.0295
+vacant_centers_defficiency_coeff	55.637
+reaction_heat_effect_Q				0.2

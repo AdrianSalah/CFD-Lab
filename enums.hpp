@@ -27,11 +27,12 @@ enum class read_type {
     DOUBLE
 };
 
-enum class ID {
+enum  ID {
     A,
     B,
     C,
-    D
+    D,
+    LAST
 };
 
 enum CellType {
