@@ -138,6 +138,7 @@ int main(int argn, char** args) {
     double* homogeneous_reaction_coef = new double[LAST];
     double* absorption_coeff = new double[LAST];
     double* heat_capacity = new double[LAST];
+    bool* is_product = new bool[LAST];
     double* reaction_rate_constant_factor = new double;
     double* activation_energy_forward = new double;
     double* activation_energy_reverse = new double;
@@ -174,7 +175,7 @@ int main(int argn, char** args) {
             tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI,
             C_inject, Pr_diffusion, SD_coeff, stoichiometric_coeff, homogeneous_reaction_coef, absorption_coeff, heat_capacity,
             reaction_rate_constant_factor, activation_energy_forward, activation_energy_reverse, activation_energy_catalyst,
-            vacant_centers_defficiency_coeff, reaction_heat_effect_Q);
+            vacant_centers_defficiency_coeff, reaction_heat_effect_Q, is_product);
     }
 
     cell_array = read_pgm(input_geometry_file_path);
@@ -229,7 +230,6 @@ int main(int argn, char** args) {
 
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
-
     // Initialize timer to measure performance
     Timer runtime;
 
@@ -246,10 +246,10 @@ int main(int argn, char** args) {
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
         calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
-            false,
-            false,
-            true,
-            true,
+            is_product[0],
+            is_product[1],
+            is_product[2],
+            is_product[3],
             stoichiometric_coeff[0],
             stoichiometric_coeff[1],
             stoichiometric_coeff[2],
@@ -386,6 +386,7 @@ int main(int argn, char** args) {
     delete[] homogeneous_reaction_coef;
     delete[] absorption_coeff;
     delete[] heat_capacity;
+    delete[] is_product;
     delete reaction_rate_constant_factor;
     delete activation_energy_forward ;
     delete activation_energy_reverse ;

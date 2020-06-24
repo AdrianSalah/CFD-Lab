@@ -44,7 +44,8 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	double* activation_energy_reverse,
 	double* activation_energy_catalyst,
     double* vacant_centers_defficiency_coeff,
-    double* reaction_heat_effect_Q
+    double* reaction_heat_effect_Q,
+	bool* is_product
                      )                     
 {
     // Reading Parameters
@@ -128,6 +129,12 @@ int read_parameters(std::string szFileName,       /* name of the file */
 				file >> heat_capacity[1];
 				file >> heat_capacity[2];
 				file >> heat_capacity[3];
+			}
+			if (var == "is_product") {
+				file >> is_product[0];
+				file >> is_product[1];
+				file >> is_product[2];
+				file >> is_product[3];
 			}
 			if (var == "activation_energy_forward")				file >> *activation_energy_forward;
 			if (var == "reaction_rate_constant_factor")		    file >> *reaction_rate_constant_factor;
