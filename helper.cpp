@@ -357,7 +357,65 @@ void init_matrix( double **m, int nrl, int nrh, int ncl, int nch, double a)
 	   m[i][j] = a;
 }
 
+void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENARIO_DAT_FILE, std::string& SCENARIO_PGM_FILE) {
+    switch (scenarioSpec)
+    {
+    case 1:
+        printf("lid driven cavity \n");
+        SCENARIO_NAME = "lid_driven_cavity";
+        SCENARIO_DAT_FILE = "../parameters/lid_driven_cavity.dat";
+        SCENARIO_PGM_FILE = "../geometry/lid_driven_cavity.pgm";
+        break;
 
+    case 2:
+        printf("plane shear \n");
+        SCENARIO_NAME = "plane_shear";
+        SCENARIO_DAT_FILE = "../parameters/plane_shear.dat";
+        SCENARIO_PGM_FILE = "../geometry/plane_shear.pgm";
+        break;
+
+    case 3:
+        printf("karman vortex street \n");
+        SCENARIO_NAME = "karman_vortex_street";
+        SCENARIO_DAT_FILE = "../parameters/karman_vortex_street.dat";
+        SCENARIO_PGM_FILE = "../geometry/karman_vortex_street.pgm";
+        break;
+
+    case 4:
+        printf("flow over step \n");
+        SCENARIO_NAME = "flow_over_step";
+        SCENARIO_DAT_FILE = "../parameters/flow_over_step.dat";
+        SCENARIO_PGM_FILE = "../geometry/flow_over_step.pgm";
+        break;
+
+    case 5:
+        printf("natural convection \n");
+        SCENARIO_NAME = "natural_convection";
+        SCENARIO_DAT_FILE = "../parameters/natural_convection.dat";
+        SCENARIO_PGM_FILE = "../geometry/natural_convection.pgm";
+        break;
+
+    case 6:
+        printf("fluid trap \n");
+        SCENARIO_NAME = "fluid_trap";
+        SCENARIO_DAT_FILE = "../parameters/fluid_trap.dat";
+        SCENARIO_PGM_FILE = "../geometry/fluid_trap.pgm";
+        break;
+
+    case 7:
+        printf("rayleigh benard convection \n");
+        SCENARIO_NAME = "rayleigh_benard_convection";
+        SCENARIO_DAT_FILE = "../parameters/rayleigh_benard_convection.dat";
+        SCENARIO_PGM_FILE = "../geometry/rayleigh_benard_convection.pgm";
+        break;
+
+    default:
+        printf("Couldn't select any secnario \n");
+        exit(EXIT_FAILURE);
+
+    }
+
+}
 /* allocates storage for a matrix */
 int **imatrix( int nrl, int nrh, int ncl, int nch )
 {
@@ -447,7 +505,7 @@ bool assert_problem_solvability(int** PGM_cell, Grid &grid) {
     return true;
 }
 
-int **read_pgm(const char *filename) {
+int **read_pgm(const char *filename, int imax, int jmax) {
     FILE *input = NULL;
     char line[1024];
     int levels;
@@ -480,7 +538,12 @@ int **read_pgm(const char *filename) {
 
     /* read the width and height */
     sscanf(line, "%d %d\n", &xsize, &ysize);
-    printf("Image size: %d x %d\n", xsize, ysize);
+    if (xsize == imax + 2 and ysize == jmax + 2)
+        printf("Image size: %d x %d\n", xsize, ysize);
+    else {
+        std::cout << "dimensions mismatch between pgm and input file... exiting";
+        exit(EXIT_FAILURE);
+    }
     
     /* get number of greyscale levels */
     fscanf(input, "%d", &levels);

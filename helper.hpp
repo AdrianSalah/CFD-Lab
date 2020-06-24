@@ -261,13 +261,13 @@ void free_imatrix( int **m, int nrl, int nrh, int ncl, int nch );
  */
 void init_imatrix( int **m, int nrl, int nrh, int ncl, int nch, int a);
 
-
+void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENARIO_DAT_FILE, std::string& SCENARIO_PGM_FILE);
 /**
  * reads in a ASCII pgm-file and returns the colour information in a two-dimensional integer array.
  */
 bool assert_problem_solvability(int** PGM_cell, Grid &grid);
 
-int **read_pgm(const char *filename);
+int **read_pgm(const char *filename, int imax, int jmax);
 
 
 /**
