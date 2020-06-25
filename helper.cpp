@@ -409,6 +409,13 @@ void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENAR
         SCENARIO_PGM_FILE = "../geometry/rayleigh_benard_convection.pgm";
         break;
 
+    case 8:
+        printf("catalyst_reactor \n");
+        SCENARIO_NAME = "catalyst_reactor";
+        SCENARIO_DAT_FILE = "../parameters/catalyst_reactor.dat";
+        SCENARIO_PGM_FILE = "../geometry/catalyst_reactor.pgm";
+        break;
+
     default:
         printf("Couldn't select any secnario \n");
         exit(EXIT_FAILURE);
