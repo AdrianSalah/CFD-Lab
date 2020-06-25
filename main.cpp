@@ -29,8 +29,8 @@ int main(int argn, char** args) {
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
 
-    //set scenario manually
-    scenarioSpec = 5;
+    // SET SCENARIO MANUALLY
+    scenarioSpec = 8;
 
     // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
     set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
@@ -68,6 +68,10 @@ int main(int argn, char** args) {
     }
 
     cell_array = read_pgm(input_geometry_file_path, *imax, *jmax);
+
+    // If all initial values are zero, introduce some small numbers to avoid infinities
+    if (CI[A] == 0 && CI[B] == 0 && CI[C] == 0 && CI[D] == 0)
+        CI[A] = 0.0000001;
 
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D]);
@@ -160,6 +164,7 @@ int main(int argn, char** args) {
             *SD_coeff,
             *vacant_centers_defficiency_coeff,
             *reaction_heat_effect_Q);
+        
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
@@ -219,7 +224,8 @@ int main(int argn, char** args) {
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
-    std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+    std::cout << "Timesteps total: " << timesteps_total << std::endl;
+    std::cout << "failed SOR iterations: " << count_failed_SOR << std::endl;
 
     //close input file
     fclose(parameterFile);
