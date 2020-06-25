@@ -8,20 +8,12 @@
 #include <sstream>
 #include "boundary_val.hpp"
 #include "Timer.h"
-
-#define BOUNDARY_SIZE 1
-
-int scenarioSpec;
-std::string SCENARIO_NAME;
-std::string SCENARIO_DAT_FILE;
-std::string SCENARIO_PGM_FILE;
-
+#include "parameters.h"
 
 //define scenarios using macros
 //#define SCENARIO_NAME "lid_driven_cavity"
 //#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
 //#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
-
 
 int main(int argn, char** args) {
 
@@ -40,119 +32,9 @@ int main(int argn, char** args) {
     // SET SCENARIO MANUALLY
     scenarioSpec = 8;
 
-    switch(scenarioSpec)
-    {
-        case 1:
-            printf("lid driven cavity \n");
-            SCENARIO_NAME = "lid_driven_cavity";
-            SCENARIO_DAT_FILE = "../parameters/lid_driven_cavity.dat";
-            SCENARIO_PGM_FILE = "../geometry/lid_driven_cavity.pgm";
-            break;
+    // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
+    set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
 
-        case 2:
-            printf("plane shear \n");
-            SCENARIO_NAME = "plane_shear";
-            SCENARIO_DAT_FILE = "../parameters/plane_shear.dat";
-            SCENARIO_PGM_FILE = "../geometry/plane_shear.pgm";
-            break;
-
-        case 3:
-            printf("karman vortex street \n");
-            SCENARIO_NAME = "karman_vortex_street";
-            SCENARIO_DAT_FILE = "../parameters/karman_vortex_street.dat";
-            SCENARIO_PGM_FILE = "../geometry/karman_vortex_street.pgm";
-            break;
-
-        case 4:
-            printf("flow over step \n");
-            SCENARIO_NAME = "flow_over_step";
-            SCENARIO_DAT_FILE = "../parameters/flow_over_step.dat";
-            SCENARIO_PGM_FILE = "../geometry/flow_over_step.pgm";
-            break;
-
-        case 5:
-            printf("natural convection \n");
-            SCENARIO_NAME = "natural_convection";
-            SCENARIO_DAT_FILE = "../parameters/natural_convection.dat";
-            SCENARIO_PGM_FILE = "../geometry/natural_convection.pgm";
-            break;
-
-        case 6:
-            printf("fluid trap \n");
-            SCENARIO_NAME = "fluid_trap";
-            SCENARIO_DAT_FILE = "../parameters/fluid_trap.dat";
-            SCENARIO_PGM_FILE = "../geometry/fluid_trap.pgm";
-            break;
-
-        case 7:
-            printf("rayleigh benard convection \n");
-            SCENARIO_NAME = "rayleigh_benard_convection";
-            SCENARIO_DAT_FILE = "../parameters/rayleigh_benard_convection.dat";
-            SCENARIO_PGM_FILE = "../geometry/rayleigh_benard_convection.pgm";
-            break;
-
-        case 8:
-            printf("catalyst_reactor \n");
-            SCENARIO_NAME = "catalyst_reactor";
-            SCENARIO_DAT_FILE = "../parameters/catalyst_reactor.dat";
-            SCENARIO_PGM_FILE = "../geometry/catalyst_reactor.pgm";
-            break;
-
-        default:
-            printf("Couldn't select any scenario \n");
-            exit(EXIT_FAILURE);
-
-    }
-
-
-
-    //initialize all relevant parameters
-    double* Re = new double;                /* reynolds number   */
-    double* UI = new double;                /* velocity x-direction */
-    double* VI = new double;                /* velocity y-direction */
-    double* PI = new double;                /* pressure */
-    double* GX = new double;                /* gravitation x-direction */
-    double* GY = new double;                /* gravitation y-direction */
-    double* t_end = new double;             /* end time */
-    double* xlength = new double;           /* length of the domain x-dir.*/
-    double* ylength = new double;           /* length of the domain y-dir.*/
-    double* dt = new double;                /* time step */
-    double* dx = new double;                /* length of a cell x-dir. */
-    double* dy = new double;                /* length of a cell y-dir. */
-    int* imax = new int;                    /* number of cells x-direction*/
-    int* jmax = new int;                    /* number of cells y-direction*/
-    double* alpha = new double;             /* uppwind differencing factor*/
-    double* omg = new double;               /* relaxation factor */
-    double* tau = new double;               /* safety factor for time step*/
-    int* itermax = new int;                 /* max. number of iterations  */
-    double* eps = new double;               /* accuracy bound for pressure*/
-    double* dt_value = new double;          /* time for output */
-    double* TI = new double;                /* Initial Temperature*/
-    double* T_h = new double;               /* Temperature of hot wall*/
-    double* T_c = new double;               /* Temperature of cold wall*/
-    double* CI = new double[LAST];                /* Initial Concentration */
-    double* C_inject = new double[LAST];       /* Concentration of the injected chemical */
-    double* Pr = new double;                /* Prandlt Number*/
-    double* Pr_diffusion = new double[LAST];      /* Prandlt Number for chemical diffusion*/
-    double* res = new double;               /* residual for SOR*/
-    double* beta= new double;               /* beta for fg calculation*/
-    double* v_inflow = new double;          /* boundary value for inflow BC */
-    double* u_inflow = new double;          /* boundary value for inflow BC */
-    double* kappa = new double;             /* thermal conductivity */
-    double* heat_flux = new double;         /* heat flux */
-    double* SD_coeff = new double;         /* surface development coefficient */
-    double* stoichiometric_coeff = new double[LAST];
-    double* homogeneous_reaction_coef = new double[LAST];
-    double* absorption_coeff = new double[LAST];
-    double* heat_capacity = new double[LAST];
-    bool* is_product = new bool[LAST];
-    double* reaction_rate_constant_factor = new double;
-    double* activation_energy_forward = new double;
-    double* activation_energy_reverse = new double;
-    double* activation_energy_catalyst = new double;
-    double* vacant_centers_defficiency_coeff = new double;
-    double* reaction_heat_effect_Q = new double;
-    int **cell_array = new int *;           /* array of geometry */
 
     //check if directory "output" exists, if not creates directory "output"
     check_dir_exists(SCENARIO_NAME);
@@ -176,8 +58,8 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);
     }
     else {
-        std::string parameterFile{input_parameter_file_path}; //relative path to plane_shear.dat file
-        //ready parameters from plane_shear.dat file and assign values to initalized parameters
+        std::string parameterFile{input_parameter_file_path}; //relative path to dat file
+        //ready parameters from dat file and assign values to initalized parameters
         read_parameters(parameterFile, Re, UI, VI, PI, GX, GY, t_end, xlength, ylength, dt, dx, dy, imax, jmax, alpha, omg,
             tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI,
             C_inject, Pr_diffusion, SD_coeff, stoichiometric_coeff, homogeneous_reaction_coef, absorption_coeff, heat_capacity,
@@ -185,7 +67,7 @@ int main(int argn, char** args) {
             vacant_centers_defficiency_coeff, reaction_heat_effect_Q, is_product);
     }
 
-    cell_array = read_pgm(input_geometry_file_path);
+    cell_array = read_pgm(input_geometry_file_path, *imax, *jmax);
 
     // If all initial values are zero, introduce some small numbers to avoid infinities
     if (CI[A] == 0 && CI[B] == 0 && CI[C] == 0 && CI[D] == 0)
@@ -202,7 +84,6 @@ int main(int argn, char** args) {
     //for output to vtk-file
     VTKHelper vtkOutput;
     
-    //TO DO: check wheather imax and jmax same as grid size in geometry file
     for (int j = grid.jmaxb() - 1; j >= 0; j--){
         for (int i = 0; i < grid.imaxb(); i++){
             //assign cell type
@@ -316,10 +197,6 @@ int main(int argn, char** args) {
         
         // Visualize u v p
         if (visualization_time_accumulator >= *dt_value) {
-            //grid.velocity(U, velocity_type::U);
-            //grid.velocity(V, velocity_type::V);
-            //grid.pressure(P);
-            //grid.temperature(T);
 
             //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
             vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
@@ -328,10 +205,6 @@ int main(int argn, char** args) {
         }
     }
 
-    //grid.velocity(U, velocity_type::U);
-    //grid.velocity(V, velocity_type::V);
-    //grid.pressure(P);
-    //grid.temperature(T);
 
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);

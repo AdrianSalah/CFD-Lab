@@ -1,5 +1,6 @@
 #include "init.hpp"
 #include <fstream>
+#include <assert.h>
 
 int read_parameters(std::string szFileName,       /* name of the file */
 	double* Re,                /* reynolds number   */
@@ -147,6 +148,24 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	}
 	*dx = *xlength / (double)(*imax);
 	*dy = *ylength / (double)(*jmax);
+	assert(*t_end > 0);
+	assert(*xlength > 0);
+	assert(*ylength > 0);
+	assert(*dt > 0);
+	assert(*imax > 2);
+	assert(*jmax > 2);
+	assert(*omg > 0 and *omg<2);
+	assert(*tau > 0 and *tau<=1);
+	assert(*itermax > 0);
+	assert(*eps > 0);
+	assert(*dt_value > 0 and *dt_value <= *t_end);
+	assert(*T_h > * T_c);
+	assert(*PR > 0);
+	assert(Pr_diffusion[0] > 0);
+	assert(Pr_diffusion[1] > 0);
+	assert(Pr_diffusion[2] > 0);
+	assert(Pr_diffusion[3] > 0);
+	assert(*heat_capacity > 0);
 
 	if (!file.good() && !file.eof()) return -1;
 
