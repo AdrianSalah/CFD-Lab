@@ -226,6 +226,22 @@ void boundaryvalues(int imax,
             conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
             conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
         }
+
+        // ---- DIRICHLET BC ---- //
+        // INFLOW from BOTTOM
+        if (grid.cell(i, 0)._cellType == INFLOW and grid.cell(i, 0)._nbNorth->_cellType == FLUID)
+        {
+            v_velocity.at(i).at(0) = v_inflow;
+            u_velocity.at(i).at(0) = u_inflow;
+        }
+
+        // ---- NEUMANN BC ---- //
+        // OUTFLOW to TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        {
+            v_velocity.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 1);
+            u_velocity.at(i).at(grid.jmaxb() - 2) = u_velocity.at(i).at(grid.jmaxb() - 1);
+        }
     }
 
     // left and right
@@ -562,6 +578,75 @@ void spec_boundary_val(
             temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j) + dx * heat_flux / kappa;
         }
     }
+
+    // Catalyst Reactor
+    else if (scenarioSpec == 8)
+    {
+        // ---- Neumann BC Concentration ---- //
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+            // LEFT Wall
+            conc_A.at(0).at(j) = conc_A.at(1).at(j);
+            conc_B.at(0).at(j) = conc_B.at(1).at(j);
+            conc_C.at(0).at(j) = conc_C.at(1).at(j);
+            conc_D.at(0).at(j) = conc_D.at(1).at(j);
+
+            // RIGHT Wall
+            conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
+            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
+            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
+            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
+        }
+
+        for (int i = 1; i < grid.imaxb() - 1; i++)
+        {
+            // TOP Wall
+            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
+        }
+
+        // ---- Dirichlet BC Concentration ---- //
+        // (no chemical components present in the feed flow)
+        // BOTTOM Wall
+        for (int i = 1; i < grid.imaxb() - 1; i++)
+        {
+            conc_A.at(i).at(0) = 2 * 0 - conc_A.at(i).at(1);
+            conc_B.at(i).at(0) = 2 * 0 - conc_B.at(i).at(1);
+            conc_C.at(i).at(0) = 2 * 0 - conc_C.at(i).at(1);
+            conc_D.at(i).at(0) = 2 * 0 - conc_D.at(i).at(1);
+        }
+
+        // Only these cells are non-zero: C_injection point at the BOTTOM wall (reactor feed flow)
+        // and if current time is <50% of t_end
+
+        if (time < t_end * 0.5)
+        {
+            for (int i = 9; i < 14; i++)
+            {
+                conc_A.at(i).at(0) = 2 * C_inject[ID::A] - conc_A.at(i).at(1);
+                conc_B.at(i).at(0) = 2 * C_inject[ID::B] - conc_B.at(i).at(1);
+            }
+        }
+
+
+        for (int i = 1; i < grid.imaxb() - 1; i++)
+        {
+            // INFLOW from BOTTOM
+            if (grid.cell(i, 0)._cellType == INFLOW and grid.cell(i, 0)._nbNorth->_cellType == FLUID)
+            {
+                // ---- Dirichlet BC Temperature ---- //
+                // T_gas = T_c BOTTOM Wall
+                temp.at(i).at(0) = 2 * T_c - temp.at(i).at(1);
+
+                // ---- Neumann BC Temperature ---- //
+                // TOP Wall
+                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
+            }
+        }
+    }
+
 
     grid.set_temperature(temp);
     grid.set_concentration(conc_A, ID::A);

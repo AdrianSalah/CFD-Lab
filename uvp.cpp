@@ -324,274 +324,194 @@ void calculate_chem_kinetics(
     grid.temperature(T);
     grid.pressure(P);
 
-    static double reaction_rate_forward;
-    static double reaction_rate_reverse;
-    static double reaction_rate_total;
-    static double reaction_intencity;
-
-    static double reaction_rate_const_forward;
-    static double reaction_rate_const_reverse;
-
-    static double partial_pressure_A;
-    static double partial_pressure_B;
-    static double partial_pressure_C;
-    static double partial_pressure_D;
-
-    // Plays role only in FORWARD reaction
-    static double forward_partial_pressure_A;
-    static double forward_partial_pressure_B;
-    static double forward_partial_pressure_C;
-    static double forward_partial_pressure_D;
-
-    // Plays role only in REVERSE reaction
-    static double reverse_partial_pressure_A;
-    static double reverse_partial_pressure_B;
-    static double reverse_partial_pressure_C;
-    static double reverse_partial_pressure_D;
-
-    static double molar_fraction_A;
-    static double molar_fraction_B;
-    static double molar_fraction_C;
-    static double molar_fraction_D;
     static double moles_total;
 
-    // Surface fraction defines the ratio of the catalyst surface with adsorbed molecules
-    // of the corresponding component, to the total surface of the catalyst
-    static double surface_fraction_A;
-    static double surface_fraction_B;
-    static double surface_fraction_C;
-    static double surface_fraction_D;
-    static double surface_fraction_denominator;
+    double fwd_homog_acting_conc[4];
+    double rev_homog_acting_conc[4];
+    double fwd_homog_react_const;
+    double rev_homog_react_const;
+    double fwd_homog_react_rate;
+    double rev_homog_react_rate;
+    double homog_intencity(0);
 
-    // Plays role only in FORWARD reaction
-    static double forward_fraction_A;
-    static double forward_fraction_B;
-    static double forward_fraction_C;
-    static double forward_fraction_D;
+    double fwd_heter_acting_surf[4];
+    double rev_heter_acting_surf[4];
+    double fwd_heter_react_const;
+    double rev_heter_react_const;
+    double fwd_heter_react_rate;
+    double rev_heter_react_rate;
+    double heter_intencity(0);
 
-    // Plays role only in REVERSE reaction
-    static double reverse_fraction_A;
-    static double reverse_fraction_B;
-    static double reverse_fraction_C;
-    static double reverse_fraction_D;
-
-    // Temperature change due to heat release/absorption
-    static double delta_T;
-
-    // Defines the surface fraction which should compensate the deficiency of vacant adsorption centres
-    static double surface_fraction_vacant_centers;
+    double total_react_intencity(0);
 
     // Defines the characteristic dimension of the catalyst surface
     // For our 2D case it is linear:
     // if FLUID cell is located to the NORTH or SOUTH of the CATALYST block, then dS = dx
     // if FLUID cell is located to the WEST of EAST of the CATALYST block, then dS = dy
-    static double dS;
+    static double dS_heter;
+    static double dS_homog;
 
-    // Molar heat capacity at constant pressure (Cp = R*(i + 2)/2), where i - gas degrees of freedom
-    // This is another important approximation of our model!
-    // In general, a polytropic process should be considered
-    static double Cp_mol_A;
-    static double Cp_mol_B;
-    static double Cp_mol_C;
-    static double Cp_mol_D;
-
-    Cp_mol_A = heat_capacity_A;
-    Cp_mol_B = heat_capacity_B;
-    Cp_mol_C = heat_capacity_C;
-    Cp_mol_D = heat_capacity_D;
+    // Surface fraction defines the ratio of the catalyst surface with adsorbed molecules
+    // of the corresponding component, to the total surface of the catalyst
+    double heter_surface_fraction[4];
+    static double surface_fraction_denominator;
 
     // Reduced heat capacity of the gas mixture
     static double reduced_heat_capacity;
+
+    int chem_time_steps = 50;
+    double chem_dt = dt / chem_time_steps;
 
     for (int i = 1; i < grid.imaxb() - 1; i++)
     {
         for (int j = 1; j < grid.jmaxb() - 1; j++)
         {
-            // If cell is a FLUID cell
-            if (grid.cell(i, j)._cellType > 1)
+            for (int k = 0; k < chem_time_steps; ++k)
             {
-                //// Compute molar fractions of each component
-                moles_total = C_A[i][j] + C_B[i][j] + C_C[i][j] + C_D[i][j];
-                //molar_fraction_A = C_A[i][j] / moles_total;
-                //molar_fraction_B = C_B[i][j] / moles_total;
-                //molar_fraction_C = C_C[i][j] / moles_total;
-                //molar_fraction_D = C_D[i][j] / moles_total;
-
-                // Compute reduced heat capacity (of the gas mix)
-                reduced_heat_capacity = (Cp_mol_A * C_A[i][j] + Cp_mol_B * C_B[i][j]
-                                       + Cp_mol_C * C_C[i][j] + Cp_mol_D * C_D[i][j]) / moles_total;
-
-                // REPLACED WITH MOLAR CONCENTRATIONS
-                //// Compute partial pressure of each component
-                //partial_pressure_A = molar_fraction_A * P[i][j];
-                //partial_pressure_B = molar_fraction_B * P[i][j];
-                //partial_pressure_C = molar_fraction_C * P[i][j];
-                //partial_pressure_D = molar_fraction_D * P[i][j];
-
-                // HETEROGENEOUS CATALYST REACTION
-                // reaction occurs along the surface of the catalyst
-                // If has at least one adjacent CATALYST block
-                if ((grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) ||
-                    (grid.cell(i, j)._nbSouth->_cellType == CellType::CATALYST) ||
-                    (grid.cell(i, j)._nbWest->_cellType == CellType::CATALYST) ||
-                    (grid.cell(i, j)._nbEast->_cellType == CellType::CATALYST))
+                // Reaction is computed only for FLUID cell
+                if (grid.cell(i, j)._cellType > 1)
                 {
-                    // Define the characteristic dimension (total area of the reaction surface)
-                    dS =  (grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) * dx
-                        + (grid.cell(i, j)._nbSouth->_cellType == CellType::CATALYST) * dx
-                        + (grid.cell(i, j)._nbWest->_cellType == CellType::CATALYST) * dy
-                        + (grid.cell(i, j)._nbEast->_cellType == CellType::CATALYST) * dy;
+                    //// Compute molar fractions of each component
+                    moles_total = C_A[i][j] + C_B[i][j] + C_C[i][j] + C_D[i][j];
 
-                    surface_fraction_denominator =
-                        1 + adsorption_coeff_A * partial_pressure_A
-                        + adsorption_coeff_B * partial_pressure_B
-                        + adsorption_coeff_C * partial_pressure_C
-                        + adsorption_coeff_D * partial_pressure_D;
+                    // Molar heat capacity at constant volume (Cv = R*i/2), where i - degrees of freedom of gas component
+                    // One of the model approximations. In general case, a polytropic process should be considered
+                    // Compute reduced heat capacity (of the gas mix)
+                    reduced_heat_capacity = (heat_capacity_A * C_A[i][j] + heat_capacity_B * C_B[i][j]
+                        + heat_capacity_C * C_C[i][j] + heat_capacity_D * C_D[i][j]) / moles_total;
 
-                    // Compute adsorbed surface fraction of each component
-                    //surface_fraction_A = adsorption_coeff_A * partial_pressure_A / surface_fraction_denominator;
-                    //surface_fraction_B = adsorption_coeff_B * partial_pressure_B / surface_fraction_denominator;
-                    //surface_fraction_C = adsorption_coeff_C * partial_pressure_C / surface_fraction_denominator;
-                    //surface_fraction_D = adsorption_coeff_D * partial_pressure_D / surface_fraction_denominator;
+                    // HOMOGENEOUS NON-CATALYST REACTION
+                    // Reaction occurs across the VOLUME of a cell
 
-                    // REPLACED WITH MOLAR CONCENTRATIONS
-                    surface_fraction_A = adsorption_coeff_A * C_A[i][j] / surface_fraction_denominator;
-                    surface_fraction_B = adsorption_coeff_B * C_B[i][j] / surface_fraction_denominator;
-                    surface_fraction_C = adsorption_coeff_C * C_C[i][j] / surface_fraction_denominator;
-                    surface_fraction_D = adsorption_coeff_D * C_D[i][j] / surface_fraction_denominator;
+                    // Define the characteristic dimension (total volume of a cell)
+                    dS_homog = dx * dy;
 
-                    surface_fraction_vacant_centers =
-                        1 - (surface_fraction_A + surface_fraction_B + surface_fraction_C + surface_fraction_D);
-
-                    // Updates surface fraction coefficients for FORWARD reaction 
+                    // Updates ACTING MOLAR CONCENTRATIONS for FORWARD reaction
                     // taking into consideration the type of component:
                     // only INITIAL COMPONENTS will be taken into account for computation
                     // i.e. the products will NOT be included into equation (multiplied by x1)
-                    forward_fraction_A = component_A_is_the_product ? 1 : surface_fraction_A;
-                    forward_fraction_B = component_B_is_the_product ? 1 : surface_fraction_B;
-                    forward_fraction_C = component_C_is_the_product ? 1 : surface_fraction_C;
-                    forward_fraction_D = component_D_is_the_product ? 1 : surface_fraction_D;
-
-                    // Constant of FORWARD CATALYST reaction
-                    reaction_rate_const_forward = reaction_rate_constant_factor *
-                        exp(-activation_energy_catalyst / (R_gas_const * T[i][j]));
-
-                    reaction_rate_forward = reaction_rate_const_forward
-                        * std::pow(forward_fraction_A, stoichiometric_coeff_a)
-                        * std::pow(forward_fraction_B, stoichiometric_coeff_b)
-                        * std::pow(forward_fraction_C, stoichiometric_coeff_c)
-                        * std::pow(forward_fraction_D, stoichiometric_coeff_d)
-                        * std::pow(surface_fraction_vacant_centers, vacant_centers_defficiency_coeff);
-
-                    // Updates surface fraction coefficients for REVERSE reaction
-                    // taking into consideration the type of component:
-                    // only PRODUCTS will be taken into account for computation
-                    // i.e. the initial components will NOT be included into equation (multiplied by x1)
-                    reverse_fraction_A = component_A_is_the_product ? surface_fraction_A : 1;
-                    reverse_fraction_B = component_B_is_the_product ? surface_fraction_B : 1;
-                    reverse_fraction_C = component_C_is_the_product ? surface_fraction_C : 1;
-                    reverse_fraction_D = component_D_is_the_product ? surface_fraction_D : 1;
-
-                    // Constant of the REVERSE reaction
-                    reaction_rate_const_reverse = reaction_rate_constant_factor *
-                        exp(-(activation_energy_catalyst-reaction_heat_effect_Q) / (R_gas_const * T[i][j]));
-
-                    reaction_rate_reverse = reaction_rate_const_reverse
-                        * std::pow(reverse_fraction_A, stoichiometric_coeff_a)
-                        * std::pow(reverse_fraction_B, stoichiometric_coeff_b)
-                        * std::pow(reverse_fraction_C, stoichiometric_coeff_c)
-                        * std::pow(reverse_fraction_D, stoichiometric_coeff_d);
-
-                    // Total effect from FORWARD AND REVERSE reactions
-                    reaction_rate_total = (reaction_rate_forward - reaction_rate_reverse);
-
-                    // Determines the rate of reaction in mols/sec
-                    reaction_intencity = reaction_rate_total * surface_development_coeff * dS * dt;
-
-                    // Update concentration of the components
-                    C_A[i][j] += sign_A * stoichiometric_coeff_a * reaction_intencity;
-                    C_B[i][j] += sign_B * stoichiometric_coeff_b * reaction_intencity;
-                    C_C[i][j] += sign_C * stoichiometric_coeff_c * reaction_intencity;
-                    C_D[i][j] += sign_D * stoichiometric_coeff_d * reaction_intencity;
-
-                    // Compute temperature change due to heat release/absorption
-                    T[i][j] += reaction_intencity * reaction_heat_effect_Q / reduced_heat_capacity;
-                }
-
-                // HOMOGENEOUS NON-CATALYST REACTION
-                // reaction occurs across the volume of a cell
-                else
-                {
-                    // Define the characteristic dimension (total area of the reaction surface)
-                    dS = dx * dy;
-
-                    // Updates partial pressure for FORWARD reaction 
-                    // taking into consideration the type of component:
-                    // only INITIAL COMPONENTS will be taken into account for computation
-                    // i.e. the products will NOT be included into equation (multiplied by x1)
-                    //forward_partial_pressure_A = component_A_is_the_product ? 1 : partial_pressure_A;
-                    //forward_partial_pressure_B = component_B_is_the_product ? 1 : partial_pressure_B;
-                    //forward_partial_pressure_C = component_C_is_the_product ? 1 : partial_pressure_C;
-                    //forward_partial_pressure_D = component_D_is_the_product ? 1 : partial_pressure_D;
-
-                    // REPLACED WITH MOLAR CONCENTRATIONS
-                    forward_partial_pressure_A = component_A_is_the_product ? 1 : C_A[i][j];
-                    forward_partial_pressure_B = component_B_is_the_product ? 1 : C_B[i][j];
-                    forward_partial_pressure_C = component_C_is_the_product ? 1 : C_C[i][j];
-                    forward_partial_pressure_D = component_D_is_the_product ? 1 : C_D[i][j];
+                    fwd_homog_acting_conc[0] = component_A_is_the_product ? 1 : C_A[i][j];
+                    fwd_homog_acting_conc[1] = component_B_is_the_product ? 1 : C_B[i][j];
+                    fwd_homog_acting_conc[2] = component_C_is_the_product ? 1 : C_C[i][j];
+                    fwd_homog_acting_conc[3] = component_D_is_the_product ? 1 : C_D[i][j];
 
                     // Constant of FORWARD reaction
-                    reaction_rate_const_forward = reaction_rate_constant_factor *
+                    fwd_homog_react_const = reaction_rate_constant_factor *
                         exp(-activation_energy_forward / (R_gas_const * T[i][j]));
 
-                    reaction_rate_forward = reaction_rate_const_forward
-                        * std::pow(forward_partial_pressure_A, homogeneous_reaction_coeff_a)
-                        * std::pow(forward_partial_pressure_B, homogeneous_reaction_coeff_b)
-                        * std::pow(forward_partial_pressure_C, homogeneous_reaction_coeff_c)
-                        * std::pow(forward_partial_pressure_D, homogeneous_reaction_coeff_d);
+                    fwd_homog_react_rate = fwd_homog_react_const
+                        * std::pow(fwd_homog_acting_conc[0], homogeneous_reaction_coeff_a)
+                        * std::pow(fwd_homog_acting_conc[1], homogeneous_reaction_coeff_b)
+                        * std::pow(fwd_homog_acting_conc[2], homogeneous_reaction_coeff_c)
+                        * std::pow(fwd_homog_acting_conc[3], homogeneous_reaction_coeff_d);
 
-                    // Updates partial pressure for REVERSE reaction 
+                    // Updates ACTING MOLAR CONCENTRATIONS for REVERSE reaction 
                     // taking into consideration the type of component:
                     // only PRODUCTS will be taken into account for computation
                     // i.e. the initial components will NOT be included into equation (multiplied by x1)
-                    //reverse_partial_pressure_A = component_A_is_the_product ? partial_pressure_A : 1;
-                    //reverse_partial_pressure_B = component_B_is_the_product ? partial_pressure_B : 1;
-                    //reverse_partial_pressure_C = component_C_is_the_product ? partial_pressure_C : 1;
-                    //reverse_partial_pressure_D = component_D_is_the_product ? partial_pressure_D : 1;
-
-                    // REPLACED WITH MOLAR CONCENTRATIONS
-                    reverse_partial_pressure_A = component_A_is_the_product ? C_A[i][j] : 1;
-                    reverse_partial_pressure_B = component_B_is_the_product ? C_B[i][j] : 1;
-                    reverse_partial_pressure_C = component_C_is_the_product ? C_C[i][j] : 1;
-                    reverse_partial_pressure_D = component_D_is_the_product ? C_D[i][j] : 1;
+                    rev_homog_acting_conc[0] = component_A_is_the_product ? C_A[i][j] : 1;
+                    rev_homog_acting_conc[1] = component_B_is_the_product ? C_B[i][j] : 1;
+                    rev_homog_acting_conc[2] = component_C_is_the_product ? C_C[i][j] : 1;
+                    rev_homog_acting_conc[3] = component_D_is_the_product ? C_D[i][j] : 1;
 
                     // Constant of the REVERSE reaction
-                    reaction_rate_const_reverse = reaction_rate_constant_factor *
+                    rev_homog_react_const = reaction_rate_constant_factor *
                         exp(-activation_energy_reverse / (R_gas_const * T[i][j]));
 
                     // NOTE the difference between stoichiometric and homogenous reaction coefficients
                     // Normally, they are different, because the former is the analytical value,
                     // the latter - taken exlusively from experiment
-                    reaction_rate_reverse = reaction_rate_const_reverse
-                        * std::pow(reverse_fraction_A, homogeneous_reaction_coeff_a)
-                        * std::pow(reverse_fraction_B, homogeneous_reaction_coeff_b)
-                        * std::pow(reverse_fraction_C, homogeneous_reaction_coeff_c)
-                        * std::pow(reverse_fraction_D, homogeneous_reaction_coeff_d);
+                    rev_homog_react_rate = rev_homog_react_const
+                        * std::pow(rev_homog_acting_conc[0], homogeneous_reaction_coeff_a)
+                        * std::pow(rev_homog_acting_conc[1], homogeneous_reaction_coeff_b)
+                        * std::pow(rev_homog_acting_conc[2], homogeneous_reaction_coeff_c)
+                        * std::pow(rev_homog_acting_conc[3], homogeneous_reaction_coeff_d);
 
-                    // Total effect from FORWARD AND REVERSE reactions
-                    reaction_rate_total = (reaction_rate_forward - reaction_rate_reverse);
+                    // Total effect from FORWARD AND REVERSE reactions, mols/sec
+                    homog_intencity = (fwd_homog_react_rate - rev_homog_react_const) * dS_homog;
 
-                    // Determines the rate of reaction in mols/sec
-                    reaction_intencity = reaction_rate_total * dS * dt;
+                    // HETEROGENEOUS CATALYST REACTION
+                    // Reaction occurs along the SURFACE of the catalyst block
+                    // If has at least one adjacent CATALYST block
+                    if ((grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) ||
+                        (grid.cell(i, j)._nbSouth->_cellType == CellType::CATALYST) ||
+                        (grid.cell(i, j)._nbWest->_cellType == CellType::CATALYST) ||
+                        (grid.cell(i, j)._nbEast->_cellType == CellType::CATALYST))
+
+                    {
+                        // Define the characteristic dimension (total area of the reaction surface)
+                        dS_heter =
+                            (grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) * dx
+                            + (grid.cell(i, j)._nbSouth->_cellType == CellType::CATALYST) * dx
+                            + (grid.cell(i, j)._nbWest->_cellType == CellType::CATALYST) * dy
+                            + (grid.cell(i, j)._nbEast->_cellType == CellType::CATALYST) * dy;
+
+                        surface_fraction_denominator = 1
+                            + adsorption_coeff_A * C_A[i][j]
+                            + adsorption_coeff_B * C_B[i][j]
+                            + adsorption_coeff_C * C_C[i][j]
+                            + adsorption_coeff_D * C_D[i][j];
+
+                        // Compute adsorbed surface fraction of each component
+                        heter_surface_fraction[0] = adsorption_coeff_A * C_A[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[1] = adsorption_coeff_B * C_B[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[2] = adsorption_coeff_C * C_C[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[3] = adsorption_coeff_D * C_D[i][j] / surface_fraction_denominator;
+
+                        // Updates surface fraction coefficients for FORWARD reaction 
+                        // taking into consideration the type of component:
+                        // only INITIAL COMPONENTS will be taken into account for computation
+                        // i.e. the products will NOT be included into equation (multiplied by x1)
+                        fwd_heter_acting_surf[0] = component_A_is_the_product ? 1 : heter_surface_fraction[0];
+                        fwd_heter_acting_surf[1] = component_B_is_the_product ? 1 : heter_surface_fraction[1];
+                        fwd_heter_acting_surf[2] = component_C_is_the_product ? 1 : heter_surface_fraction[2];
+                        fwd_heter_acting_surf[3] = component_D_is_the_product ? 1 : heter_surface_fraction[3];
+
+                        // Constant of the rate of FORWARD CATALYST reaction
+                        fwd_heter_react_const = reaction_rate_constant_factor *
+                            exp(-activation_energy_catalyst / (R_gas_const * T[i][j]));
+
+                        // Vacant centers defficiency coefficient can be also considered here... (look up theory if needed)
+                        fwd_heter_react_rate = fwd_heter_react_const
+                            * std::pow(fwd_heter_acting_surf[0], stoichiometric_coeff_a)
+                            * std::pow(fwd_heter_acting_surf[1], stoichiometric_coeff_b)
+                            * std::pow(fwd_heter_acting_surf[2], stoichiometric_coeff_c)
+                            * std::pow(fwd_heter_acting_surf[3], stoichiometric_coeff_d);
+
+                        // Updates surface fraction coefficients for REVERSE reaction
+                        // taking into consideration the type of component:
+                        // only PRODUCTS will be taken into account for computation
+                        // i.e. the initial components will NOT be included into equation (multiplied by x1)
+                        rev_heter_acting_surf[0] = component_A_is_the_product ? heter_surface_fraction[0] : 1;
+                        rev_heter_acting_surf[1] = component_B_is_the_product ? heter_surface_fraction[1] : 1;
+                        rev_heter_acting_surf[2] = component_C_is_the_product ? heter_surface_fraction[2] : 1;
+                        rev_heter_acting_surf[3] = component_D_is_the_product ? heter_surface_fraction[3] : 1;
+
+                        // Constant of the rate of REVERSE CATALYST reaction
+                        rev_heter_react_const = reaction_rate_constant_factor *
+                            exp(-(activation_energy_catalyst - reaction_heat_effect_Q) / (R_gas_const * T[i][j]));
+
+                        rev_heter_react_rate = rev_heter_react_const
+                            * std::pow(rev_heter_acting_surf[0], stoichiometric_coeff_a)
+                            * std::pow(rev_heter_acting_surf[1], stoichiometric_coeff_b)
+                            * std::pow(rev_heter_acting_surf[2], stoichiometric_coeff_c)
+                            * std::pow(rev_heter_acting_surf[3], stoichiometric_coeff_d);
+
+                        // Total effect from FORWARD AND REVERSE CATALYST reactions, mols/sec
+                        heter_intencity = (fwd_heter_react_rate - rev_heter_react_const) * surface_development_coeff * dS_heter;
+                    }
+
+                    // Total effect from HOMOGENEOUS reaction AND HETEROGENEOUS CATALYST reaction, mols/sec
+                    total_react_intencity = (homog_intencity + heter_intencity) * chem_dt;
 
                     // Update concentration of the components
-                    C_A[i][j] += sign_A * stoichiometric_coeff_a * reaction_intencity;
-                    C_B[i][j] += sign_B * stoichiometric_coeff_b * reaction_intencity;
-                    C_C[i][j] += sign_C * stoichiometric_coeff_c * reaction_intencity;
-                    C_D[i][j] += sign_D * stoichiometric_coeff_d * reaction_intencity;
+                    C_A[i][j] += sign_A * stoichiometric_coeff_a * total_react_intencity;
+                    C_B[i][j] += sign_B * stoichiometric_coeff_b * total_react_intencity;
+                    C_C[i][j] += sign_C * stoichiometric_coeff_c * total_react_intencity;
+                    C_D[i][j] += sign_D * stoichiometric_coeff_d * total_react_intencity;
 
-                    // Compute temperature change due to heat release/absorption
-                    T[i][j] += reaction_intencity * reaction_heat_effect_Q / reduced_heat_capacity;
+                    // Update temperature change due to heat release/absorption
+                    T[i][j] += total_react_intencity * (-reaction_heat_effect_Q) / reduced_heat_capacity;
                 }
             }
         }

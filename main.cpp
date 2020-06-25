@@ -37,8 +37,8 @@ int main(int argn, char** args) {
     else {std::cout << "more arguments given" << std::endl;
         exit(EXIT_FAILURE);}
 
-    //set scenario manually
-    scenarioSpec = 5;
+    // SET SCENARIO MANUALLY
+    scenarioSpec = 8;
 
     switch(scenarioSpec)
     {
@@ -91,8 +91,15 @@ int main(int argn, char** args) {
             SCENARIO_PGM_FILE = "../geometry/rayleigh_benard_convection.pgm";
             break;
 
+        case 8:
+            printf("catalyst_reactor \n");
+            SCENARIO_NAME = "catalyst_reactor";
+            SCENARIO_DAT_FILE = "../parameters/catalyst_reactor.dat";
+            SCENARIO_PGM_FILE = "../geometry/catalyst_reactor.pgm";
+            break;
+
         default:
-            printf("Couldn't select any secnario \n");
+            printf("Couldn't select any scenario \n");
             exit(EXIT_FAILURE);
 
     }
@@ -180,6 +187,10 @@ int main(int argn, char** args) {
 
     cell_array = read_pgm(input_geometry_file_path);
 
+    // If all initial values are zero, introduce some small numbers to avoid infinities
+    if (CI[A] == 0 && CI[B] == 0 && CI[C] == 0 && CI[D] == 0)
+        CI[A] = 0.0000001;
+
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D]);
 
@@ -227,7 +238,6 @@ int main(int argn, char** args) {
     //assign initial values FI, GI and RSI on the hole domain for F, G and RS
     init_fgrs(*imax, *jmax, F, G, RS, 0, 0, 0, grid);
 
-
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
     // Initialize timer to measure performance
@@ -273,6 +283,7 @@ int main(int argn, char** args) {
             *SD_coeff,
             *vacant_centers_defficiency_coeff,
             *reaction_heat_effect_Q);
+        
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
@@ -340,7 +351,8 @@ int main(int argn, char** args) {
     runtime.printTimer();
 
     //Print total number of timesteps and number of failed SOR iterations
-    std::cout << "#total of timesteps: " << timesteps_total << " #failed SOR iterations: " << count_failed_SOR << std::endl;
+    std::cout << "Timesteps total: " << timesteps_total << std::endl;
+    std::cout << "failed SOR iterations: " << count_failed_SOR << std::endl;
 
     //close input file
     fclose(parameterFile);
