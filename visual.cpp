@@ -198,6 +198,11 @@ void VTKHelper::printVTKFile(
     Velocity->SetName("velocity");
     Velocity->SetNumberOfComponents(3);
 
+    // Geometry Array
+    vtkDoubleArray* Geometry = vtkDoubleArray::New();
+    Geometry->SetName("geometry");
+    Velocity->SetNumberOfComponents(1);
+
     // Set number of tuples
     std::vector<std::vector<Cell>> cells;
     
@@ -226,6 +231,22 @@ void VTKHelper::printVTKFile(
     // CONCENTRATION of Component D
     std::vector<std::vector<double>> concentrationD;
     grid.concentration(concentrationD, ID::D);
+
+    // TODO: create new matrix "geometry" depending on the type of cell and write it to the vtk-file
+    // GEOMETRY OF OBSTACLES
+    std::vector<std::vector<double>> geometry;
+    geometry.resize(grid.imaxb(), std::vector<double>(grid.jmaxb(), 0));
+    // write cell in formation to matrix
+    for(int j = 0; j < grid.jmaxb(); j++) {
+        for(int i = 0; i < grid.imaxb(); i++) {
+            // print ones for obstacle cells
+            if(grid.cell(i,j)._cellType == NOSLIP)
+                geometry.at(i).at(j) = 1;
+            // print zeros for non-obstacle cells
+            else
+                geometry.at(i).at(j) = 0;
+        }
+    }
 
     
     // Print pressure from bottom to top
@@ -277,6 +298,16 @@ void VTKHelper::printVTKFile(
     }
 
 
+    // GEOMETRY
+    // Print geometry information from bottom to top
+    for (int j = 0; j < (grid.jmaxb() - 1); j++) {
+        for (int i = 0; i < (grid.imaxb() - 1); i++) {
+            Geometry->InsertNextTuple(&geometry.at(i).at(j));
+        }
+    }
+
+
+
 
 
     // Temp Velocity
@@ -323,8 +354,13 @@ void VTKHelper::printVTKFile(
     // Add Concentration to Structured Grid
     structuredGrid->GetCellData()->AddArray(ConcentrationD);
 
+    // Add Geometry to Structured Grid
+    structuredGrid->GetPointData()->AddArray(Geometry);
+
     // Add Velocity to Structured Grid
     structuredGrid->GetPointData()->AddArray(Velocity);
+
+
 
     // Write Grid
     vtkSmartPointer<vtkStructuredGridWriter> writer = vtkSmartPointer<vtkStructuredGridWriter>::New();
