@@ -70,7 +70,27 @@ void calculate_concentration(
     ID  id
 );
 
+void calculate_chem_kinetics(
+        double dt,
+        double dx,
+        double dy,
+        int imax,
+        int jmax,
+        Grid& grid,
+        const bool* is_product,
+        const double* stoichiometric_coeff,
+        const double* homogeneous_reaction_coeff,
+        const double* adsorption_coeff,
+        const double* heat_capacity,
+        const double& reaction_rate_constant_factor,
+        const double& activation_energy_forward,
+        const double& activation_energy_reverse,
+        const double& activation_energy_catalyst,
+        const double& surface_development_coeff,
+        const double& vacant_centers_defficiency_coeff,
+        const double& reaction_heat_effect_Q);
 
+/*
 void calculate_chem_kinetics(
     double dt,
     double dx,
@@ -106,6 +126,7 @@ void calculate_chem_kinetics(
     const double& vacant_centers_defficiency_coeff,
     const double& reaction_heat_effect_Q
 );
+ */
 
 
 /**
