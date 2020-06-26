@@ -167,6 +167,10 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	assert(Pr_diffusion[3] > 0);
 	assert(*heat_capacity > 0);
 
+	// If all initial values are zero, introduce some small numbers to avoid infinities
+	if (CI[0] == 0 && CI[1] == 0 && CI[2] == 0 && CI[3] == 0)
+		CI[1] = 0.0000001;
+
 	if (!file.good() && !file.eof()) return -1;
 
 	return 1;

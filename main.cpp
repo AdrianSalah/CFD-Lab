@@ -69,17 +69,15 @@ int main(int argn, char** args) {
 
     cell_array = read_pgm(input_geometry_file_path, *imax, *jmax);
 
-    // If all initial values are zero, introduce some small numbers to avoid infinities
-    if (CI[A] == 0 && CI[B] == 0 && CI[C] == 0 && CI[D] == 0)
-        CI[A] = 0.0000001;
-
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D]);
 
+    /*
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
+    */
  
     //for output to vtk-file
     VTKHelper vtkOutput;

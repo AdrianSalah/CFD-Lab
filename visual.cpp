@@ -201,7 +201,7 @@ void VTKHelper::printVTKFile(
     // Geometry Array
     vtkDoubleArray* Geometry = vtkDoubleArray::New();
     Geometry->SetName("geometry");
-    Velocity->SetNumberOfComponents(1);
+    Geometry->SetNumberOfComponents(1);
 
     // Set number of tuples
     std::vector<std::vector<Cell>> cells;
@@ -242,6 +242,9 @@ void VTKHelper::printVTKFile(
             // print ones for obstacle cells
             if(grid.cell(i,j)._cellType == NOSLIP)
                 geometry.at(i).at(j) = 1;
+            // print ones for CATALYST cells
+            else if (grid.cell(i, j)._cellType == CATALYST)
+                geometry.at(i).at(j) = 2;
             // print zeros for non-obstacle cells
             else
                 geometry.at(i).at(j) = 0;
