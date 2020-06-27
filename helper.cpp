@@ -471,14 +471,18 @@ void init_imatrix( int **m, int nrl, int nrh, int ncl, int nch, int a)
 	   m[i][j] = a;
 }
 
-bool assert_problem_solvability(int** PGM_cell, Grid &grid) {
+bool assert_problem_solvability(int** PGM_cellt, Grid &grid) {
 
-    int num_Fluid_Cells;
+    const int i_length= grid.imaxb();
+    const int j_length= grid.jmaxb();
+    int PGM_cell[i_length][j_length];
     int num_non_Fluid_Cells;
-    for (int i = 0; i < grid.imaxb() ; i++) 
-        for (int j = 0; j < grid.jmaxb() ; j++) 
+    int num_Fluid_Cells;
+    for (int i = 0; i < grid.imaxb(); i++)
+        for (int j = 0; j < grid.jmaxb(); j++) {
+            PGM_cell[i][j] = PGM_cellt[i][j];
             if (PGM_cell[i][j] > 4)PGM_cell[i][j] = 0;
-
+        }
     for (int i = 0; i < grid.imaxb(); i++) {
         if (PGM_cell[i][0] == 4 || PGM_cell[i][grid.jmaxb() -1] == 4)
             return false;

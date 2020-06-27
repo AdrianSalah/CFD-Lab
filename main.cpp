@@ -72,12 +72,12 @@ int main(int argn, char** args) {
     // Set up grid
     Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D]);
 
-    /*
+    
     if (!assert_problem_solvability(cell_array, grid)) {
         printf("PGM file is not solvable");
         exit(EXIT_FAILURE);
     }
-    */
+    
  
     //for output to vtk-file
     VTKHelper vtkOutput;
@@ -87,8 +87,8 @@ int main(int argn, char** args) {
             //assign cell type
             if (cell_array[i][j] == 0){grid.cell(i,j)._cellType = NOSLIP;}
             else if(cell_array[i][j] == 4){grid.cell(i,j)._cellType = FLUID;}
-            else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = OUTFLOW;}
-            else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = INFLOW;}
+            else if(cell_array[i][j] == 2){grid.cell(i,j)._cellType = OUTFLOW;}
+            else if(cell_array[i][j] == 3){grid.cell(i,j)._cellType = INFLOW;}
             else if(cell_array[i][j] == 1){grid.cell(i,j)._cellType = FREESLIP;}
             else if(cell_array[i][j] == 5){grid.cell(i,j)._cellType = CATALYST;}
             else{
