@@ -324,6 +324,9 @@ void calculate_chem_kinetics(
     double heter_intencity(0);
 
     double total_react_intencity(0);
+    double fixed_point_acting_conc_new;
+    double fixed_point_delta_conc;
+    double initial_conc;
 
     // Defines the characteristic dimension of the catalyst surface
     // For our 2D case it is linear:
@@ -340,82 +343,161 @@ void calculate_chem_kinetics(
     // Reduced heat capacity of the gas mixture
     static double reduced_heat_capacity;
 
-    int chem_time_steps = 50;
+    // Internal time steps to simulate chemical reaction
+    int chem_time_steps = 100;
     double chem_dt = dt / chem_time_steps;
+
+    // Define the accuracy and max iterations for chemical reaction fixed point solver
+    double epsilon_chem = INFINITY;
+    double max_iterations = 100;
+    double internal_iterations = 0;
 
     for (int i = 1; i < grid.imaxb() - 1; i++)
     {
         for (int j = 1; j < grid.jmaxb() - 1; j++)
         {
-            for (int k = 0; k < chem_time_steps; ++k)
+            // Reaction is computed only for FLUID cell
+            if (grid.cell(i, j)._cellType > 1)
             {
-                // Reaction is computed only for FLUID cell
-                if (grid.cell(i, j)._cellType > 1)
+                for (int internal_time_step = 0; internal_time_step < chem_time_steps; ++internal_time_step)
                 {
-                    //// Compute molar fractions of each component
-                    moles_total = C_A[i][j] + C_B[i][j] + C_C[i][j] + C_D[i][j];
+                    // Compute molar fractions of each component
+                    moles_total = C_A[i][j] + C_B[i][j] + C_C[i][j];
 
                     // Molar heat capacity at constant volume (Cv = R*i/2), where i - degrees of freedom of gas component
                     // One of the model approximations. In general case, a polytropic process should be considered
                     // Compute reduced heat capacity (of the gas mix)
-                    reduced_heat_capacity = (heat_capacity[ID::A] * C_A[i][j] + heat_capacity[ID::B] * C_B[i][j]
-                                             + heat_capacity[ID::C] * C_C[i][j] + heat_capacity[ID::D] * C_D[i][j]) / moles_total;
+                    reduced_heat_capacity =
+                        (heat_capacity[ID::A] * C_A[i][j]
+                        + heat_capacity[ID::B] * C_B[i][j]
+                        + heat_capacity[ID::C] * C_C[i][j]) / moles_total;
 
-                    // HOMOGENEOUS NON-CATALYST REACTION
-                    // Reaction occurs across the VOLUME of a cell
+                    // --------------------------------------------- //
+                    // ----- HOMOGENEOUS NON-CATALYST REACTION ----- //
+                    // --------------------------------------------- //
+
+                    // (reaction occurs across the VOLUME of a cell)
 
                     // Define the characteristic dimension (total volume of a cell)
                     dS_homog = dx * dy;
 
-                    // Updates ACTING MOLAR CONCENTRATIONS for FORWARD reaction
-                    // taking into consideration the type of component:
-                    // only INITIAL COMPONENTS will be taken into account for computation
-                    // i.e. the products will NOT be included into equation (multiplied by x1)
+                    // ----- IMPLICIT EQUATION FIXED POINT SOLVER ----- //
+                    initial_conc = C_A[i][j];
 
-                    //for(auto i = 0; i < 4; i++)
-                     //   is_product[i] ? fwd_homog_acting_conc[i] = 1 : fwd_homog_acting_conc[i]
-
-                    fwd_homog_acting_conc[0] = is_product[ID::A] ? 1 : C_A[i][j];
-                    fwd_homog_acting_conc[1] = is_product[ID::B] ? 1 : C_B[i][j];
-                    fwd_homog_acting_conc[2] = is_product[ID::C] ? 1 : C_C[i][j];
-                    fwd_homog_acting_conc[3] = is_product[ID::D] ? 1 : C_D[i][j];
+                    fwd_homog_acting_conc[ID::A] = C_A[i][j];
+                    fwd_homog_acting_conc[ID::B] = C_B[i][j];
 
                     // Constant of FORWARD reaction
                     fwd_homog_react_const = reaction_rate_constant_factor *
-                                            exp(-activation_energy_forward / (R_gas_const * T[i][j]));
+                        exp(-activation_energy_forward / (R_gas_const * T[i][j]));
 
-                    fwd_homog_react_rate = fwd_homog_react_const
-                                           * std::pow(fwd_homog_acting_conc[0], homogeneous_reaction_coeff[ID::A])
-                                           * std::pow(fwd_homog_acting_conc[1], homogeneous_reaction_coeff[ID::B])
-                                           * std::pow(fwd_homog_acting_conc[2], homogeneous_reaction_coeff[ID::C])
-                                           * std::pow(fwd_homog_acting_conc[3], homogeneous_reaction_coeff[ID::D]);
+                    epsilon_chem = INFINITY;
+                    internal_iterations = 0;
+
+                    // Loop while relative error is larger than 1e-6 AND max iterations not exceeded
+                    while ((epsilon_chem >= 1e-6) && (internal_iterations < max_iterations))
+                    {
+                        fixed_point_delta_conc =
+                            chem_dt * stoichiometric_coeff[ID::A] * fwd_homog_react_const
+                            * std::pow(fwd_homog_acting_conc[ID::A], homogeneous_reaction_coeff[ID::A])
+                            * std::pow(fwd_homog_acting_conc[ID::B], homogeneous_reaction_coeff[ID::B]);
+
+                        fixed_point_acting_conc_new = C_A[i][j] - fixed_point_delta_conc;
+
+                        // Compute relative error
+                        epsilon_chem =
+                            std::abs((fixed_point_acting_conc_new - fwd_homog_acting_conc[ID::A]) / fwd_homog_acting_conc[ID::A]);
+
+                        // Update acting concentration of component A
+                        fwd_homog_acting_conc[ID::A] = fixed_point_acting_conc_new;
+
+                        // Update acting concentration of component B:
+                        fwd_homog_acting_conc[ID::B] =
+                            (C_B[i][j] - stoichiometric_coeff[ID::B] / stoichiometric_coeff[ID::A] * fixed_point_delta_conc);
+
+                        // Increment internal iterations
+                        ++internal_iterations;
+                    }
+
+                    fwd_homog_acting_conc[ID::C] =
+                        (C_C[i][j] + stoichiometric_coeff[ID::C] / stoichiometric_coeff[ID::A] * fixed_point_delta_conc);
+
+                    // Update concentrations of components for FORWARD reaction
+                    // Set to zero, if the concentration tends to negative values because of the stability problem
+                    C_A[i][j] = (fwd_homog_acting_conc[ID::A] >= 0) ? fwd_homog_acting_conc[ID::A] : 0;
+                    C_B[i][j] = (fwd_homog_acting_conc[ID::B] >= 0) ? fwd_homog_acting_conc[ID::B] : 0;
+                    C_C[i][j] = (fwd_homog_acting_conc[ID::C] >= 0) ? fwd_homog_acting_conc[ID::C] : 0;
+
+                    // Update temperature change due to heat release/absorption
+                    T[i][j] +=
+                        dS_homog * (C_A[i][j] - initial_conc) / stoichiometric_coeff[ID::A]
+                        * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+
+
+                    // ----- IMPLICIT EQUATION FIXED POINT SOLVER ----- //
 
                     // Updates ACTING MOLAR CONCENTRATIONS for REVERSE reaction
-                    // taking into consideration the type of component:
-                    // only PRODUCTS will be taken into account for computation
-                    // i.e. the initial components will NOT be included into equation (multiplied by x1)
-                    rev_homog_acting_conc[0] = is_product[ID::A] ? C_A[i][j] : 1;
-                    rev_homog_acting_conc[1] = is_product[ID::B] ? C_B[i][j] : 1;
-                    rev_homog_acting_conc[2] = is_product[ID::C] ? C_C[i][j] : 1;
-                    rev_homog_acting_conc[3] = is_product[ID::D] ? C_D[i][j] : 1;
+                    initial_conc = C_C[i][j];
 
-                    // Constant of the REVERSE reaction
+                    rev_homog_acting_conc[ID::C] = C_C[i][j];
+
+                    // Constant of REVERSE reaction
                     rev_homog_react_const = reaction_rate_constant_factor *
-                                            exp(-activation_energy_reverse / (R_gas_const * T[i][j]));
+                        exp(-activation_energy_reverse / (R_gas_const * T[i][j]));
+
+                    epsilon_chem = INFINITY;
+                    internal_iterations = 0;
+
+                    // Loop while relative error is larger than 1e-6 AND max iterations not exceeded
+                    while ((epsilon_chem >= 1e-6) && (internal_iterations < max_iterations))
+                    {
+                        fixed_point_delta_conc =
+                            chem_dt * stoichiometric_coeff[ID::C] * rev_homog_react_const
+                            * std::pow(rev_homog_acting_conc[ID::C], homogeneous_reaction_coeff[ID::C]);
+
+                        fixed_point_acting_conc_new = C_C[i][j] - fixed_point_delta_conc;
+
+                        // Compute relative error
+                        epsilon_chem =
+                            std::abs((fixed_point_acting_conc_new - rev_homog_acting_conc[ID::C]) / rev_homog_acting_conc[ID::C]);
+
+                        // Update acting concentration of component C
+                        rev_homog_acting_conc[ID::C] = fixed_point_acting_conc_new;
+
+                        // Increment internal iterations
+                        ++internal_iterations;
+                    }
+
+                    rev_homog_acting_conc[ID::A] =
+                        (C_A[i][j] + stoichiometric_coeff[ID::A] / stoichiometric_coeff[ID::C] * fixed_point_delta_conc);
+                    rev_homog_acting_conc[ID::B] =
+                        (C_B[i][j] + stoichiometric_coeff[ID::B] / stoichiometric_coeff[ID::C] * fixed_point_delta_conc);
+
+                    // Update concentrations of components for REVERSE reaction
+                    // Set to zero, if the concentration tends to negative values because of the stability problem
+                    C_A[i][j] = (rev_homog_acting_conc[ID::A] >= 0) ? rev_homog_acting_conc[ID::A] : 0;
+                    C_B[i][j] = (rev_homog_acting_conc[ID::B] >= 0) ? rev_homog_acting_conc[ID::B] : 0;
+                    C_C[i][j] = (rev_homog_acting_conc[ID::C] >= 0) ? rev_homog_acting_conc[ID::C] : 0;
+
+                    // Update temperature change due to heat release/absorption (mind the minus sign)
+                    T[i][j] -=
+                        dS_homog * (C_C[i][j] - initial_conc) / stoichiometric_coeff[ID::C]
+                        * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+
 
                     // NOTE the difference between stoichiometric and homogenous reaction coefficients
                     // Normally, they are different, because the former is the analytical value,
                     // the latter - taken exlusively from experiment
-                    rev_homog_react_rate = rev_homog_react_const
-                                           * std::pow(rev_homog_acting_conc[0], homogeneous_reaction_coeff[ID::A])
-                                           * std::pow(rev_homog_acting_conc[1], homogeneous_reaction_coeff[ID::B])
-                                           * std::pow(rev_homog_acting_conc[2], homogeneous_reaction_coeff[ID::C])
-                                           * std::pow(rev_homog_acting_conc[3], homogeneous_reaction_coeff[ID::D]);
+                    rev_homog_react_rate =
+                        rev_homog_react_const * std::pow(rev_homog_acting_conc[ID::C], homogeneous_reaction_coeff[ID::C]);
 
                     // Total effect from FORWARD AND REVERSE reactions, mols/sec
                     homog_intencity = (fwd_homog_react_rate - rev_homog_react_const) * dS_homog;
 
-                    // HETEROGENEOUS CATALYST REACTION
+                    // ------------------------------------------- //
+                    // ----- HETEROGENEOUS CATALYST REACTION ----- //
+                    // ------------------------------------------- //
+
                     // Reaction occurs along the SURFACE of the catalyst block
                     // If has at least one adjacent CATALYST block
                     if ((grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) ||
@@ -434,22 +516,18 @@ void calculate_chem_kinetics(
                         surface_fraction_denominator = 1
                                                        + adsorption_coeff[ID::A] * C_A[i][j]
                                                        + adsorption_coeff[ID::B] * C_B[i][j]
-                                                       + adsorption_coeff[ID::C] * C_C[i][j]
-                                                       + adsorption_coeff[ID::D] * C_D[i][j];
+                                                       + adsorption_coeff[ID::C] * C_C[i][j];
 
                         // Compute adsorbed surface fraction of each component
-                        heter_surface_fraction[0] = adsorption_coeff[ID::A] * C_A[i][j] / surface_fraction_denominator;
-                        heter_surface_fraction[1] = adsorption_coeff[ID::B] * C_B[i][j] / surface_fraction_denominator;
-                        heter_surface_fraction[2] = adsorption_coeff[ID::C] * C_C[i][j] / surface_fraction_denominator;
-                        heter_surface_fraction[3] = adsorption_coeff[ID::D] * C_D[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[ID::A] = adsorption_coeff[ID::A] * C_A[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[ID::B] = adsorption_coeff[ID::B] * C_B[i][j] / surface_fraction_denominator;
+                        heter_surface_fraction[ID::C] = adsorption_coeff[ID::C] * C_C[i][j] / surface_fraction_denominator;
 
                         // Updates surface fraction coefficients for FORWARD reaction
                         // taking into consideration the type of component:
                         // only INITIAL COMPONENTS will be taken into account for computation
-                        // i.e. the products will NOT be included into equation (multiplied by x1)
-
-                        for(auto i = 0; i < 4; i++)
-                            fwd_heter_acting_surf[i] = is_product[i] ? 1 : heter_surface_fraction[i];
+                        fwd_heter_acting_surf[ID::A] = heter_surface_fraction[ID::A];
+                        fwd_heter_acting_surf[ID::B] = heter_surface_fraction[ID::B];
 
                         // Constant of the rate of FORWARD CATALYST reaction
                         fwd_heter_react_const = reaction_rate_constant_factor *
@@ -457,44 +535,37 @@ void calculate_chem_kinetics(
 
                         // Vacant centers defficiency coefficient can be also considered here... (look up theory if needed)
                         fwd_heter_react_rate = fwd_heter_react_const
-                                               * std::pow(fwd_heter_acting_surf[0], stoichiometric_coeff[ID::A])
-                                               * std::pow(fwd_heter_acting_surf[1], stoichiometric_coeff[ID::B])
-                                               * std::pow(fwd_heter_acting_surf[2], stoichiometric_coeff[ID::C])
-                                               * std::pow(fwd_heter_acting_surf[3], stoichiometric_coeff[ID::D]);
+                                               * std::pow(fwd_heter_acting_surf[ID::A], stoichiometric_coeff[ID::A])
+                                               * std::pow(fwd_heter_acting_surf[ID::B], stoichiometric_coeff[ID::B]);
 
                         // Updates surface fraction coefficients for REVERSE reaction
                         // taking into consideration the type of component:
-                        // only PRODUCTS will be taken into account for computation
-                        // i.e. the initial components will NOT be included into equation (multiplied by x1)
-                        for(auto i = 0; i < 4; i++)
-                            rev_heter_acting_surf[i] = is_product[i] ? heter_surface_fraction[i] : 1;
-
-
                         // Constant of the rate of REVERSE CATALYST reaction
+                        rev_heter_acting_surf[ID::C] = heter_surface_fraction[ID::C];
+
                         rev_heter_react_const = reaction_rate_constant_factor *
                                                 exp(-(activation_energy_catalyst - reaction_heat_effect_Q) / (R_gas_const * T[i][j]));
 
                         rev_heter_react_rate = rev_heter_react_const
-                                               * std::pow(rev_heter_acting_surf[0], stoichiometric_coeff[ID::A])
-                                               * std::pow(rev_heter_acting_surf[1], stoichiometric_coeff[ID::B])
-                                               * std::pow(rev_heter_acting_surf[2], stoichiometric_coeff[ID::C])
-                                               * std::pow(rev_heter_acting_surf[3], stoichiometric_coeff[ID::D]);
+                                               * std::pow(rev_heter_acting_surf[ID::C], stoichiometric_coeff[ID::C]);
 
                         // Total effect from FORWARD AND REVERSE CATALYST reactions, mols/sec
-                        heter_intencity = (fwd_heter_react_rate - rev_heter_react_const) * surface_development_coeff * dS_heter;
+                        heter_intencity = (fwd_heter_react_rate - rev_heter_react_const) * surface_development_coeff * dS_heter * chem_dt;
                     }
 
-                    // Total effect from HOMOGENEOUS reaction AND HETEROGENEOUS CATALYST reaction, mols/sec
-                    total_react_intencity = (homog_intencity + heter_intencity) * chem_dt;
-
                     // Update concentration of the components
-                    C_A[i][j] += signs[ID::A] * stoichiometric_coeff[ID::A] * total_react_intencity;
-                    C_B[i][j] += signs[ID::B] * stoichiometric_coeff[ID::B] * total_react_intencity;
-                    C_C[i][j] += signs[ID::C] * stoichiometric_coeff[ID::C] * total_react_intencity;
-                    C_D[i][j] += signs[ID::D] * stoichiometric_coeff[ID::D] * total_react_intencity;
+                    C_A[i][j] += -stoichiometric_coeff[ID::A] * heter_intencity;
+                    C_B[i][j] += -stoichiometric_coeff[ID::B] * heter_intencity;
+                    C_C[i][j] += stoichiometric_coeff[ID::C] * heter_intencity;
+                    
+                    // Check if the values are not negative
+                    C_A[i][j] = (C_A[i][j] >= 0) ? C_A[i][j] : 0;
+                    C_B[i][j] = (C_B[i][j] >= 0) ? C_B[i][j] : 0;
+                    C_C[i][j] = (C_C[i][j] >= 0) ? C_C[i][j] : 0;
 
                     // Update temperature change due to heat release/absorption
-                    T[i][j] += total_react_intencity * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+                    T[i][j] -= dS_homog * heter_intencity / stoichiometric_coeff[ID::C]
+                        * (-reaction_heat_effect_Q) / reduced_heat_capacity;
                 }
             }
         }
