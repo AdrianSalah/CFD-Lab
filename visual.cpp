@@ -324,10 +324,12 @@ void VTKHelper::printVTKFile(
     grid.velocity(velocity_V, velocity_type::V);
 
     // Print Velocity from bottom to top
-    for(int j = 0; j < grid.jmaxb()-1; j++) {
-            for(int i = 0; i < grid.imaxb()-1; i++) {
-            vel[0] = (velocity_U.at(i).at(j) + velocity_U.at(i).at(j+1)) * 0.5;
-            vel[1] = (velocity_V.at(i).at(j) + velocity_V.at(i+1).at(j)) * 0.5;
+    for(int j = 1; j < grid.jmaxb(); j++)
+    {
+        for(int i = 1; i < grid.imaxb(); i++)
+        {
+            vel[0] = (velocity_U.at(i - 1).at(j) + velocity_U.at(i).at(j)) * 0.5;
+            vel[1] = (velocity_V.at(i).at(j - 1) + velocity_V.at(i).at(j)) * 0.5;
             Velocity->InsertNextTuple(vel);
         }
     }

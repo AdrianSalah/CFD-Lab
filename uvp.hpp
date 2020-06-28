@@ -70,6 +70,24 @@ void calculate_concentration(
     ID  id
 );
 
+
+void homogeneous_noncatalyst_reaction(
+    double& C_A_cell,
+    double& C_B_cell,
+    double& C_C_cell,
+    double& T_cell,
+    const double* stoichiometric_coeff,
+    const double* homogeneous_reaction_coeff,
+    const double& activation_energy_forward,
+    const double& activation_energy_reverse,
+    const double& reaction_rate_constant_factor,
+    const double& reaction_heat_effect_Q,
+    const double& reduced_heat_capacity,
+    const double& chem_dt,
+    const double& dS_homog,
+    const int& max_fixed_point_iterations);
+
+
 void calculate_chem_kinetics(
         double dt,
         double dx,
@@ -89,45 +107,6 @@ void calculate_chem_kinetics(
         const double& surface_development_coeff,
         const double& vacant_centers_defficiency_coeff,
         const double& reaction_heat_effect_Q);
-
-/*
-void calculate_chem_kinetics(
-    double dt,
-    double dx,
-    double dy,
-    int imax,
-    int jmax,
-    Grid& grid,
-    const bool& component_A_is_the_product,
-    const bool& component_B_is_the_product,
-    const bool& component_C_is_the_product,
-    const bool& component_D_is_the_product,
-    const double& stoichiometric_coeff_a,
-    const double& stoichiometric_coeff_b,
-    const double& stoichiometric_coeff_c,
-    const double& stoichiometric_coeff_d,
-    const double& homogeneous_reaction_coeff_a,
-    const double& homogeneous_reaction_coeff_b,
-    const double& homogeneous_reaction_coeff_c,
-    const double& homogeneous_reaction_coeff_d,
-    const double& adsorption_coeff_A,
-    const double& adsorption_coeff_B,
-    const double& adsorption_coeff_C,
-    const double& adsorption_coeff_D,
-    const double& heat_capacity_A,
-    const double& heat_capacity_B,
-    const double& heat_capacity_C,
-    const double& heat_capacity_D,
-    const double& reaction_rate_constant_factor,
-    const double& activation_energy_forward,
-    const double& activation_energy_reverse,
-    const double& activation_energy_catalyst,
-    const double& surface_development_coeff,
-    const double& vacant_centers_defficiency_coeff,
-    const double& reaction_heat_effect_Q
-);
- */
-
 
 /**
  * This operation computes the right hand side of the pressure poisson equation.

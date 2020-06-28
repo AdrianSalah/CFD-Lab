@@ -633,15 +633,20 @@ void spec_boundary_val(
 
         for (int i = 1; i < grid.imaxb() - 1; i++)
         {
-            // INFLOW from BOTTOM
-            if (grid.cell(i, 0)._cellType == INFLOW and grid.cell(i, 0)._nbNorth->_cellType == FLUID)
+            // ---- Dirichlet BC Temperature ---- //
+            // INFLOW from BOTTOM (T_gas = T_h)
+            if (grid.cell(i, 0)._cellType == INFLOW
+                && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
-                // ---- Dirichlet BC Temperature ---- //
-                // T_gas = T_c BOTTOM Wall
-                temp.at(i).at(0) = 2 * T_c - temp.at(i).at(1);
+                //temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
+                temp.at(i).at(0) = T_h;
+            }
 
-                // ---- Neumann BC Temperature ---- //
-                // TOP Wall
+            // ---- Neumann BC Temperature ---- //
+            // TOP Wall
+            if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
+                && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+            {
                 temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
             }
         }
