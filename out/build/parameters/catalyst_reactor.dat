@@ -94,7 +94,7 @@ Pr_diffusion						3.0    4.0     10.0   20.0
 homogeneous_reaction_coef			1      3       2      1
 absorption_coeff					3      4       10     3
 heat_capacity						29.1   29.1    33.3   20.8
-reaction_rate_constant_factor		100
+reaction_rate_constant_factor		36374000000
 activation_energy_forward			160000
 activation_energy_reverse			252280
 activation_energy_catalyst			70000

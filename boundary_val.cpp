@@ -619,9 +619,9 @@ void spec_boundary_val(
         }
 
         // Only these cells are non-zero: C_injection point at the BOTTOM wall (reactor feed flow)
-        // and if current time is <50% of t_end
+        // and if current time is <40% of t_end
 
-        if (time < t_end * 0.5)
+        if (time < t_end * 0.4)
         {
             for (int i = 9; i < 14; i++)
             {
@@ -638,8 +638,8 @@ void spec_boundary_val(
             if (grid.cell(i, 0)._cellType == INFLOW
                 && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
-                //temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-                temp.at(i).at(0) = T_h;
+                temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
+                //temp.at(i).at(0) = T_h;
             }
 
             // ---- Neumann BC Temperature ---- //

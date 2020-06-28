@@ -298,96 +298,101 @@ void homogeneous_noncatalyst_reaction(
 
     static double reaction_final_conc;
 
-    // Determine which component is taken in deficiency, defining aliases
-    // The program can be extended for extra components
-    if (C_A_cell / stoichiometric_coeff[ID::A] <= C_B_cell / stoichiometric_coeff[ID::B])
+    // It makes sense to compute the reaction if there are initial components available
+    // Otherwise skip the forward reaction computation
+    if (C_A_cell > 0 && C_B_cell > 0)
     {
-        initial_conc = C_A_cell;
-
-        fwd_homog_acting_conc_deficit = C_A_cell;
-        fwd_homog_acting_conc_deficit_alias = &C_A_cell;
-        fwd_homog_stoich_coeff_deficit = stoichiometric_coeff[ID::A];
-        homog_react_coeff_deficit = homogeneous_reaction_coeff[ID::A];
-
-        fwd_homog_acting_conc_excess[0] = C_B_cell;
-        fwd_homog_acting_conc_excess_alias[0] = &C_B_cell;
-        fwd_homog_stoich_coeff_excess[0] = stoichiometric_coeff[ID::B];
-        homog_react_coeff_excess[0] = homogeneous_reaction_coeff[ID::B];
-    }
-    else
-    {
-        initial_conc = C_B_cell;
-
-        fwd_homog_acting_conc_deficit = C_B_cell;
-        fwd_homog_acting_conc_deficit_alias = &C_B_cell;
-        fwd_homog_stoich_coeff_deficit = stoichiometric_coeff[ID::B];
-        homog_react_coeff_deficit = homogeneous_reaction_coeff[ID::B];
-
-        fwd_homog_acting_conc_excess[0] = C_A_cell;
-        fwd_homog_acting_conc_excess_alias[0] = &C_A_cell;
-        fwd_homog_stoich_coeff_excess[0] = stoichiometric_coeff[ID::A];
-        homog_react_coeff_excess[0] = homogeneous_reaction_coeff[ID::A];
-    }
-
-    // Constant of FORWARD reaction
-    fwd_homog_react_const = reaction_rate_constant_factor *
-        exp(-activation_energy_forward / (R_gas_const * T_cell));
-
-    static double epsilon_chem;
-    static int internal_iterations;
-    epsilon_chem = INFINITY;
-    internal_iterations = 0;
-
-    // Loop while relative error is larger than 1e-6 AND max iterations not exceeded
-    while ((epsilon_chem >= 1e-6) && (internal_iterations < max_fixed_point_iterations))
-    {
-        fixed_point_delta_conc =
-            chem_dt * fwd_homog_stoich_coeff_deficit * fwd_homog_react_const
-            * std::pow(fwd_homog_acting_conc_deficit, homog_react_coeff_deficit)
-            * std::pow(fwd_homog_acting_conc_excess[0], homog_react_coeff_excess[0]);
-
-        // If the reaction rate is fast enough to completely deplete the component
-        // which may result in having negative concentration of the components,
-        // then it can be considered the reaction has been completed
-        reaction_final_conc = *fwd_homog_acting_conc_deficit_alias - fixed_point_delta_conc;
-        if (reaction_final_conc < 0)
+        // Determine which component is taken in deficiency, defining aliases
+        // The program can be extended for extra components
+        if (C_A_cell / stoichiometric_coeff[ID::A] <= C_B_cell / stoichiometric_coeff[ID::B])
         {
-            fixed_point_delta_conc = *fwd_homog_acting_conc_deficit_alias;
-            fixed_point_acting_conc_new = 0;
+            initial_conc = C_A_cell;
+
+            fwd_homog_acting_conc_deficit = C_A_cell;
+            fwd_homog_acting_conc_deficit_alias = &C_A_cell;
+            fwd_homog_stoich_coeff_deficit = stoichiometric_coeff[ID::A];
+            homog_react_coeff_deficit = homogeneous_reaction_coeff[ID::A];
+
+            fwd_homog_acting_conc_excess[0] = C_B_cell;
+            fwd_homog_acting_conc_excess_alias[0] = &C_B_cell;
+            fwd_homog_stoich_coeff_excess[0] = stoichiometric_coeff[ID::B];
+            homog_react_coeff_excess[0] = homogeneous_reaction_coeff[ID::B];
         }
         else
-            fixed_point_acting_conc_new = reaction_final_conc;
+        {
+            initial_conc = C_B_cell;
 
-        // Compute relative error
-        epsilon_chem =
-            std::abs((fixed_point_acting_conc_new - fwd_homog_acting_conc_deficit)
-                / fwd_homog_acting_conc_deficit);
+            fwd_homog_acting_conc_deficit = C_B_cell;
+            fwd_homog_acting_conc_deficit_alias = &C_B_cell;
+            fwd_homog_stoich_coeff_deficit = stoichiometric_coeff[ID::B];
+            homog_react_coeff_deficit = homogeneous_reaction_coeff[ID::B];
 
-        // Update acting concentration of the component in deficit
-        fwd_homog_acting_conc_deficit = fixed_point_acting_conc_new;
+            fwd_homog_acting_conc_excess[0] = C_A_cell;
+            fwd_homog_acting_conc_excess_alias[0] = &C_A_cell;
+            fwd_homog_stoich_coeff_excess[0] = stoichiometric_coeff[ID::A];
+            homog_react_coeff_excess[0] = homogeneous_reaction_coeff[ID::A];
+        }
 
-        // Update acting concentration of the components in excess:
-        fwd_homog_acting_conc_excess[0] =
-            (*fwd_homog_acting_conc_excess_alias[0]
-                - fwd_homog_stoich_coeff_excess[0] / fwd_homog_stoich_coeff_deficit * fixed_point_delta_conc);
+        // Constant of FORWARD reaction
+        fwd_homog_react_const = reaction_rate_constant_factor *
+            exp(-activation_energy_forward / (R_gas_const * T_cell));
 
-        // Increment internal iterations
-        ++internal_iterations;
-    }
+        static double epsilon_chem;
+        static int internal_iterations;
+        epsilon_chem = INFINITY;
+        internal_iterations = 0;
 
-    fwd_homog_acting_conc[ID::C] =
-        (C_C_cell + stoichiometric_coeff[ID::C] / fwd_homog_stoich_coeff_deficit * fixed_point_delta_conc);
+        // Loop while relative error is larger than 1e-6 AND max iterations not exceeded
+        while ((epsilon_chem >= 1e-6) && (internal_iterations < max_fixed_point_iterations))
+        {
+            fixed_point_delta_conc =
+                chem_dt * fwd_homog_stoich_coeff_deficit * fwd_homog_react_const
+                * std::pow(fwd_homog_acting_conc_deficit, homog_react_coeff_deficit)
+                * std::pow(fwd_homog_acting_conc_excess[0], homog_react_coeff_excess[0]);
 
-    // Update concentrations of components for FORWARD reaction
-    *fwd_homog_acting_conc_deficit_alias = fwd_homog_acting_conc_deficit;
-    *fwd_homog_acting_conc_excess_alias[0] = fwd_homog_acting_conc_excess[0];
-    C_C_cell = (fwd_homog_acting_conc[ID::C] > 0) ? fwd_homog_acting_conc[ID::C] : 0;
+            // If the reaction rate is fast enough to completely deplete the component
+            // which may result in having negative concentration of the components,
+            // then it can be considered the reaction has been completed
+            reaction_final_conc = *fwd_homog_acting_conc_deficit_alias - fixed_point_delta_conc;
+            if (reaction_final_conc < 0)
+            {
+                fixed_point_delta_conc = *fwd_homog_acting_conc_deficit_alias;
+                fixed_point_acting_conc_new = 0;
+            }
+            else
+                fixed_point_acting_conc_new = reaction_final_conc;
+
+            // Compute relative error
+            epsilon_chem =
+                std::abs((fixed_point_acting_conc_new - fwd_homog_acting_conc_deficit)
+                    / fwd_homog_acting_conc_deficit);
+
+            // Update acting concentration of the component in deficit
+            fwd_homog_acting_conc_deficit = fixed_point_acting_conc_new;
+
+            // Update acting concentration of the components in excess:
+            fwd_homog_acting_conc_excess[0] =
+                (*fwd_homog_acting_conc_excess_alias[0]
+                    - fwd_homog_stoich_coeff_excess[0] / fwd_homog_stoich_coeff_deficit * fixed_point_delta_conc);
+
+            // Increment internal iterations
+            ++internal_iterations;
+        }
+
+        fwd_homog_acting_conc[ID::C] =
+            (C_C_cell + stoichiometric_coeff[ID::C] / fwd_homog_stoich_coeff_deficit * fixed_point_delta_conc);
+
+        // Update concentrations of components for FORWARD reaction
+        *fwd_homog_acting_conc_deficit_alias = fwd_homog_acting_conc_deficit;
+        *fwd_homog_acting_conc_excess_alias[0] = fwd_homog_acting_conc_excess[0];
+        C_C_cell = (fwd_homog_acting_conc[ID::C] > 0) ? fwd_homog_acting_conc[ID::C] : 0;
 
     
-    // Update temperature change due to heat release/absorption
-    T_cell +=
-        dS_homog * (*fwd_homog_acting_conc_deficit_alias - initial_conc) / fwd_homog_stoich_coeff_deficit
-        * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+        // Update temperature change due to heat release/absorption
+        T_cell +=
+            dS_homog * (*fwd_homog_acting_conc_deficit_alias - initial_conc) / fwd_homog_stoich_coeff_deficit
+            * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+    }
 
 
     // ++++++++ TURNED OFF TO ISOLATE FORWARD HOMOGENEOUS REACTION FOR DEBUGGING ++++++++ //
