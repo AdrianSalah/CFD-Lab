@@ -61,7 +61,7 @@ void calculate_fg(
     static double d_uv_dy;
 
     // ------ Discretisation of differential operators of F ----- //
-    for (int i = 2 + (il == 0); i < (ir - il + 3) - (ir == (grid.imaxb() - 1)); i++) {
+    for (int i = 2 + (il == 0); i < (ir - il + 3) - 2*(ir == (grid.imaxb() - 1)); i++) {
 
         for (int j = 1 + (jb == 0); j < (jt - jb + 2) - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
@@ -109,7 +109,7 @@ void calculate_fg(
 
     for (int i = 1 + (il == 0); i < ir - il + 2 - (ir == (grid.imaxb() - 1)); i++) {
 
-        for (int j = 2 + (jb == 0); j < jt - jb + 3 - (jt == (grid.jmaxb() - 1)); j++)
+        for (int j = 2 + (jb == 0); j < jt - jb + 3 - 2*(jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
             {
             //second derivative of v with respect to x
@@ -349,7 +349,7 @@ void calculate_uv(
 
 
 
-    for (int i = 2 + (il == 0); i < ir - il + 3 - (ir == (grid.imaxb() - 1)); i++)
+    for (int i = 2 + (il == 0); i < ir - il + 3 - 2*(ir == (grid.imaxb() - 1)); i++)
     {
         for (int j = 1 + (jb == 0); j < jt - jb + 2 - (jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbEast->_cellType == FLUID)
@@ -360,7 +360,7 @@ void calculate_uv(
 
     for (int i = 1 + (il == 0); i < ir - il + 2 - (ir == (grid.imaxb() - 1)); i++)
     {
-        for (int j = 2 + (jb == 0); j < jt - jb + 3 - (jt == (grid.jmaxb() - 1)); j++)
+        for (int j = 2 + (jb == 0); j < jt - jb + 3 - 2*(jt == (grid.jmaxb() - 1)); j++)
             //if (grid.cell(i, j)._cellType == FLUID && grid.cell(i, j)._nbNorth->_cellType == FLUID)
             {
             v_velocity.at(i).at(j) = G.at(i).at(j) - dt / dy * (pressure.at(i).at(j) - pressure.at(i).at(j - 1));

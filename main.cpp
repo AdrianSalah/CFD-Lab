@@ -233,7 +233,6 @@ int main(int argn, char** args) {
     }
      */
 
-
     init_parallel(*iproc, *jproc, *imax, *jmax, &myrank, il, ir, jb, jt, rank_l, rank_r, rank_b, rank_t, omg_i, omg_j, num_proc);
  
         //std::cout << "myrank: " << myrank << std::endl;
@@ -310,7 +309,7 @@ int main(int argn, char** args) {
             //here we set time steps manually
             calculate_dt(*Re, *Pr, *tau, dt, *dx, *dy, *imax, *jmax, grid, *il, *ir, *jb, *jt);
             //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *T_h, *T_c, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec);
-            spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt);
+            spec_boundary_val(grid, *u_inflow, *v_inflow, *T_c, *T_h, *kappa, *heat_flux, U, V, P, T, F, G, *il, *ir, *jb, *jt, myrank);
             //calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, il, ir, jb, jt);
             calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid,U,V, F, G, *il, *ir, *jb, *jt);
             calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid, *il, *ir, *jb, *jt);
@@ -320,11 +319,16 @@ int main(int argn, char** args) {
 
             //reset residual before new SOR iteration
             *res = INFINITY;
-
+            if (myrank == 0 and timesteps_total == 1) {
+                for (int j = *jt - *jb - 7; j < *jt - *jb + 3; j++) {
+                    std::cout << P[1][j] << std::endl;
+                }
+                std::cout << "\n\n\n";
+            }
             while ((*res > * eps) && (current_timestep_iteration <= *itermax)) {
                 sor(*omg, *dx, *dy, *imax, *jmax, grid, RS,P, res, res_temp, *il, *ir, *jb, *jt, myrank);
                 current_timestep_iteration++;
-                /*std::cout << *res << std::endl;*/
+                //std::cout << *res << std::endl;
                 MPI_Status status;
                 pressure_comm(P, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSend, bufRecv, MPI_STATUS_IGNORE, myrank);
             }
@@ -334,9 +338,12 @@ int main(int argn, char** args) {
 
             //f_comm(F, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendF, bufRecvF, MPI_STATUS_IGNORE, myrank);
             //g_comm(G, *il, *ir, *jb, *jt, *rank_l, *rank_r, *rank_b, *rank_t, bufSendG, bufRecvG, MPI_STATUS_IGNORE, myrank);
-
-
-
+            //if (myrank == 0 and timesteps_total == 100) {
+            //    for (int j = jt - jb -7; j < jt - jb + 3; j++) {
+            //        std::cout << P[ir - il + 2][j] << std::endl;
+            //    }
+            //    std::cout << std::endl << std::endl;
+            //}
 
             // for DEBUGGING
             //double summ = 0;
@@ -359,6 +366,12 @@ int main(int argn, char** args) {
             timesteps_total++;
             time += *dt;
 
+ /*           if (myrank == 0 and timesteps_total == 1) {
+                for (int j = *jt - *jb -7; j < *jt - *jb + 3; j++) {
+                    std::cout << P[*ir-*il+2][j] << std::endl;
+                }
+
+            }*/
             // Visualize u v p
             if (visualization_time_accumulator >= *dt_value) {
                 if (myrank < (*iproc) * (*jproc)){
@@ -376,6 +389,7 @@ int main(int argn, char** args) {
                 visualization_time_accumulator -= *dt_value;
             }
         }
+
         if (myrank < (*iproc) * (*jproc)) {
             grid.set_velocity(U, velocity_type::U, *il, *ir, *jb, *jt);
             grid.set_velocity(V, velocity_type::V, *il, *ir, *jb, *jt);

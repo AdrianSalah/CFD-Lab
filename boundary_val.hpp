@@ -47,7 +47,8 @@ void spec_boundary_val(Grid& grid,
     int il,
     int ir,
     int jb,
-    int jt);
+    int jt,
+    int rank);
 
 /*
  * Store pointers to neighbour cells for grid
