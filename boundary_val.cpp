@@ -33,16 +33,15 @@ void boundaryvalues(int imax,
     grid.temperature(temp);
 
     // CONCENTRATION - Declaration and Initialization
-    static matrix<double> conc_A;
+    static matrix<double> conc_A, conc_B, conc_C, conc_D;
     grid.concentration(conc_A, ID::A);
-
-    static matrix<double> conc_B, conc_C, conc_D;
     grid.concentration(conc_B, ID::B);
     grid.concentration(conc_C, ID::C);
     grid.concentration(conc_D, ID::D);
 
-    // ----- Boundary conditions of NOSLIP inner cells ----- //
-    // (< 1) Condition means that the cell is solid//
+    // TODO: check BC for inner Cells
+    /* ----- BC of NOSLIP inner cells ----- */
+    // (< 1) Condition means that the cell is solid //
 
     for (int i = 1; i < grid.imaxb() - 1; i++) {
         for (int j = 1; j < grid.jmaxb() - 1; j++) {
@@ -186,15 +185,13 @@ void boundaryvalues(int imax,
 
     /* ---- BC outer cells ---- */
 
-    // bottom and top
-    for(int i = 0; i < grid.imaxb(); i++)
-    {
-        //noslip bottom: checked and added pres and temp [Adrian]
-        if(grid.cell(i,0)._cellType < 1 and grid.cell(i,0)._nbNorth->_cellType == FLUID)
-        {
+    /* ---- NOSLIP BC ---- */
+    // BOTTOM and TOP WALL
+    for (int i = 0; i < grid.imaxb(); i++) {
+        // NOSLIP BOTTOM
+        if (grid.cell(i, 0)._cellType < 1 and grid.cell(i, 0)._nbNorth->_cellType == FLUID) {
             u_velocity.at(i).at(0) = -u_velocity.at(i).at(1);
             v_velocity.at(i).at(0) = 0;
-
             //G.at(i).at(0) = v_velocity.at(i).at(0);
             G.at(i).at(0) = v_velocity.at(i).at(0) - beta * delta_t / 2 * (temp.at(i).at(0) + temp.at(i).at(1)) * GY;
             pres.at(i).at(0) = pres.at(i).at(1);
@@ -204,21 +201,18 @@ void boundaryvalues(int imax,
             conc_C.at(i).at(0) = conc_C.at(i).at(1);
             conc_D.at(i).at(0) = conc_D.at(i).at(1);
         }
-        //noslip top: checked and added pres and temp [Adrian]
-        if(grid.cell(i, grid.jmaxb() - 1)._cellType < 1 and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
-        {
+        // NOSLIP TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType < 1 and
+            grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID) {
             u_velocity.at(i).at(grid.jmaxb() - 1) = -u_velocity.at(i).at(grid.jmaxb() - 2);
             v_velocity.at(i).at(grid.jmaxb() - 1) = 0; // Solid cell
             v_velocity.at(i).at(grid.jmaxb() - 2) = 0; // Fluid cell below
-
             G.at(i).at(grid.jmaxb() - 1) = v_velocity.at(i).at(grid.jmaxb() - 1); // Solid cell
-            
-
             //G.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 2);
-
             G.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 2)
-                - beta * delta_t / 2 * (temp.at(i).at(grid.jmaxb() - 2) + temp.at(i).at(grid.jmaxb() - 1)) * GY; // Fluid cell below
-            
+                                           - beta * delta_t / 2 *
+                                             (temp.at(i).at(grid.jmaxb() - 2) + temp.at(i).at(grid.jmaxb() - 1)) *
+                                             GY; // Fluid cell below
             pres.at(i).at(grid.jmaxb() - 1) = pres.at(i).at(grid.jmaxb() - 2);
             temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
             conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
@@ -226,14 +220,160 @@ void boundaryvalues(int imax,
             conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
             conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
         }
+    }
 
-        // ---- DIRICHLET BC ---- //
+    // LEFT and RIGHT WALL
+    for (int j = 0; j < grid.jmaxb(); j++) {
+        // NOSLIP LEFT
+        if (grid.cell(0, j)._cellType < 1 and grid.cell(0, j)._nbEast->_cellType == FLUID) {
+            u_velocity.at(0).at(j) = 0;
+            v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
+            // F.at(0).at(j) = u_velocity.at(0).at(j);
+            F.at(0).at(j) = u_velocity.at(0).at(j) - beta * delta_t / 2 * (temp.at(0).at(j) + temp.at(1).at(j)) * GX;
+            pres.at(0).at(j) = pres.at(1).at(j);
+            temp.at(0).at(j) = temp.at(1).at(j);
+            conc_A.at(0).at(j) = conc_A.at(1).at(j);
+            conc_B.at(0).at(j) = conc_B.at(1).at(j);
+            conc_C.at(0).at(j) = conc_C.at(1).at(j);
+            conc_D.at(0).at(j) = conc_D.at(1).at(j);
+        }
+
+        // NOSLIP RIGHT
+        if (grid.cell(grid.imaxb() - 1, j)._cellType < 1 and
+            grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID) {
+            u_velocity.at(grid.imaxb() - 1).at(j) = 0; // Solid cell
+            u_velocity.at(grid.imaxb() - 2).at(j) = 0; // Fluid cell
+            v_velocity.at(grid.imaxb() - 1).at(j) = -v_velocity.at(grid.imaxb() - 2).at(j);
+            F.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 1).at(
+                    j); // Solid cell (no need to calculate it)
+            // F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j);
+            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j)
+                                           - beta * delta_t / 2 *
+                                             (temp.at(grid.imaxb() - 2).at(j) + temp.at(grid.imaxb() - 1).at(j)) *
+                                             GX; // Fluid cell (still no need to calculate it)
+            pres.at(grid.imaxb() - 1).at(j) = pres.at(grid.imaxb() - 2).at(j);
+            temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
+            conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
+            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
+            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
+            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
+        }
+    }
+
+    // TODO: check INFLOW BC
+    /* ---- INFLOW BC ---- */
+    // BOTTOM and TOP WALL
+    for (int i = 0; i < grid.imaxb(); i++)
+    {
         // INFLOW from BOTTOM
-        if (grid.cell(i, 0)._cellType == INFLOW and grid.cell(i, 0)._nbNorth->_cellType == FLUID)
+        if (grid.cell(i, 0)._cellType == INFLOW and
+        grid.cell(i, 0)._nbNorth->_cellType == FLUID)
         {
             v_velocity.at(i).at(0) = v_inflow;
             u_velocity.at(i).at(0) = u_inflow;
         }
+        // INFLOW from TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == INFLOW and
+            grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        {
+            v_velocity.at(i).at(grid.jmaxb()) = v_inflow;
+            u_velocity.at(i).at(grid.jmaxb()) = u_inflow;
+        }
+    }
+
+    // LEFT and RIGHT WALL
+    for (int j = 0; j < grid.jmaxb(); j++)
+    {
+        // INFLOW from LEFT
+        if(grid.cell(0,j)._cellType == INFLOW and
+        grid.cell(0,j)._nbEast->_cellType == FLUID)
+        {
+            v_velocity.at(0).at(j) = v_inflow;
+            u_velocity.at(0).at(j) = u_inflow;
+        }
+        // INFLOW from RIGHT
+        if (grid.cell(grid.imaxb() - 1, j)._cellType == INFLOW and
+            grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
+        {
+            v_velocity.at(grid.imaxb()).at(j) = v_inflow;
+            u_velocity.at(grid.imaxb() ).at(j) = u_inflow;
+        }
+    }
+
+    // TODO: check OUTFLOW BC
+    /* ---- OUTFLOW BC ---- */
+    // BOTTOM and TOP WALL
+    for (int i = 0; i < grid.imaxb(); i++)
+    {
+        // OUTFLOW from BOTTOM
+        if (grid.cell(i, 0)._cellType == OUTFLOW and
+            grid.cell(i, 0)._nbNorth->_cellType == FLUID)
+        {
+          v_velocity.at(i).at(1) = v_velocity.at(i).at(0);
+          u_velocity.at(i).at(1) = u_velocity.at(i).at(0);
+        }
+
+        // OUTFLOW to TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
+        grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        {
+            v_velocity.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 1);
+            u_velocity.at(i).at(grid.jmaxb() - 2) = u_velocity.at(i).at(grid.jmaxb() - 1);
+        }
+    }
+
+    // LEFT and RIGHT WALL
+    for (int j = 0; j < grid.jmaxb(); j++)
+    {
+        // OUTFLOW from LEFT
+        if(grid.cell(0,j)._cellType == OUTFLOW and
+           grid.cell(0,j)._nbEast->_cellType == FLUID)
+        {
+            v_velocity.at(1).at(j) = v_velocity.at(0).at(j);
+            u_velocity.at(1).at(j) = u_velocity.at(0).at(j);
+        }
+
+        // OUTFLOW to RIGHT
+        if(grid.cell(grid.imaxb() - 1, j)._cellType == OUTFLOW and
+        grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
+        {
+            v_velocity.at(grid.imaxb() - 2).at(j) = v_velocity.at(grid.imaxb() - 1).at(j);
+            u_velocity.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 1).at(j);
+        }
+    }
+
+    // TODO: check FREESLIP BC
+
+    /* ---- FREESLIP BC ---- */
+    // BOTTOM and TOP WALL
+    for (int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        // FREESLIP for TOP WALL
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP) {
+            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
+            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
+        }
+        // TODO: FREESLIP for BOTTOM WALL
+        assert((grid.cell(i, 0)._cellType == FREESLIP));
+
+    }
+
+    // LEFT and RIGHT WALL
+    for (int j = 1; j < grid.jmaxb() - 1; j++)
+    {
+        // TODO: FREESLIP for LEFT WALL
+        assert(grid.cell(0, j)._cellType == FREESLIP);
+
+        // TODO: FREESLIP for RIGHT WALL
+        assert(grid.cell(grid.imaxb() - 1,j)._cellType == FREESLIP);
+
+    }
+
+
+
+    /*
+
+
 
         // ---- NEUMANN BC ---- //
         // OUTFLOW to TOP
@@ -244,47 +384,6 @@ void boundaryvalues(int imax,
         }
     }
 
-    // left and right
-    for(int j = 0; j < grid.jmaxb(); j++)
-    {
-        // noslip left: checked and added pres and temp [Adrian]
-        if(grid.cell(0,j)._cellType < 1 and grid.cell(0,j)._nbEast->_cellType == FLUID)
-        {
-            u_velocity.at(0).at(j) = 0;
-            v_velocity.at(0).at(j) = -v_velocity.at(1).at(j);
-
-            // F.at(0).at(j) = u_velocity.at(0).at(j);
-
-            F.at(0).at(j) = u_velocity.at(0).at(j) - beta * delta_t / 2 * (temp.at(0).at(j) + temp.at(1).at(j)) * GX;
-            pres.at(0).at(j) = pres.at(1).at(j);
-            temp.at(0).at(j) = temp.at(1).at(j);
-            conc_A.at(0).at(j) = conc_A.at(1).at(j);
-            conc_B.at(0).at(j) = conc_B.at(1).at(j);
-            conc_C.at(0).at(j) = conc_C.at(1).at(j);
-            conc_D.at(0).at(j) = conc_D.at(1).at(j);
-        }
-
-        // noslip right: checked and added pres and temp [Adrian]
-        if(grid.cell(grid.imaxb() - 1,j)._cellType < 1 and grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
-        {
-            u_velocity.at(grid.imaxb() - 1).at(j) = 0; // Solid cell
-            u_velocity.at(grid.imaxb() - 2).at(j) = 0; // Fluid cell
-            v_velocity.at(grid.imaxb() - 1).at(j) = -v_velocity.at(grid.imaxb() - 2).at(j);
-
-            F.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 1).at(j); // Solid cell (no need to calculate it)
-
-            // F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j);
-
-            F.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 2).at(j)
-                - beta * delta_t / 2 * (temp.at(grid.imaxb() - 2).at(j) + temp.at(grid.imaxb() - 1).at(j)) * GX; // Fluid cell (still no need to calculate it)
-            
-            pres.at(grid.imaxb() - 1).at(j) = pres.at(grid.imaxb() - 2).at(j);
-            temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
-            conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
-            conc_B.at(grid.imaxb() - 1).at(j) = conc_B.at(grid.imaxb() - 2).at(j);
-            conc_C.at(grid.imaxb() - 1).at(j) = conc_C.at(grid.imaxb() - 2).at(j);
-            conc_D.at(grid.imaxb() - 1).at(j) = conc_D.at(grid.imaxb() - 2).at(j);
-        }
 
         // inflow left
         if(grid.cell(0,j)._cellType == INFLOW and grid.cell(0,j)._nbEast->_cellType == FLUID)
@@ -306,7 +405,9 @@ void boundaryvalues(int imax,
             u_velocity.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 1).at(j);
         }
     }
+     */
 
+    /*
     // ---- Freeslip BC for lid driven cavity ---- //
     for (int i = 1; i < grid.imaxb() - 1; i++)
     {
@@ -316,6 +417,7 @@ void boundaryvalues(int imax,
             u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
         }
     }
+     */
 
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
