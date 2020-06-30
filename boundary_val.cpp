@@ -276,8 +276,8 @@ void boundaryvalues(int imax,
         if (grid.cell(i, grid.jmaxb() - 1)._cellType == INFLOW and
             grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
         {
-            v_velocity.at(i).at(grid.jmaxb()) = v_inflow;
-            u_velocity.at(i).at(grid.jmaxb()) = u_inflow;
+            v_velocity.at(i).at(grid.jmaxb() - 1) = v_inflow;
+            u_velocity.at(i).at(grid.jmaxb() - 1) = u_inflow;
         }
     }
 
@@ -295,8 +295,8 @@ void boundaryvalues(int imax,
         if (grid.cell(grid.imaxb() - 1, j)._cellType == INFLOW and
             grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
         {
-            v_velocity.at(grid.imaxb()).at(j) = v_inflow;
-            u_velocity.at(grid.imaxb() ).at(j) = u_inflow;
+            v_velocity.at(grid.imaxb() - 1).at(j) = v_inflow;
+            u_velocity.at(grid.imaxb() - 1).at(j) = u_inflow;
         }
     }
 
@@ -309,16 +309,16 @@ void boundaryvalues(int imax,
         if (grid.cell(i, 0)._cellType == OUTFLOW and
             grid.cell(i, 0)._nbNorth->_cellType == FLUID)
         {
-          v_velocity.at(i).at(1) = v_velocity.at(i).at(0);
-          u_velocity.at(i).at(1) = u_velocity.at(i).at(0);
+          v_velocity.at(i).at(0) = v_velocity.at(i).at(1);
+          u_velocity.at(i).at(0) = u_velocity.at(i).at(1);
         }
 
         // OUTFLOW to TOP
         if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
         grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
         {
-            v_velocity.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 1);
-            u_velocity.at(i).at(grid.jmaxb() - 2) = u_velocity.at(i).at(grid.jmaxb() - 1);
+            v_velocity.at(i).at(grid.jmaxb() - 1) = v_velocity.at(i).at(grid.jmaxb() - 2);
+            u_velocity.at(i).at(grid.jmaxb() - 1) = u_velocity.at(i).at(grid.jmaxb() - 2);
         }
     }
 
@@ -329,16 +329,16 @@ void boundaryvalues(int imax,
         if(grid.cell(0,j)._cellType == OUTFLOW and
            grid.cell(0,j)._nbEast->_cellType == FLUID)
         {
-            v_velocity.at(1).at(j) = v_velocity.at(0).at(j);
-            u_velocity.at(1).at(j) = u_velocity.at(0).at(j);
+            v_velocity.at(0).at(j) = v_velocity.at(1).at(j);
+            u_velocity.at(0).at(j) = u_velocity.at(1).at(j);
         }
 
         // OUTFLOW to RIGHT
         if(grid.cell(grid.imaxb() - 1, j)._cellType == OUTFLOW and
         grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
         {
-            v_velocity.at(grid.imaxb() - 2).at(j) = v_velocity.at(grid.imaxb() - 1).at(j);
-            u_velocity.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 1).at(j);
+            v_velocity.at(grid.imaxb() - 1).at(j) = v_velocity.at(grid.imaxb() - 2).at(j);
+            u_velocity.at(grid.imaxb() - 1).at(j) = u_velocity.at(grid.imaxb() - 2).at(j);
         }
     }
 
@@ -703,15 +703,22 @@ void spec_boundary_val(
         for (int i = 1; i < grid.imaxb() - 1; i++)
         {
             // TOP Wall
-            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);
-            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 2);
-            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 2);
-            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
+            // Added BC for one extra layer below
+            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 3);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 3);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 3);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 3);
+
+            conc_A.at(i).at(grid.jmaxb() - 2) = conc_A.at(i).at(grid.jmaxb() - 3);
+            conc_B.at(i).at(grid.jmaxb() - 2) = conc_B.at(i).at(grid.jmaxb() - 3);
+            conc_C.at(i).at(grid.jmaxb() - 2) = conc_C.at(i).at(grid.jmaxb() - 3);
+            conc_D.at(i).at(grid.jmaxb() - 2) = conc_D.at(i).at(grid.jmaxb() - 3);
         }
 
         // ---- Dirichlet BC Concentration ---- //
         // (no chemical components present in the feed flow)
         // BOTTOM Wall
+        /*
         for (int i = 1; i < grid.imaxb() - 1; i++)
         {
             conc_A.at(i).at(0) = 2 * 0 - conc_A.at(i).at(1);
@@ -719,6 +726,7 @@ void spec_boundary_val(
             conc_C.at(i).at(0) = 2 * 0 - conc_C.at(i).at(1);
             conc_D.at(i).at(0) = 2 * 0 - conc_D.at(i).at(1);
         }
+        */
 
         // Only these cells are non-zero: C_injection point at the BOTTOM wall (reactor feed flow)
         // and if current time is <40% of t_end
@@ -727,8 +735,10 @@ void spec_boundary_val(
         {
             for (int i = 9; i < 14; i++)
             {
-                conc_A.at(i).at(0) = 2 * C_inject[ID::A] - conc_A.at(i).at(1);
-                conc_B.at(i).at(0) = 2 * C_inject[ID::B] - conc_B.at(i).at(1);
+                conc_A.at(i).at(1) = C_inject[ID::A];
+                conc_B.at(i).at(1) = C_inject[ID::B];
+                //conc_A.at(i).at(0) = 2 * C_inject[ID::A] - conc_A.at(i).at(1);
+                //conc_B.at(i).at(0) = 2 * C_inject[ID::B] - conc_B.at(i).at(1);
             }
         }
 
@@ -741,7 +751,7 @@ void spec_boundary_val(
                 && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
                 temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-                //temp.at(i).at(0) = T_h;
+                temp.at(i).at(1) = T_h;
             }
 
             // ---- Neumann BC Temperature ---- //
@@ -749,7 +759,8 @@ void spec_boundary_val(
             if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
                 && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
             {
-                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
+                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 3);
+                temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
             }
         }
     }
