@@ -314,8 +314,8 @@ void VTKHelper::printVTKFile(
 
     // GEOMETRY
     // Print geometry information from bottom to top
-    for (int j = 0; j < grid.jmaxb() - 1; j++) {
-        for (int i = 0; i < grid.imaxb() - 1; i++) {
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
             Geometry->InsertNextTuple(&geometry.at(i).at(j));
         }
     }
@@ -371,7 +371,7 @@ void VTKHelper::printVTKFile(
     structuredGrid->GetCellData()->AddArray(ConcentrationD);
 
     // Add Geometry to Structured Grid
-    structuredGrid->GetPointData()->AddArray(Geometry);
+    structuredGrid->GetCellData()->AddArray(Geometry);
 
     // Add Velocity to Structured Grid
     structuredGrid->GetPointData()->AddArray(Velocity);
