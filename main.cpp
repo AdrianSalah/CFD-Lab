@@ -134,6 +134,7 @@ int main(int argn, char** args) {
             calculate_concentration(*Re, Pr_diffusion,
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
+        
         calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
                 is_product,
                 stoichiometric_coeff,
@@ -147,38 +148,6 @@ int main(int argn, char** args) {
                 *SD_coeff,
                 *vacant_centers_defficiency_coeff,
                 *reaction_heat_effect_Q);
-
-        /*
-        calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
-            is_product[0],
-            is_product[1],
-            is_product[2],
-            is_product[3],
-            stoichiometric_coeff[0],
-            stoichiometric_coeff[1],
-            stoichiometric_coeff[2],
-            stoichiometric_coeff[3],
-            homogeneous_reaction_coef[0],
-            homogeneous_reaction_coef[1],
-            homogeneous_reaction_coef[2],
-            homogeneous_reaction_coef[3],
-            absorption_coeff[0],
-            absorption_coeff[1],
-            absorption_coeff[2],
-            absorption_coeff[3],
-            heat_capacity[0],
-            heat_capacity[1],
-            heat_capacity[2],
-            heat_capacity[3],
-            *reaction_rate_constant_factor,
-            *activation_energy_forward,
-            *activation_energy_reverse,
-            *activation_energy_catalyst,
-            *SD_coeff,
-            *vacant_centers_defficiency_coeff,
-            *reaction_heat_effect_Q);
-            */
-        
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 

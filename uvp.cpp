@@ -494,14 +494,6 @@ void calculate_chem_kinetics(
 
     static double Q;        // Total heat effect
 
-    // Defines the sign of the component in the chemical reaction
-    // +1 - for product
-    // -1 - for initial components
-    int signs[4];
-
-    for(auto i = 0; i < 4; i++)
-        signs[i] = is_product[i] ? 1 : (-1);
-
     // Get concentration of each component from the grid
     grid.concentration(C_A, ID::A);
     grid.concentration(C_B, ID::B);
@@ -565,15 +557,19 @@ void calculate_chem_kinetics(
                         + heat_capacity[ID::B] * C_B[i][j]
                         + heat_capacity[ID::C] * C_C[i][j]) / moles_total;
 
+                    
                     homogeneous_noncatalyst_reaction(
                         C_A[i][j], C_B[i][j], C_C[i][j], T[i][j], stoichiometric_coeff, homogeneous_reaction_coeff,
                         activation_energy_forward, activation_energy_reverse,  reaction_rate_constant_factor,
                         reaction_heat_effect_Q, reduced_heat_capacity, chem_dt, dS_homog, max_fixed_point_iterations);
+                    
 
+                    
                     // ++++++++ TURNED OFF TO ISOLATE HOMOGENEOUS REACTION FOR DEBUGGING ++++++++ //
                     // ------------------------------------------- //
                     // ----- HETEROGENEOUS CATALYST REACTION ----- //
                     // ------------------------------------------- //
+
 
                     // Reaction occurs along the SURFACE of the catalyst block
                     // If has at least one adjacent CATALYST block
@@ -627,18 +623,21 @@ void calculate_chem_kinetics(
                                                * std::pow(rev_heter_acting_surf[ID::C], stoichiometric_coeff[ID::C]);
 
                         // Total effect from FORWARD AND REVERSE CATALYST reactions, mols/sec
-                        heter_intencity = (fwd_heter_react_rate - rev_heter_react_const) * surface_development_coeff * dS_heter * chem_dt;
+                        heter_intencity = (fwd_heter_react_rate - rev_heter_react_rate) * surface_development_coeff * dS_heter * chem_dt;
                     }
 
                     // Update concentration of the components
                     C_A[i][j] += -stoichiometric_coeff[ID::A] * heter_intencity;
                     C_B[i][j] += -stoichiometric_coeff[ID::B] * heter_intencity;
                     C_C[i][j] += stoichiometric_coeff[ID::C] * heter_intencity;
-                    
+                   
+
                     // Check if the values are not negative
                     C_A[i][j] = (C_A[i][j] >= 1e-10) ? C_A[i][j] : 0;
                     C_B[i][j] = (C_B[i][j] >= 1e-10) ? C_B[i][j] : 0;
                     C_C[i][j] = (C_C[i][j] >= 1e-10) ? C_C[i][j] : 0;
+
+
 
                     /*
                     // Update temperature change due to heat release/absorption

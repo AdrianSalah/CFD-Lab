@@ -733,7 +733,7 @@ void spec_boundary_val(
 
         if (time < t_end * 0.4)
         {
-            for (int i = 9+2*(scenarioSpec ==10); i < 13+ 2 * (scenarioSpec == 10); i++)
+            for (int i = 9 + 2 * 9 * (scenarioSpec == 10); i < 13 + 2 * 13 * (scenarioSpec == 10); i++)
             {
                 conc_A.at(i).at(1) = C_inject[ID::A];
                 conc_B.at(i).at(1) = C_inject[ID::B];
