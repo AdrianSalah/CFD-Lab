@@ -682,7 +682,7 @@ void spec_boundary_val(
     }
 
     // Catalyst Reactor
-    else if (scenarioSpec == 8)
+    else if (scenarioSpec == 10 or scenarioSpec == 8)
     {
         // ---- Neumann BC Concentration ---- //
         for (int j = 1; j < grid.jmaxb() - 1; j++)
@@ -733,7 +733,7 @@ void spec_boundary_val(
 
         if (time < t_end * 0.4)
         {
-            for (int i = 9; i < 14; i++)
+            for (int i = 9*3; i < 13*3; i++)
             {
                 conc_A.at(i).at(1) = C_inject[ID::A];
                 conc_B.at(i).at(1) = C_inject[ID::B];
@@ -751,7 +751,7 @@ void spec_boundary_val(
                 && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
                 temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-                temp.at(i).at(1) = T_h;
+               // temp.at(i).at(1) = T_h;
             }
 
             // ---- Neumann BC Temperature ---- //
@@ -759,8 +759,8 @@ void spec_boundary_val(
             if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
                 && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
             {
-                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 3);
-                temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
+                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
+               // temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
             }
         }
     }
