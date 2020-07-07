@@ -518,6 +518,18 @@ void spec_boundary_val(
                 conc_D.at(0).at(j + 6) = 2 * C_inject[ID::D] - conc_D.at(1).at(j + 6);
             }
         }
+
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        { 
+            // ----  Dirichlet BC Temperature ---- //
+            // T_h LEFT Wall
+            temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
+
+
+            // ---- Neumann BC Temperature ---- //
+            // T_c RIGHT Wall
+            temp.at(grid.imaxb() - 1).at(j) = temp.at(grid.imaxb() - 2).at(j);
+        }
     }
 
 
@@ -682,7 +694,7 @@ void spec_boundary_val(
     }
 
     // Catalyst Reactor
-    else if (scenarioSpec == 10 or scenarioSpec == 8)
+    else if (scenarioSpec == 11 or scenarioSpec == 10 or scenarioSpec == 8)
     {
         // ---- Neumann BC Concentration ---- //
         for (int j = 1; j < grid.jmaxb() - 1; j++)
@@ -743,6 +755,7 @@ void spec_boundary_val(
         }
 
 
+        
         for (int i = 1; i < grid.imaxb() - 1; i++)
         {
             // ---- Dirichlet BC Temperature ---- //
@@ -750,19 +763,32 @@ void spec_boundary_val(
             if (grid.cell(i, 0)._cellType == INFLOW
                 && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
-                temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-               // temp.at(i).at(1) = T_h;
+                temp.at(i).at(0) = T_h;
+                temp.at(i).at(1) = T_h;
+                //temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
             }
 
+            // TOP Wall
+            if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
+                && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+            {
+                temp.at(i).at(grid.jmaxb() - 1) = T_c;
+                temp.at(i).at(grid.jmaxb() - 2) = T_c;
+            }
+
+            /*
             // ---- Neumann BC Temperature ---- //
             // TOP Wall
             if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
                 && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
             {
-                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
-               // temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
+                temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 3);
+                temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
             }
+            */
         }
+        
+
     }
 
 

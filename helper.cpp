@@ -423,6 +423,13 @@ void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENAR
         SCENARIO_PGM_FILE = "../geometry/catalyst_reactor2.pgm";
         break;
 
+    case 11:
+        printf("catalyst_reactor3 \n");
+        SCENARIO_NAME = "catalyst_reactor3";
+        SCENARIO_DAT_FILE = "../parameters/catalyst_reactor3.dat";
+        SCENARIO_PGM_FILE = "../geometry/catalyst_reactor3.pgm";
+        break;
+
     default:
         printf("Couldn't select any secnario \n");
         exit(EXIT_FAILURE);
