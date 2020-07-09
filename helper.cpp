@@ -410,6 +410,13 @@ void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENAR
         break;
 
     case 8:
+        printf("cylinder \n");
+        SCENARIO_NAME = "cylinder";
+        SCENARIO_DAT_FILE = "../parameters/cylinder.dat";
+        SCENARIO_PGM_FILE = "../geometry/cylinder.pgm";
+        break;
+
+    case 9:
         printf("catalyst_reactor \n");
         SCENARIO_NAME = "catalyst_reactor";
         SCENARIO_DAT_FILE = "../parameters/catalyst_reactor.dat";
@@ -421,6 +428,13 @@ void set_paths(int scenarioSpec, std::string& SCENARIO_NAME, std::string& SCENAR
         SCENARIO_NAME = "catalyst_reactor2";
         SCENARIO_DAT_FILE = "../parameters/catalyst_reactor2.dat";
         SCENARIO_PGM_FILE = "../geometry/catalyst_reactor2.pgm";
+        break;
+
+    case 11:
+        printf("catalyst_reactor3 \n");
+        SCENARIO_NAME = "catalyst_reactor3";
+        SCENARIO_DAT_FILE = "../parameters/catalyst_reactor3.dat";
+        SCENARIO_PGM_FILE = "../geometry/catalyst_reactor3.pgm";
         break;
 
     default:
