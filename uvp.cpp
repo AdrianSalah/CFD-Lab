@@ -195,6 +195,7 @@ void calculate_temp(
                 // TODO: add source/sink component Q_temp
 
                 T_new[i][j] = T_old[i][j] + dt * ((1 / (Pr * Re)) * (d2_T_dx2 + d2_T_dy2) - duT_dx - dvT_dy);
+                
             }
         }
     }
@@ -387,12 +388,12 @@ void homogeneous_noncatalyst_reaction(
         *fwd_homog_acting_conc_excess_alias[0] = fwd_homog_acting_conc_excess[0];
         C_C_cell = (fwd_homog_acting_conc[ID::C] > 1e-10) ? fwd_homog_acting_conc[ID::C] : 0;
 
-        /*
+        
         // Update temperature change due to heat release/absorption
-        T_cell +=
-            dS_homog * (*fwd_homog_acting_conc_deficit_alias - initial_conc) / fwd_homog_stoich_coeff_deficit
-            * (-reaction_heat_effect_Q) / reduced_heat_capacity;
-        */
+        //T_cell +=
+        //    dS_homog * (*fwd_homog_acting_conc_deficit_alias - initial_conc) / fwd_homog_stoich_coeff_deficit
+        //    * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+        
     }
 
 
@@ -562,6 +563,11 @@ void calculate_chem_kinetics(
                         C_A[i][j], C_B[i][j], C_C[i][j], T[i][j], stoichiometric_coeff, homogeneous_reaction_coeff,
                         activation_energy_forward, activation_energy_reverse,  reaction_rate_constant_factor,
                         reaction_heat_effect_Q, reduced_heat_capacity, chem_dt, dS_homog, max_fixed_point_iterations);
+
+                    // Check if the values are not negative
+                    C_A[i][j] = (C_A[i][j] >= 1e-10) ? C_A[i][j] : 0;
+                    C_B[i][j] = (C_B[i][j] >= 1e-10) ? C_B[i][j] : 0;
+                    C_C[i][j] = (C_C[i][j] >= 1e-10) ? C_C[i][j] : 0;
                     
 
                     
@@ -570,7 +576,7 @@ void calculate_chem_kinetics(
                     // ----- HETEROGENEOUS CATALYST REACTION ----- //
                     // ------------------------------------------- //
 
-
+                    /*
                     // Reaction occurs along the SURFACE of the catalyst block
                     // If has at least one adjacent CATALYST block
                     if ((grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) ||
@@ -631,7 +637,7 @@ void calculate_chem_kinetics(
                     C_B[i][j] += -stoichiometric_coeff[ID::B] * heter_intencity;
                     C_C[i][j] += stoichiometric_coeff[ID::C] * heter_intencity;
                    
-
+                    */
                     // Check if the values are not negative
                     C_A[i][j] = (C_A[i][j] >= 1e-10) ? C_A[i][j] : 0;
                     C_B[i][j] = (C_B[i][j] >= 1e-10) ? C_B[i][j] : 0;
@@ -639,11 +645,11 @@ void calculate_chem_kinetics(
 
 
 
-                    /*
+                    
                     // Update temperature change due to heat release/absorption
-                    T[i][j] -= dS_homog * heter_intencity / stoichiometric_coeff[ID::C]
-                        * (-reaction_heat_effect_Q) / reduced_heat_capacity;
-                    */                
+                    //T[i][j] -= dS_homog * heter_intencity / stoichiometric_coeff[ID::C]
+                    //    * (-reaction_heat_effect_Q) / reduced_heat_capacity;
+                                    
                 }
             }
         }
