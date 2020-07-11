@@ -17,14 +17,14 @@ jmax        18
 # tau: safety factor for time step size control
 #--------------------------------------------
 dt           0.05
-t_end        10000
+t_end        10
 tau          0.5
 
 #--------------------------------------------
 #               output
 # dt_value: time interval for writing files
 #--------------------------------------------
-dt_value     100
+dt_value     0.1
 
 #--------------------------------------------
 #               pressure
@@ -84,7 +84,7 @@ PR          12500
 #     Concentration Parameters
 #--------------------------------------------
 #-----------------------------------A------B-------C------D-------
-is_product							0	   0	   1	  1		  
+is_product							0	   0	   1	  -1		  
 SD_coeff							10
 CI									1.0    1.0     0.0    0.0
 stoichiometric_coeff				1      1       1      1

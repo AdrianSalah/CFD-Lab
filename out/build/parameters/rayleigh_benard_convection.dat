@@ -84,7 +84,7 @@ PR          12500
 #     Concentration Parameters
 #--------------------------------------------
 #-----------------------------------A------B-------C------D-------
-is_product							0	   0	   1	  1		  
+is_product							0	   0	   1	  -1		  
 SD_coeff							10
 CI									1.0    1.0     0.0    0.0
 stoichiometric_coeff				1      1       1      1

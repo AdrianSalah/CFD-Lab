@@ -30,7 +30,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // SET SCENARIO MANUALLY
-    scenarioSpec = 11;
+    scenarioSpec = 10;
 
     // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
     set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
