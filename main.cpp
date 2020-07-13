@@ -30,7 +30,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // SET SCENARIO MANUALLY
-    scenarioSpec = 10;
+    scenarioSpec = 9;
 
     // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
     set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
@@ -122,19 +122,18 @@ int main(int argn, char** args) {
     // Initialize timer to measure performance
     Timer runtime;
 
+    // Set boundary values for the first iteration
+    //boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *dx, *dy, *beta, *dt, *GX, *GY);
+    //spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
+
     while (time < *t_end) {
         //here we set time steps manually
         calculate_dt(*Re, *Pr, Pr_diffusion, *tau, dt, *dx, *dy, *imax, *jmax, grid);
 
-        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *dx, *dy, *beta, *dt, *GX, *GY);
-
-        spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
-        
         for (int it = 0; it < LAST; it++)
             calculate_concentration(*Re, Pr_diffusion,
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
-        
         calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
                 is_product,
                 stoichiometric_coeff,
@@ -154,8 +153,12 @@ int main(int argn, char** args) {
         calculate_fg(*Re, *beta, *GX, *GY, *alpha, *dt, *dx, *dy, *imax, *jmax, grid, F, G);
 
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
+
+        boundaryvalues(*imax, *jmax, grid, *v_inflow, *u_inflow, F, G, *dx, *dy, *beta, *dt, *GX, *GY, scenarioSpec, *T_h, *T_c);
+
+        spec_boundary_val(*imax, *jmax, grid, *v_inflow, *u_inflow, *T_h, *T_c, C_inject, *dx, *dy, *kappa, *heat_flux, *beta, *dt, *GX, *GY, scenarioSpec, time, *t_end);
         
-        smooth_temp(*imax, *jmax, grid, time);
+        //smooth_temp(*imax, *jmax, grid, time);
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;

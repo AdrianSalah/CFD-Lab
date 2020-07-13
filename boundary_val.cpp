@@ -14,7 +14,11 @@ void boundaryvalues(int imax,
     double& beta,
     double& delta_t,
     double& GX,
-    double& GY) {
+    double& GY,
+    int scenarioSpec,
+    double& T_h,
+    double& T_c)
+{
     
     // VELOCITY - Declaration and Initialisation
 
@@ -170,8 +174,8 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j) = 0;     // NORTH
                     v_velocity.at(i).at(j - 1) = 0; // SOUTH
 
-                    pres.at(i).at(j)=0;
-                    temp.at(i).at(j)=0;
+                    pres.at(i).at(j) = 0;
+                    temp.at(i).at(j) = 0;
                     conc_A.at(i).at(j) = 0;
                     conc_B.at(i).at(j) = 0;
                     conc_C.at(i).at(j) = 0;
@@ -182,6 +186,15 @@ void boundaryvalues(int imax,
             }
         }
     }
+
+    // Set the temperature for all INTERNAL SOLID cells of the catalyst reactor (scenario 10), including catalyst
+    // (i.e. modelling the coolling down (or heating up) of the reactor internals as part of chemical process
+    if (scenarioSpec == 9 || scenarioSpec == 10 || scenarioSpec == 11)
+        for (int i = 1; i < grid.imaxb() - 1; i++) 
+            for (int j = 1; j < grid.jmaxb() - 1; j++) 
+                if (grid.cell(i, j)._cellType < 1)
+                    temp.at(i).at(j) = T_c;
+
 
     /* ---- BC outer cells ---- */
 
@@ -520,42 +533,6 @@ void spec_boundary_val(
         }
     }
 
-
-    // CASE FOR ONE COMPONENT ONLY
-    //// Plane shear, Step over flow, Karmann Vortex (with chemical injection)
-    //if (scenarioSpec == 2 || scenarioSpec == 3 || scenarioSpec == 4)
-    //{
-    //    // ----  Dirichlet BC Concentration ---- //
-    //    // We set boundary values for all boundary cells equal zero
-    //    // (no chemical components present in the feed flow)
-    //    // LEFT Wall
-    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
-    //        conc_A.at(0).at(j) = 2 * 0 - conc_A.at(1).at(j);
-
-    //    // ---- Neumann BC Concentration ---- //
-    //    // RIGHT Wall
-    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
-    //        conc_A.at(grid.imaxb() - 1).at(j) = conc_A.at(grid.imaxb() - 2).at(j);
-
-    //    for (int i = 1; i < grid.imaxb() - 1; i++)
-    //    {
-    //        // BOTTOM Wall
-    //        conc_A.at(i).at(0) = conc_A.at(i).at(1);
-    //        
-    //        // TOP Wall
-    //        conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 2);  
-    //    }
-
-    //    // Only these cells are non-zero: C_injection point at left wall (INFLOW)
-    //    // and if current time is <50% of t_end
-    //    if (time < t_end * 0.5)
-    //    {
-    //        for (int j = 12; j < 13; j++)
-    //            conc_A.at(0).at(j) = 2 * C_inject[static_cast<int>(ID::A)] - conc_A.at(1).at(j);
-    //    }
-    //}
-
-
     // Natural Convection and Fluid Trap
     // CONCENTRATION AND TEMPERATURE
     if (scenarioSpec == 5 or scenarioSpec == 6)
@@ -709,6 +686,11 @@ void spec_boundary_val(
             conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 3);
             conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 3);
 
+            conc_A.at(i).at(grid.jmaxb() - 1) = conc_A.at(i).at(grid.jmaxb() - 3);
+            conc_B.at(i).at(grid.jmaxb() - 1) = conc_B.at(i).at(grid.jmaxb() - 3);
+            conc_C.at(i).at(grid.jmaxb() - 1) = conc_C.at(i).at(grid.jmaxb() - 3);
+            conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 3);
+
             conc_A.at(i).at(grid.jmaxb() - 2) = conc_A.at(i).at(grid.jmaxb() - 3);
             conc_B.at(i).at(grid.jmaxb() - 2) = conc_B.at(i).at(grid.jmaxb() - 3);
             conc_C.at(i).at(grid.jmaxb() - 2) = conc_C.at(i).at(grid.jmaxb() - 3);
@@ -750,8 +732,9 @@ void spec_boundary_val(
             if (grid.cell(i, 0)._cellType == INFLOW
                 && grid.cell(i, 0)._nbNorth->_cellType == FLUID)
             {
-                temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
-               // temp.at(i).at(1) = T_h;
+                //temp.at(i).at(0) = 2 * T_h - temp.at(i).at(1);
+                temp.at(i).at(0) = T_h;
+                temp.at(i).at(1) = T_h;
             }
 
             // ---- Neumann BC Temperature ---- //
@@ -759,8 +742,10 @@ void spec_boundary_val(
             if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
                 && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
             {
-                temp.at(i).at(grid.jmaxb() - 1) =2*T_c- temp.at(i).at(grid.jmaxb() - 2);
-               // temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
+                temp.at(i).at(grid.jmaxb() - 1) = T_c;
+                temp.at(i).at(grid.jmaxb() - 2) = T_c;
+                //temp.at(i).at(grid.jmaxb() - 1) = 2 * T_c - temp.at(i).at(grid.jmaxb() - 2);
+                //temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
             }
         }
     }

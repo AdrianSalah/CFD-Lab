@@ -258,6 +258,10 @@ void calculate_concentration(
     grid.set_concentration(C_new, id);
 }
 
+
+// The function is used to smooth the gradients of temperature across full domain.
+// If relative delta for a particular cell is higher than the threshold value soecified upfront, then the function
+// will "smooth" the value at this cell with respect to other adjacent cells.
 void smooth_temp(
     int imax,
     int jmax,
@@ -604,7 +608,7 @@ void calculate_chem_kinetics(
                     // ----- HETEROGENEOUS CATALYST REACTION ----- //
                     // ------------------------------------------- //
 
-                    /*
+                    
                     // Reaction occurs along the SURFACE of the catalyst block
                     // If has at least one adjacent CATALYST block
                     if ((grid.cell(i, j)._nbNorth->_cellType == CellType::CATALYST) ||
@@ -665,7 +669,7 @@ void calculate_chem_kinetics(
                     C_B[i][j] += -stoichiometric_coeff[ID::B] * heter_intencity;
                     C_C[i][j] += stoichiometric_coeff[ID::C] * heter_intencity;
                    
-                    */
+                    
                     // Check if the values are not negative
                     C_A[i][j] = (C_A[i][j] >= 1e-10) ? C_A[i][j] : 0;
                     C_B[i][j] = (C_B[i][j] >= 1e-10) ? C_B[i][j] : 0;
