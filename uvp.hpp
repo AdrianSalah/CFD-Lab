@@ -70,6 +70,11 @@ void calculate_concentration(
     ID  id
 );
 
+void smooth_temp(
+    int imax,
+    int jmax,
+    Grid& grid,
+    double time);
 
 void homogeneous_noncatalyst_reaction(
     double& C_A_cell,

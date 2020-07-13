@@ -258,7 +258,35 @@ void calculate_concentration(
     grid.set_concentration(C_new, id);
 }
 
+void smooth_temp(
+    int imax,
+    int jmax,
+    Grid& grid,
+    double time)
+{
 
+    static matrix<double> T;
+
+    grid.temperature(T);
+    double rel = 0.04;
+    for (int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+
+            if (grid.cell(i, j)._cellType == 4) {
+                double rel_diff = std::abs(T[i][j] - T[i + 1][j]) / std::max(T[i][j], T[i + 1][j])
+                                + std::abs(T[i][j] - T[i][j + 1]) / std::max(T[i][j], T[i][j + 1])
+                                + std::abs(T[i][j] - T[i - 1][j]) / std::max(T[i][j], T[i - 1][j])
+                                + std::abs(T[i][j] - T[i][j - 1]) / std::max(T[i][j], T[i][j - 1]);
+                if (rel_diff > 4 * rel) {
+                    T[i][j] = (T[i][j] + T[i][j + 1] + T[i + 1][j] + T[i - 1][j] + T[i][j - 1]) / 5;
+                }
+            }
+        }
+    }
+    grid.set_temperature(T);
+}
 // Compute kinetics of HOMOGENEOUS NON-CATALYST REACTION
 // (reaction occurs across the entire VOLUME of a cell) 
 void homogeneous_noncatalyst_reaction(

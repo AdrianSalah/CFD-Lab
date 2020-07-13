@@ -155,6 +155,7 @@ int main(int argn, char** args) {
 
         calculate_rs(*dt, *dx, *dy, *imax, *jmax, F, G, RS, grid);
         
+        smooth_temp(*imax, *jmax, grid, time);
 
         //reset current number of iterations for SOR
         current_timestep_iteration = 0;
@@ -187,8 +188,6 @@ int main(int argn, char** args) {
             visualization_time_accumulator -= *dt_value;
         }
     }
-
-
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
 
