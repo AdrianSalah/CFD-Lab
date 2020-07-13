@@ -135,18 +135,21 @@ int main(int argn, char** args) {
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
         calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
-                is_product,
-                stoichiometric_coeff,
-                homogeneous_reaction_coef,
-                absorption_coeff,
-                heat_capacity,
-                *reaction_rate_constant_factor,
-                *activation_energy_forward,
-                *activation_energy_reverse,
-                *activation_energy_catalyst,
-                *SD_coeff,
-                *vacant_centers_defficiency_coeff,
-                *reaction_heat_effect_Q);
+            is_product,
+            stoichiometric_coeff,
+            homogeneous_reaction_coef,
+            absorption_coeff,
+            heat_capacity,
+            *reaction_rate_constant_factor,
+            *activation_energy_forward,
+            *activation_energy_reverse,
+            *activation_energy_catalyst,
+            *SD_coeff,
+            *vacant_centers_defficiency_coeff,
+            *reaction_heat_effect_Q,
+            1);
+        // Simulates A + B -> C, if "0" is set here
+        // Simulates A -> B + C, if "1" is set here
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
