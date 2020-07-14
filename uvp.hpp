@@ -76,6 +76,45 @@ void smooth_temp(
     Grid& grid,
     double time);
 
+
+void homogeneous_noncatalyst_reaction_ABtoCD(
+    double& C_A_cell,
+    double& C_B_cell,
+    double& C_C_cell,
+    double& C_D_cell,
+    double& T_cell,
+    const double* stoichiometric_coeff,
+    const double* homogeneous_reaction_coeff,
+    const double& activation_energy_forward,
+    const double& activation_energy_reverse,
+    const double& reaction_rate_constant_factor,
+    const double& reaction_heat_effect_Q,
+    const double& reduced_heat_capacity,
+    const double& chem_dt,
+    const double& dS_homog,
+    const int& max_fixed_point_iterations);
+
+
+void heterogeneous_catalyst_reaction_ABtoCD(
+    double& C_A_cell,
+    double& C_B_cell,
+    double& C_C_cell,
+    double& C_D_cell,
+    double& T_cell,
+    const double* stoichiometric_coeff,
+    const double* adsorption_coeff,
+    const double& activation_energy_forward,
+    const double& activation_energy_reverse,
+    const double& activation_energy_catalyst,
+    const double& surface_development_coeff,
+    const double& vacant_centers_defficiency_coeff,
+    const double& reaction_rate_constant_factor,
+    const double& reaction_heat_effect_Q,
+    const double& reduced_heat_capacity,
+    const double& chem_dt,
+    const double& dS_heter);
+
+
 void homogeneous_noncatalyst_reaction_AtoBC(
     double& C_A_cell,
     double& C_B_cell,
@@ -93,7 +132,7 @@ void homogeneous_noncatalyst_reaction_AtoBC(
     const int& max_fixed_point_iterations);
 
 
-void heterogeneous_catalyst_reaction_ABtoC(
+void heterogeneous_catalyst_reaction_AtoBC(
     double& C_A_cell,
     double& C_B_cell,
     double& C_C_cell,
