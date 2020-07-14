@@ -382,56 +382,6 @@ void boundaryvalues(int imax,
 
     }
 
-
-
-    /*
-
-
-
-        // ---- NEUMANN BC ---- //
-        // OUTFLOW to TOP
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
-        {
-            v_velocity.at(i).at(grid.jmaxb() - 2) = v_velocity.at(i).at(grid.jmaxb() - 1);
-            u_velocity.at(i).at(grid.jmaxb() - 2) = u_velocity.at(i).at(grid.jmaxb() - 1);
-        }
-    }
-
-
-        // inflow left
-        if(grid.cell(0,j)._cellType == INFLOW and grid.cell(0,j)._nbEast->_cellType == FLUID)
-        {
-                v_velocity.at(0).at(j) = v_inflow;
-                u_velocity.at(0).at(j) = u_inflow;
-        }
-
-        //inflow from right
-        //...
-
-        //outflow to left
-        //...
-
-        //outflow to right
-        if(grid.cell(grid.imaxb() - 1, j)._cellType == OUTFLOW and grid.cell(grid.imaxb() - 1, j)._nbWest->_cellType == FLUID)
-        {
-            v_velocity.at(grid.imaxb() - 2).at(j) = v_velocity.at(grid.imaxb() - 1).at(j); //neumann BC also for v_velocity!
-            u_velocity.at(grid.imaxb() - 2).at(j) = u_velocity.at(grid.imaxb() - 1).at(j);
-        }
-    }
-     */
-
-    /*
-    // ---- Freeslip BC for lid driven cavity ---- //
-    for (int i = 1; i < grid.imaxb() - 1; i++)
-    {
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == FREESLIP)
-        {
-            v_velocity.at(i).at(grid.jmaxb() - 1) = 0;
-            u_velocity.at(i).at(grid.jmaxb() - 1) = 2 - u_velocity.at(i).at(grid.jmaxb() - 2);
-        }
-    }
-     */
-
     grid.set_velocity(u_velocity, velocity_type::U);
     grid.set_velocity(v_velocity, velocity_type::V);
 
@@ -589,51 +539,8 @@ void spec_boundary_val(
             conc_D.at(i).at(grid.jmaxb() - 1) = conc_D.at(i).at(grid.jmaxb() - 2);
         }
 
-        // Only these cells are non-zero: C_injection point at left wall (INFLOW)
-        // and if current time is <50% of t_end
-        // "SINKS/SOURCES" ARE TURNED OFF
-        /*
-        // LEFT
-        conc_A.at(0).at(grid.jmaxb()/2) = 2 * C_inject[ID::A] - conc_A.at(1).at(grid.jmaxb() / 2);
-            
-        // RIGHT
-        conc_B.at(grid.imaxb() - 1).at(grid.jmaxb() / 2) = 2 * C_inject[ID::B] - conc_B.at(grid.imaxb() - 2).at(grid.jmaxb() / 2);
-            
-        // BOTTOM
-        conc_C.at(grid.imaxb() / 2).at(0) = 2 * C_inject[ID::C] - conc_C.at(grid.imaxb() / 2).at(1);
-            
-        // TOP
-        conc_D.at(grid.imaxb() / 2).at(grid.jmaxb() - 1) = 2 * C_inject[ID::D] - conc_D.at(grid.imaxb() / 2).at(grid.jmaxb() - 2);
-        */
-        /*if (time < t_end * 0.5)
-        { }*/
     }
 
-
-    // Natural Convection and Fluid Trap
-    // TEMPERATURE ONLY
-    //if(scenarioSpec == 5 or scenarioSpec == 6)
-    //{
-    //    // ----  Dirichlet BC Temperature ---- //
-    //    for (int j = 1; j < grid.jmaxb() - 1; j++)
-    //    { 
-    //        // T_h LEFT Wall
-    //        temp.at(0).at(j) = 2 * T_h - temp.at(1).at(j);
-
-    //        // T_c RIGHT Wall
-    //        temp.at(grid.imaxb() - 1).at(j) = 2 * T_c - temp.at(grid.imaxb() - 2).at(j);    
-    //    }
-
-    //    // ---- Neumann BC Temperature ---- //
-    //    for (int i = 1; i < grid.imaxb() - 1; i++)
-    //    {
-    //        // BOTTOM Wall
-    //        temp.at(i).at(0) = temp.at(i).at(1) + dy * heat_flux / kappa;
-
-    //        // TOP Wall
-    //        temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2) + dy * heat_flux / kappa;
-    //    }
-    //}
     
     // Rayleigh-Benard Convection
     else if (scenarioSpec == 7)
