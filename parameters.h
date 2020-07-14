@@ -47,7 +47,10 @@ double* stoichiometric_coeff = new double[LAST];
 double* homogeneous_reaction_coef = new double[LAST];
 double* absorption_coeff = new double[LAST];
 double* heat_capacity = new double[LAST];
-int* is_product = new int[LAST];
+int* processReaction = new int;
+// 0  for  A + B ->  C
+// 1  for  A -> B + C
+// 2  for  A + B ->  C + D
 double* reaction_rate_constant_factor = new double;
 double* activation_energy_forward = new double;
 double* activation_energy_reverse = new double;

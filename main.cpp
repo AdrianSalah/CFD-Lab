@@ -10,11 +10,6 @@
 #include "Timer.h"
 #include "parameters.h"
 
-//define scenarios using macros
-//#define SCENARIO_NAME "lid_driven_cavity"
-//#define SCENARIO_DAT_FILE "../parameters/lid_driven_cavity.dat"
-//#define SCENARIO_PGM_FILE "../geometry/lid_driven_cavity.pgm"
-
 int main(int argn, char** args) {
 
     //select scenario
@@ -30,7 +25,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // SET SCENARIO MANUALLY
-    scenarioSpec = 9;
+    scenarioSpec = 10;
 
     // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
     set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
@@ -64,7 +59,7 @@ int main(int argn, char** args) {
             tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI,
             C_inject, Pr_diffusion, SD_coeff, stoichiometric_coeff, homogeneous_reaction_coef, absorption_coeff, heat_capacity,
             reaction_rate_constant_factor, activation_energy_forward, activation_energy_reverse, activation_energy_catalyst,
-            vacant_centers_defficiency_coeff, reaction_heat_effect_Q, is_product);
+            vacant_centers_defficiency_coeff, reaction_heat_effect_Q, processReaction);
     }
 
     cell_array = read_pgm(input_geometry_file_path, *imax, *jmax);
@@ -135,7 +130,6 @@ int main(int argn, char** args) {
                 *alpha, *dt, *dx, *dy, *imax, *jmax, grid, static_cast<ID>(it));
 
         calculate_chem_kinetics(*dt, *dx, *dy, *imax, *jmax, grid,
-            is_product,
             stoichiometric_coeff,
             homogeneous_reaction_coef,
             absorption_coeff,
@@ -147,9 +141,7 @@ int main(int argn, char** args) {
             *SD_coeff,
             *vacant_centers_defficiency_coeff,
             *reaction_heat_effect_Q,
-            1);
-        // Simulates A + B -> C, if "0" is set here
-        // Simulates A -> B + C, if "1" is set here
+            *processReaction);
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
@@ -196,17 +188,6 @@ int main(int argn, char** args) {
     }
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-
-
-    // print Temperature in final timestep
-    /*
-    std::cout << "T temperature" << std::endl;
-    for (int i = 0; i < grid.imaxb() / 2; ++i) {
-        for (int j = 0; j < grid.jmaxb() / 2; ++j)
-            std::cout << T[i][j] << " ";
-        std::cout << std::endl;
-    }
-     */
           
     // Print out the total time required for the solution
     runtime.printTimer();
@@ -259,7 +240,7 @@ int main(int argn, char** args) {
     delete[] homogeneous_reaction_coef;
     delete[] absorption_coeff;
     delete[] heat_capacity;
-    delete[] is_product;
+    delete[] processReaction;
     delete reaction_rate_constant_factor;
     delete activation_energy_forward ;
     delete activation_energy_reverse ;

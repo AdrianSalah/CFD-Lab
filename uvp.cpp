@@ -1776,7 +1776,6 @@ void calculate_chem_kinetics(
     int imax,
     int jmax,
     Grid& grid,
-    const int* is_product,
     const double* stoichiometric_coeff,
     const double* homogeneous_reaction_coeff,
     const double* adsorption_coeff,

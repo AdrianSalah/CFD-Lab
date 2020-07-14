@@ -88,7 +88,7 @@ int read_parameters(std::string szFileName,       /* name of the file */
     double* activation_energy_catalyst,
     double* vacant_centers_defficiency_coeff,
     double* reaction_heat_effect_Q,
-    int* is_product);
+    int* processReaction);
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on
