@@ -26,7 +26,7 @@ int main(int argn, char** args) {
         exit(EXIT_FAILURE);}
 
     // SET SCENARIO MANUALLY
-    //scenarioSpec = 10;
+    scenarioSpec = 11;
 
     // set paths for SCENARIO_NAME, SCENARIO_DAT_FILE and SCENARIO_PGM_FILE
     set_paths(scenarioSpec, SCENARIO_NAME, SCENARIO_DAT_FILE, SCENARIO_PGM_FILE);
@@ -189,7 +189,56 @@ int main(int argn, char** args) {
     }
     //write_vtkFile(SCENARIO_NAME, timesteps_total, *xlength, *ylength, *imax, *jmax, *dx, *dy, U, V, P, T);
     vtkOutput.printVTKFile(grid, *dx, *dy, SCENARIO_NAME, SCENARIO_NAME, timesteps_total);
-          
+    
+
+    // + + + + + Compute total reactor productivity of C-component for Haber reaction + + + + + 
+    static matrix<double> conc_C;
+    grid.concentration(conc_C, ID::C);
+
+    static matrix<double> v_velocity;
+    grid.velocity(v_velocity, velocity_type::V);
+
+    double mass_outflow = 0;
+    for (int i = 0; i < grid.imaxb(); i++)
+    {
+        // OUTFLOW to TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
+            grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        {
+            //std::cout << "Concentration at point:\t " << conc_C.at(i).at(grid.jmaxb() - 3) << "moles/m3" << std::endl;
+            //std::cout << "Velocity at point:\t " << v_velocity.at(i).at(grid.jmaxb() - 3) << "m/s" << std::endl;
+            mass_outflow += conc_C.at(i).at(grid.jmaxb() - 3) * v_velocity.at(i).at(grid.jmaxb() - 3) * (*dx) * (*dy);
+        }
+    }
+
+    //std::cout << "dx:\t " << *dx << "\t dy:\t" << *dy << std::endl;
+
+    // Print the mass outflow - moles/sec
+    std::cout << "Reactor productivity:\t " << mass_outflow << "\t moles/sec" << std::endl;
+
+    static matrix<double> pres;
+    grid.pressure(pres);
+
+    double cell_counter = 0;
+    double pressure_drop = 0;
+    for (int i = 0; i < grid.imaxb(); i++)
+    {
+        // OUTFLOW to TOP
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
+            grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
+        {
+            // Pressure drop per cell
+            pressure_drop += pres.at(i).at(2) - pres.at(i).at(grid.jmaxb() - 3);
+            cell_counter += 1;
+        }
+    }
+
+    // Average pressure drop
+    pressure_drop /= cell_counter;
+
+    // Print the mass outflow - moles/sec
+    std::cout << "Reactor pressure drop:\t " << pressure_drop << "\t Pa" << std::endl;
+
     // Print out the total time required for the solution
     runtime.printTimer();
 

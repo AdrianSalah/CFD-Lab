@@ -1823,7 +1823,7 @@ void calculate_chem_kinetics(
     static double reduced_heat_capacity = 29.1;
 
     // Internal time steps to simulate chemical reaction
-    int chem_time_steps = 10;
+    int chem_time_steps = 25;
     double chem_dt = dt / chem_time_steps;
 
     // Define max iterations for chemical reaction fixed point solver

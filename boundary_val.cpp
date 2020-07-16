@@ -175,7 +175,7 @@ void boundaryvalues(int imax,
                     v_velocity.at(i).at(j - 1) = 0; // SOUTH
 
                     pres.at(i).at(j) = 0;
-                    temp.at(i).at(j) = 0;
+                    temp.at(i).at(j) = T_c;
                     conc_A.at(i).at(j) = 0;
                     conc_B.at(i).at(j) = 0;
                     conc_C.at(i).at(j) = 0;
@@ -190,10 +190,69 @@ void boundaryvalues(int imax,
     // Set the temperature for all INTERNAL SOLID cells of the catalyst reactor (scenario 10), including catalyst
     // (i.e. modelling the coolling down (or heating up) of the reactor internals as part of chemical process
     if (scenarioSpec == 9 || scenarioSpec == 10 || scenarioSpec == 11)
-        for (int i = 1; i < grid.imaxb() - 1; i++) 
-            for (int j = 1; j < grid.jmaxb() - 1; j++) 
-                if (grid.cell(i, j)._cellType < 1)
-                    temp.at(i).at(j) = T_c;
+    {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            for (int j = 1; j < grid.jmaxb() - 1; j++) {
+                // NO slip boundary confitions
+                if (grid.cell(i, j)._cellType < 1) {
+                    //B_NE
+                    if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
+                        temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i + 1).at(j)) / 2;
+                    }
+                    //B_NW
+                    else if (grid.cell(i, j)._nbNorth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
+                        temp.at(i).at(j) = (temp.at(i).at(j + 1) + temp.at(i - 1).at(j)) / 2;
+                    }
+                    //B_SW
+                    else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbWest->_cellType > 1) {
+                        temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i - 1).at(j)) / 2;
+                    }
+                    //B_SE
+                    else if (grid.cell(i, j)._nbSouth->_cellType > 1 && grid.cell(i, j)._nbEast->_cellType > 1) {
+                        temp.at(i).at(j) = (temp.at(i).at(j - 1) + temp.at(i + 1).at(j)) / 2;
+                    }
+                    //B_N
+                    else if (grid.cell(i, j)._nbNorth->_cellType > 1) {
+                        temp.at(i).at(j) = temp.at(i).at(j + 1);
+                    }
+                    //B_E
+                    else if (grid.cell(i, j)._nbEast->_cellType > 1) {
+                        temp.at(i).at(j) = temp.at(i + 1).at(j);
+                    }
+                    //B_S
+                    else if (grid.cell(i, j)._nbSouth->_cellType > 1) {
+                        temp.at(i).at(j) = temp.at(i).at(j - 1);
+                    }
+                    //B_W
+                    else if (grid.cell(i, j)._nbWest->_cellType > 1) {
+                        temp.at(i).at(j) = temp.at(i - 1).at(j);
+                    }
+
+                    // Safety factor 0,95
+                    temp.at(i).at(j) *= 0.95;
+                }
+            }
+        }
+
+        temp.at(10).at(2) = T_h;
+        temp.at(10).at(3) = T_h;
+        temp.at(11).at(1) = T_h;
+        temp.at(11).at(2) = T_h;
+
+        temp.at(30).at(1) = T_h;
+        temp.at(30).at(2) = T_h;
+        temp.at(31).at(2) = T_h;
+        temp.at(31).at(3) = T_h;
+
+        conc_A.at(11).at(2) = conc_A.at(11).at(1);
+        conc_A.at(30).at(2) = conc_A.at(30).at(1);
+        conc_B.at(11).at(2) = conc_B.at(11).at(1);
+        conc_B.at(30).at(2) = conc_B.at(30).at(1);
+        //for (int i = 1; i < grid.imaxb() - 1; i++) 
+        //    for (int j = 1; j < grid.jmaxb() - 1; j++) 
+        //        if (grid.cell(i, j)._cellType < 1)
+        //            temp.at(i).at(j) = T_c;
+    }
 
 
     /* ---- BC outer cells ---- */
@@ -618,11 +677,11 @@ void spec_boundary_val(
         */
 
         // Only these cells are non-zero: C_injection point at the BOTTOM wall (reactor feed flow)
-        // and if current time is <40% of t_end
+        // and if current time is <100% of t_end
 
-        if (time < t_end * 0.4)
+        if (time < t_end * 1.0)
         {
-            for (int i = 15+ 6* (scenarioSpec == 10) ; i < 25+ 16 * (scenarioSpec == 10); i++)
+            for (int i = 13 + 6 * (scenarioSpec == 10); i <= 28 + 16 * (scenarioSpec == 10); i++)
             {
                 conc_A.at(i).at(1) = C_inject[ID::A];
                 conc_B.at(i).at(1) = C_inject[ID::B];
@@ -649,8 +708,11 @@ void spec_boundary_val(
             if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW
                 && grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
             {
-                temp.at(i).at(grid.jmaxb() - 1) = T_c;
-                temp.at(i).at(grid.jmaxb() - 2) = T_c;
+                temp.at(i).at(grid.jmaxb() - 1) = (T_c + T_h) * 0.5;
+                temp.at(i).at(grid.jmaxb() - 2) = (T_c + T_h) * 0.5;
+
+                //temp.at(i).at(grid.jmaxb() - 1) = temp.at(i).at(grid.jmaxb() - 2);
+
                 //temp.at(i).at(grid.jmaxb() - 1) = 2 * T_c - temp.at(i).at(grid.jmaxb() - 2);
                 //temp.at(i).at(grid.jmaxb() - 2) = temp.at(i).at(grid.jmaxb() - 3);
             }
