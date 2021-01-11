@@ -9,6 +9,7 @@
 #include "boundary_val.hpp"
 #include "Timer.h"
 #include "parameters.h"
+#include <precice/SolverInterface.hpp>
 
 int main(int argn, char** args) {
 
@@ -60,13 +61,13 @@ int main(int argn, char** args) {
             tau, itermax, eps, dt_value, TI, T_h, T_c, Pr, beta, v_inflow, u_inflow, kappa, heat_flux, CI,
             C_inject, Pr_diffusion, SD_coeff, stoichiometric_coeff, homogeneous_reaction_coef, absorption_coeff, heat_capacity,
             reaction_rate_constant_factor, activation_energy_forward, activation_energy_reverse, activation_energy_catalyst,
-            vacant_centers_defficiency_coeff, reaction_heat_effect_Q, processReaction);
+            vacant_centers_defficiency_coeff, reaction_heat_effect_Q, processReaction, MdepI);
     }
 
     cell_array = read_pgm(input_geometry_file_path, *imax, *jmax);
 
     // Set up grid
-    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D]);
+    Grid grid(*imax, *jmax, BOUNDARY_SIZE, *PI, *UI, *VI, *TI, CI[A], CI[B], CI[C], CI[D], *MdepI);
 
     
     if (!assert_problem_solvability(cell_array, grid)) {
@@ -103,9 +104,9 @@ int main(int argn, char** args) {
     double visualization_time_accumulator = 0.0;        // signals when it's time to visualize within the main loop
     int count_failed_SOR = 0;               //# of failed SOR iterations
 
-    //initialize matrices U, V, P, T, C
-    matrix<double> U, V, P, T, C;
-    init_uvptc(*imax, *jmax, U, V, P, T, *UI, *VI, *PI, *TI, CI, grid);
+    //initialize matrices U, V, P, T, C and Mdepos
+    matrix<double> U, V, P, T, C, Mdepos;
+    init_uvptc(*imax, *jmax, U, V, P, T, Mdepos, *UI, *VI, *PI, *TI, CI, *MdepI, grid);
 
     //initialize matrices F, G and RS
     matrix<double> F, G, RS;
@@ -143,6 +144,12 @@ int main(int argn, char** args) {
             *vacant_centers_defficiency_coeff,
             *reaction_heat_effect_Q,
             *processReaction);
+
+        // ######################################## //
+        // Specify the component that precipitates
+        calculate_thickness(*imax, *jmax, grid, ID::C);
+
+        // ######################################## //
 
         calculate_temp(*Re, *Pr, *alpha, *dt, *dx, *dy, *imax, *jmax, grid);
 
@@ -202,7 +209,7 @@ int main(int argn, char** args) {
     for (int i = 0; i < grid.imaxb(); i++)
     {
         // OUTFLOW to TOP
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW &&
             grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
         {
             //std::cout << "Concentration at point:\t " << conc_C.at(i).at(grid.jmaxb() - 3) << "moles/m3" << std::endl;
@@ -224,7 +231,7 @@ int main(int argn, char** args) {
     for (int i = 0; i < grid.imaxb(); i++)
     {
         // OUTFLOW to TOP
-        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW and
+        if (grid.cell(i, grid.jmaxb() - 1)._cellType == OUTFLOW &&
             grid.cell(i, grid.jmaxb() - 1)._nbSouth->_cellType == FLUID)
         {
             // Pressure drop per cell
@@ -297,5 +304,6 @@ int main(int argn, char** args) {
     delete activation_energy_catalyst ;
     delete vacant_centers_defficiency_coeff ;
     delete reaction_heat_effect_Q ;
+    delete MdepI;
     return 0;
 }

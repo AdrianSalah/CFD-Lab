@@ -57,6 +57,13 @@ void calculate_temp(
 );
 
 
+void calculate_thickness(
+    int imax,
+    int jmax,
+    Grid& grid,
+    ID id);
+
+
 void calculate_concentration(
     double Re,
     double* Pr_diffusion,
@@ -308,10 +315,12 @@ void init_uvptc(
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
+    matrix<double> Mdepos,
     double UI,
     double VI,
     double PI,
     double TI,
     double *CI,
+    double MdepI,
     Grid &grid);
 #endif

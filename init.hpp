@@ -88,7 +88,8 @@ int read_parameters(std::string szFileName,       /* name of the file */
     double* activation_energy_catalyst,
     double* vacant_centers_defficiency_coeff,
     double* reaction_heat_effect_Q,
-    int* processReaction);
+    int* processReaction,
+    double* MdepI);         // Initially deposited mass
 
 /**
  * The arrays U,V and P are initialized to the constant values UI, VI and PI on

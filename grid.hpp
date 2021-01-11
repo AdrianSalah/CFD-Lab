@@ -13,7 +13,9 @@
 
 class Grid {
 public:
-    Grid(int imax_init, int jmax_init, int boundary_size, double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D);
+    Grid(int imax_init, int jmax_init, int boundary_size,
+        double& PI, double& UI, double& VI, double& TI,
+        double& CI_A, double& CI_B, double& CI_C, double& CI_D, double& MdeposI);
     
     // Get and Set Velocity
     void velocity(matrix<double>& vec, velocity_type type);
@@ -26,6 +28,10 @@ public:
     // Get and Set Concentration
     void concentration(matrix<double>& vec, ID id);
     void set_concentration(matrix<double>& vec, ID id);
+
+    // Get and Set Thickness of the Deposited Chemical
+    void thickness(matrix<double>& vec);
+    void set_thickness(matrix<double>& vec);
 
     // Get and Set Temperature
     void temperature(matrix<double>& vec);
@@ -54,6 +60,7 @@ public:
     void print_velocity(velocity_type type);
     void print_pressure();
     void print_temperature();
+    void print_thickness();
 
     // Increment fluid cells quantity by 1
     void increment_fluid_cells();

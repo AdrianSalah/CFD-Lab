@@ -4,7 +4,7 @@
 #include <vector>
 
 Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, double& UI, double& VI,
-    double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D):
+    double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D, double& MdeposI):
     _boundary_size(boundary_size_init),
     _imax_b(imax_init+2*boundary_size_init), // +2 for the total size of the vector / matrix
     _jmax_b(jmax_init+2*boundary_size_init),
@@ -15,7 +15,7 @@ Grid::Grid(int imax_init, int jmax_init, int boundary_size_init, double& PI, dou
     
     // Resizing the grid cells
     // the boundary size is given as a single value for all borders
-    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI, TI, CI_A, CI_B, CI_C, CI_D)));
+    _cells.resize(Grid::imaxb(), std::vector<Cell>(Grid::jmaxb(), Cell(PI, UI, VI, TI, CI_A, CI_B, CI_C, CI_D, MdeposI)));
 
     // Resize Velocity Matrices
     _velocities[static_cast<int>(velocity_type::U)].resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), UI));
@@ -169,6 +169,30 @@ int Grid::get_fluid_cells_quantity() {
     return _fluid_cells_quantity;
 }
 
+void Grid::thickness(matrix<double>& vec) {
+    // Resize vector and set all values to 0
+    vec.resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), 0));
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Accessing thickness
+            vec.at(x).at(y) = _cells.at(x).at(y).thickness();
+        }
+    }
+}
+
+void Grid::set_thickness(matrix<double>& vec) {
+
+    // Iterate over cells
+    for (int x = 0; x < Grid::imaxb(); x++) {
+        for (int y = 0; y < Grid::jmaxb(); y++) {
+            // Setting thickness
+            _cells.at(x).at(y).set_thickness(vec.at(x).at(y));
+        }
+    }
+}
+
 void Grid::temperature(matrix<double>& vec) {
     // Resize vector and set all values to 0
     vec.resize(Grid::imaxb(), std::vector<double>(Grid::jmaxb(), 0));
@@ -293,4 +317,14 @@ void Grid::print_temperature() {
     }
 }
 
+void Grid::print_thickness() {
+    for (int y = Grid::jmaxb() - 1; y >= 0; y--) {
+        for (int x = 0; x < Grid::imaxb(); x++) {
+            // Accessing thickness
+            std::cout << Grid::_cells.at(x).at(y).thickness() << " ";
+        }
+        // Print new line
+        std::cout << std::endl;
+    }
+}
 

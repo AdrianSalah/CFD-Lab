@@ -3,9 +3,9 @@
 #include <assert.h>
 
 int read_parameters(std::string szFileName,       /* name of the file */
-	double* Re,                /* reynolds number   */
-	double* UI,                /* velocity x-direction */
-	double* VI,                /* velocity y-direction */
+	double* Re,				/* reynolds number   */
+	double* UI,				/* velocity x-direction */
+	double* VI,				/* velocity y-direction */
 	double* PI,                /* pressure */
 	double* GX,                /* gravitation x-direction */
 	double* GY,                /* gravitation y-direction */
@@ -46,8 +46,8 @@ int read_parameters(std::string szFileName,       /* name of the file */
 	double* activation_energy_catalyst,
     double* vacant_centers_defficiency_coeff,
     double* reaction_heat_effect_Q,
-	int* processReaction
-                     )                     
+	int* processReaction,
+	double* MdepI)                     
 {
     // Reading Parameters
 	std::ifstream file(szFileName);
@@ -140,6 +140,7 @@ int read_parameters(std::string szFileName,       /* name of the file */
 			if (var == "activation_energy_catalyst")		    file >> *activation_energy_catalyst;
 			if (var == "vacant_centers_defficiency_coeff")		file >> *vacant_centers_defficiency_coeff;
 			if (var == "reaction_heat_effect_Q")				file >> *reaction_heat_effect_Q;
+			if (var == "initially_deposited_mass_thickness")	file >> *MdepI;
 
 		}
 	}

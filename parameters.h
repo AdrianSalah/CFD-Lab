@@ -58,5 +58,6 @@ double* activation_energy_catalyst = new double;
 double* vacant_centers_defficiency_coeff = new double;
 double* reaction_heat_effect_Q = new double;
 int** cell_array = new int*;           /* array of geometry */
+double* MdepI = new double;				// Initially deposited mass
 
 #endif

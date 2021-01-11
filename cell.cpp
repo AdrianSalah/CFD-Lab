@@ -2,8 +2,8 @@
 
 Cell::Cell() {};
 
-Cell::Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D) :
-    _pressure(PI), _temperature(TI) {
+Cell::Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D, double& MdeposI) :
+    _pressure(PI), _temperature(TI), _thickness(MdeposI) {
     set_velocity(UI, velocity_type::U);
     set_velocity(VI, velocity_type::V);
 };
@@ -32,6 +32,15 @@ double& Cell::temperature() {
 
 void Cell::set_temperature(double& value) {
     _temperature = value;
+}
+
+// Thickness of the deposited material Get and Set
+double& Cell::thickness() {
+    return _thickness;
+}
+
+void Cell::set_thickness(double& value) {
+    _thickness = value;
 }
 
 // Velocity Get and Set

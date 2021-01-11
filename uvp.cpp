@@ -204,6 +204,40 @@ void calculate_temp(
 }
 
 
+// Calculates thickness of the deposited material
+// 
+void calculate_thickness(
+    int imax,
+    int jmax,
+    Grid& grid,
+    ID id)
+{
+    static matrix<double> DeposConc;
+    static matrix<double> DeposThickness;
+
+    grid.thickness(DeposThickness);
+    grid.concentration(DeposConc, id);
+
+    for (int i = 1; i < grid.imaxb() - 1; i++)
+    {
+        for (int j = 1; j < grid.jmaxb() - 1; j++)
+        {
+            // Calculate thickness change ONLY at FLUID cells (cell_type > 1)
+            // which are adjacent to SOLID cells (i.e. any of its neighbor is solid or catalyst)
+            if (grid.cell(i, j)._cellType > 1 && (
+                (grid.cell(i, j)._nbEast->_cellType < 1) ||
+                (grid.cell(i, j)._nbWest->_cellType < 1) ||
+                (grid.cell(i, j)._nbNorth->_cellType < 1) ||
+                (grid.cell(i, j)._nbSouth->_cellType < 1))) 
+            {
+                DeposThickness[i][j] += DeposConc[i][j] * 0.00001;
+            }
+        }
+    }
+    grid.set_thickness(DeposThickness);
+}
+
+
 // Calculates concentration
 void calculate_concentration(
     double Re,
@@ -2102,7 +2136,7 @@ void init_fgrs(int imax,
 }
 
 
-// Initializes u, v, p, T and c if the cells belongs to FLUID-cells
+// Initializes u, v, p, T, C and Depos Thickness if the cells belongs to FLUID-cells
 void init_uvptc(
     int imax,
     int jmax,
@@ -2110,17 +2144,20 @@ void init_uvptc(
     matrix<double> V,
     matrix<double> P,
     matrix<double> T,
+    matrix<double> Mdepos,
     double UI,
     double VI,
     double PI,
     double TI,
     double *CI,
+    double MdepI,
     Grid& grid)
 {
     grid.velocity(U, velocity_type::U);
     grid.velocity(V, velocity_type::V);
     grid.pressure(P);
     grid.temperature(T);
+    grid.thickness(Mdepos);
 
     matrix<double> C_A, C_B, C_C, C_D;
     grid.concentration(C_A, ID::A);
@@ -2136,12 +2173,13 @@ void init_uvptc(
                 V.at(i).at(j) = VI;
                 P.at(i).at(j) = PI;
                 T.at(i).at(j) = TI;
+                Mdepos.at(i).at(j) = MdepI;
                 C_A.at(i).at(j) = CI[ID::A];
                 C_B.at(i).at(j) = CI[ID::B];
                 C_C.at(i).at(j) = CI[ID::C];
                 C_D.at(i).at(j) = CI[ID::D];
-
             }
+
             else if (grid.cell(i, j)._cellType == NOSLIP) {
                 U.at(i).at(j) = 0;
                 V.at(i).at(j) = 0;
@@ -2156,6 +2194,7 @@ void init_uvptc(
     grid.set_velocity(V, velocity_type::V);
     grid.set_pressure(P);
     grid.set_temperature(T);
+    grid.set_thickness(Mdepos);
     grid.set_concentration(C_A, ID::A);
     grid.set_concentration(C_B, ID::B);
     grid.set_concentration(C_C, ID::C);

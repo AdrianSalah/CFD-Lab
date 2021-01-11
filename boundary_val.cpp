@@ -188,7 +188,7 @@ void boundaryvalues(int imax,
     }
 
     // Set the temperature for all INTERNAL SOLID cells of the catalyst reactor (scenario 10), including catalyst
-    // (i.e. modelling the coolling down (or heating up) of the reactor internals as part of chemical process
+    // (i.e. modelling the coolling down (or heating up) of the reactor internals as a part of the chemical process
     if (scenarioSpec == 9 || scenarioSpec == 10 || scenarioSpec == 11)
     {
         for (int i = 1; i < grid.imaxb() - 1; i++) {

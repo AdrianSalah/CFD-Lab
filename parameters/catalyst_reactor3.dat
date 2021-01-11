@@ -1,17 +1,17 @@
 #--------------------------------------------
-#            size of the domain             
+#       Size of the domain             
 #--------------------------------------------
 xlength      2
 ylength      5
 
 #--------------------------------------------
-#            number of cells
+#       Number of cells
 #--------------------------------------------
 imax        40
 jmax        100
 
 #--------------------------------------------
-#               time steps
+#       Time steps
 # dt: time step size
 # t_end: final time
 # tau: safety factor for time step size control
@@ -27,7 +27,7 @@ tau          0.5
 dt_value     1.0
 
 #--------------------------------------------
-#               pressure
+#     Pressure
 # itermax: maximum number of pressure iterations
 # eps: tolerance for pressure iteration (residual < eps)
 # omg: relaxation factor for SOR
@@ -45,18 +45,18 @@ beta         0.00021
 Re         100
 
 #--------------------------------------------
-#        gravity / external forces
+#     Gravity / external forces
 #--------------------------------------------
 GX          0
 GY          0
 
 #--------------------------------------------
-#         initial pressure
+#     Initial pressure
 #--------------------------------------------
 PI          0
 
 #--------------------------------------------
-#       initial velocity
+#     Initial velocity
 #--------------------------------------------
 UI          0.0
 VI          0.0
@@ -70,13 +70,13 @@ T_h         450
 T_c         273
 
 #--------------------------------------------
-#     Temperature variables
+#     Temperature Variables
 #--------------------------------------------
 kappa         1.0
 heat_flux     1.0
 
 #--------------------------------------------
-#     Prandlt Number
+#     Prandtl Number
 #--------------------------------------------
 PR          7
 
@@ -99,3 +99,8 @@ activation_energy_reverse			252280
 activation_energy_catalyst			70000
 vacant_centers_defficiency_coeff	0.0
 reaction_heat_effect_Q				-92280
+
+#--------------------------------------------
+#     Chemical Vapor Deposition
+#--------------------------------------------
+initially_deposited_mass_thickness  0.0

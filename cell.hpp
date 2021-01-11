@@ -8,7 +8,7 @@ class Cell {
 public:
     // Constructors
     Cell();
-    Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D);
+    Cell(double& PI, double& UI, double& VI, double& TI, double& CI_A, double& CI_B, double& CI_C, double& CI_D, double& MdeposI);
 
     CellType _cellType;
 
@@ -30,6 +30,10 @@ public:
     double& temperature();
     void set_temperature(double& value);
 
+    // Get + Set thickness of deposited material
+    double& thickness();
+    void set_thickness(double& value);
+
     // Get + Set velocity
     double& velocity(velocity_type type);
     void set_velocity(double& value, velocity_type type);
@@ -47,6 +51,9 @@ private:
 
     // one temperature value per call
     double _temperature = 0;
+
+    // one thickness value per call
+    double _thickness = 0;
 
     // Fixed size velocity
     std::array<double, 2> _velocity = {0};

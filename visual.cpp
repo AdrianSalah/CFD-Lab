@@ -178,6 +178,11 @@ void VTKHelper::printVTKFile(
     Temperature->SetName("temperature");
     Temperature->SetNumberOfComponents(1);
 
+    // DEPOSITED MATERIAL THICKNESS
+    // Deposited Material Array
+    vtkDoubleArray* DepositedMaterial = vtkDoubleArray::New();
+    DepositedMaterial->SetName("deposition_thckns");
+    DepositedMaterial->SetNumberOfComponents(1);
 
     // CONCENTRATION OF COMPONENT A
     // Concentration A Array
@@ -217,15 +222,17 @@ void VTKHelper::printVTKFile(
     // Set number of tuples
     std::vector<std::vector<Cell>> cells;
     
-    
+    // PRESSURE
     std::vector<std::vector<double>> pressure;
     grid.pressure(pressure);
-    
-
 
     // TEMPERATURE
     std::vector<std::vector<double>> temperature;
     grid.temperature(temperature);
+
+    // DEPOSITION THICKNESS
+    std::vector<std::vector<double>> deposition_thickness;
+    grid.thickness(deposition_thickness);
     
     // CONCENTRATION of Component A
     std::vector<std::vector<double>> concentrationA;
@@ -276,6 +283,14 @@ void VTKHelper::printVTKFile(
     for (int j = 1; j < grid.jmaxb() - 1; j++) {
         for (int i = 1; i < grid.imaxb() - 1; i++) {
             Temperature->InsertNextTuple(&temperature.at(i).at(j));
+        }
+    }
+
+    // DEPOSITED MATERIAL THICKNESS
+    // Print thickness from bottom to top
+    for (int j = 1; j < grid.jmaxb() - 1; j++) {
+        for (int i = 1; i < grid.imaxb() - 1; i++) {
+            DepositedMaterial->InsertNextTuple(&deposition_thickness.at(i).at(j));
         }
     }
 
@@ -353,6 +368,10 @@ void VTKHelper::printVTKFile(
     // TEMPERATURE
     // Add Temperature to Structured Grid
     structuredGrid->GetCellData()->AddArray(Temperature);
+
+    // DEPOSITED MATERIAL THICKNESS
+    // Add Thickness to Structured Grid
+    structuredGrid->GetCellData()->AddArray(DepositedMaterial);
     
     // CONCENTRATION OF COMPONENT A
     // Add Concentration to Structured Grid

@@ -99,3 +99,8 @@ activation_energy_reverse			320
 activation_energy_catalyst			100
 vacant_centers_defficiency_coeff	0.0
 reaction_heat_effect_Q				-100
+
+#--------------------------------------------
+#     Chemical Vapor Deposition
+#--------------------------------------------
+initially_deposited_mass_thickness  0.0
